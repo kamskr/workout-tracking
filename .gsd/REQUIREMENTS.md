@@ -232,8 +232,8 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M005/S01
 - Supporting slices: M005/S02
-- Validation: unmapped
-- Notes: Leverages Convex realtime subscriptions. Presence via heartbeat pattern.
+- Validation: M005/S01 — Session creation, joining, presence heartbeat (10s interval + 30s cron cleanup), and live set feed backend + web UI delivered. 12-check verification script (verify-s01-m05.ts) written and compiles. Web pages at /workouts/session/[id] and /session/join/[inviteCode] render with type-safe Convex bindings. Middleware protects /session(*) routes. Heartbeat-based presence pattern proven (primary risk for M005). **Pending:** shared timer (S02), session lifecycle end/summary (S02), finishWorkout integration (S03), mobile port (S04), live verification script execution.
+- Notes: Leverages Convex realtime subscriptions. Presence via heartbeat pattern. S01 proved the heartbeat write load risk is manageable (10 participants × 10s heartbeat = 60 writes/min).
 
 ### R022 — Clean/Minimal Design Language
 - Class: quality-attribute

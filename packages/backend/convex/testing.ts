@@ -30,7 +30,7 @@ import { computeCurrentStreak } from "./profiles";
 import { reactionType, reportTargetType } from "./schema";
 import { paginationOptsValidator } from "convex/server";
 import { updateLeaderboardEntries } from "./lib/leaderboardCompute";
-import { leaderboardMetric, challengeType, challengeStatus } from "./schema";
+import { leaderboardMetric, challengeType, challengeStatus, sessionStatus, participantStatus } from "./schema";
 import { updateChallengeProgress } from "./lib/challengeCompute";
 
 // ── Workout helpers ──────────────────────────────────────────────────────────
@@ -1991,6 +1991,31 @@ export const testCleanup = mutation({
       await ctx.db.delete(challenge._id);
     }
 
+    // Delete session participations (by userId index)
+    const sessionParticipations = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .collect();
+    for (const sp of sessionParticipations) {
+      await ctx.db.delete(sp._id);
+    }
+
+    // Delete group sessions hosted by this user (and their remaining participants)
+    const sessionsHosted = await ctx.db
+      .query("groupSessions")
+      .withIndex("by_hostId", (q) => q.eq("hostId", args.testUserId))
+      .collect();
+    for (const session of sessionsHosted) {
+      const sessionParticipants = await ctx.db
+        .query("sessionParticipants")
+        .withIndex("by_sessionId", (q) => q.eq("sessionId", session._id))
+        .collect();
+      for (const sp of sessionParticipants) {
+        await ctx.db.delete(sp._id);
+      }
+      await ctx.db.delete(session._id);
+    }
+
     // Delete user badges
     const userBadges = await ctx.db
       .query("userBadges")
@@ -2829,5 +2854,481 @@ export const testGetUserBadgeCount = query({
       .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
       .collect();
     return badges.length;
+  },
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Session test helpers (S01/M005)
+// ══════════════════════════════════════════════════════════════════════════════
+
+/** Unambiguous charset — mirrors sessions.ts */
+const SESSION_INVITE_CHARSET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const SESSION_INVITE_CODE_LENGTH = 6;
+const SESSION_HEARTBEAT_TIMEOUT_MS = 30_000;
+
+function generateTestInviteCode(): string {
+  let code = "";
+  for (let i = 0; i < SESSION_INVITE_CODE_LENGTH; i++) {
+    code += SESSION_INVITE_CHARSET[Math.floor(Math.random() * SESSION_INVITE_CHARSET.length)];
+  }
+  return code;
+}
+
+/**
+ * Test helper: create a group session (mirrors sessions.createSession).
+ * Returns { sessionId, inviteCode }.
+ */
+export const testCreateSession = mutation({
+  args: {
+    testUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+
+    // Generate invite code with collision retry
+    let inviteCode: string;
+    let attempts = 0;
+    do {
+      inviteCode = generateTestInviteCode();
+      const existing = await ctx.db
+        .query("groupSessions")
+        .withIndex("by_inviteCode", (q) => q.eq("inviteCode", inviteCode))
+        .first();
+      if (!existing) break;
+      attempts++;
+    } while (attempts < 10);
+
+    if (attempts >= 10) {
+      throw new Error("Failed to generate unique invite code after 10 attempts");
+    }
+
+    const sessionId = await ctx.db.insert("groupSessions", {
+      hostId: args.testUserId,
+      status: "waiting",
+      inviteCode,
+      createdAt: now,
+    });
+
+    // Create workout for host
+    const workoutId = await ctx.db.insert("workouts", {
+      userId: args.testUserId,
+      name: "Group Session",
+      status: "inProgress",
+      startedAt: now,
+      sessionId,
+    });
+
+    // Create participant entry for host
+    await ctx.db.insert("sessionParticipants", {
+      sessionId,
+      userId: args.testUserId,
+      workoutId,
+      lastHeartbeatAt: now,
+      status: "active",
+      joinedAt: now,
+    });
+
+    return { sessionId, inviteCode };
+  },
+});
+
+/**
+ * Test helper: join a session by invite code (mirrors sessions.joinSession).
+ */
+export const testJoinSession = mutation({
+  args: {
+    testUserId: v.string(),
+    inviteCode: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db
+      .query("groupSessions")
+      .withIndex("by_inviteCode", (q) => q.eq("inviteCode", args.inviteCode))
+      .first();
+
+    if (!session) throw new Error("Session not found");
+
+    if (session.status !== "waiting" && session.status !== "active") {
+      throw new Error(`Session is not joinable (status: ${session.status})`);
+    }
+
+    // Dedup check
+    const existing = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId_userId", (q) =>
+        q.eq("sessionId", session._id).eq("userId", args.testUserId),
+      )
+      .first();
+
+    if (existing) {
+      return {
+        sessionId: session._id,
+        participantId: existing._id,
+        workoutId: existing.workoutId,
+      };
+    }
+
+    // Check cap
+    const participants = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", session._id))
+      .collect();
+
+    if (participants.length >= 10) {
+      throw new Error("Session full (max 10 participants)");
+    }
+
+    const now = Date.now();
+
+    const workoutId = await ctx.db.insert("workouts", {
+      userId: args.testUserId,
+      name: "Group Session",
+      status: "inProgress",
+      startedAt: now,
+      sessionId: session._id,
+    });
+
+    const participantId = await ctx.db.insert("sessionParticipants", {
+      sessionId: session._id,
+      userId: args.testUserId,
+      workoutId,
+      lastHeartbeatAt: now,
+      status: "active",
+      joinedAt: now,
+    });
+
+    // Transition waiting → active on first non-host join
+    if (session.status === "waiting" && args.testUserId !== session.hostId) {
+      await ctx.db.patch(session._id, { status: "active" });
+    }
+
+    return { sessionId: session._id, participantId, workoutId };
+  },
+});
+
+/**
+ * Test helper: join a session by session ID directly (mirrors sessions.joinSession with sessionId).
+ */
+export const testJoinSessionById = mutation({
+  args: {
+    testUserId: v.string(),
+    sessionId: v.id("groupSessions"),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    if (session.status !== "waiting" && session.status !== "active") {
+      throw new Error(`Session is not joinable (status: ${session.status})`);
+    }
+
+    // Dedup check
+    const existing = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId_userId", (q) =>
+        q.eq("sessionId", args.sessionId).eq("userId", args.testUserId),
+      )
+      .first();
+
+    if (existing) {
+      return {
+        sessionId: args.sessionId,
+        participantId: existing._id,
+        workoutId: existing.workoutId,
+      };
+    }
+
+    // Check cap
+    const participants = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .collect();
+
+    if (participants.length >= 10) {
+      throw new Error("Session full (max 10 participants)");
+    }
+
+    const now = Date.now();
+
+    const workoutId = await ctx.db.insert("workouts", {
+      userId: args.testUserId,
+      name: "Group Session",
+      status: "inProgress",
+      startedAt: now,
+      sessionId: args.sessionId,
+    });
+
+    const participantId = await ctx.db.insert("sessionParticipants", {
+      sessionId: args.sessionId,
+      userId: args.testUserId,
+      workoutId,
+      lastHeartbeatAt: now,
+      status: "active",
+      joinedAt: now,
+    });
+
+    // Transition waiting → active on first non-host join
+    if (session.status === "waiting" && args.testUserId !== session.hostId) {
+      await ctx.db.patch(args.sessionId, { status: "active" });
+    }
+
+    return { sessionId: args.sessionId, participantId, workoutId };
+  },
+});
+
+/**
+ * Test helper: send heartbeat (mirrors sessions.sendHeartbeat).
+ */
+export const testSendHeartbeat = mutation({
+  args: {
+    testUserId: v.string(),
+    sessionId: v.id("groupSessions"),
+  },
+  handler: async (ctx, args) => {
+    const participant = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId_userId", (q) =>
+        q.eq("sessionId", args.sessionId).eq("userId", args.testUserId),
+      )
+      .first();
+
+    if (!participant) {
+      throw new Error("Not a participant");
+    }
+
+    await ctx.db.patch(participant._id, {
+      lastHeartbeatAt: Date.now(),
+      status: "active",
+    });
+  },
+});
+
+/**
+ * Test helper: get session (mirrors sessions.getSession without auth).
+ */
+export const testGetSession = query({
+  args: {
+    sessionId: v.id("groupSessions"),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    const participants = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .collect();
+
+    const hostProfile = await ctx.db
+      .query("profiles")
+      .withIndex("by_userId", (q) => q.eq("userId", session.hostId))
+      .first();
+
+    return {
+      ...session,
+      participantCount: participants.length,
+      host: {
+        displayName: hostProfile?.displayName ?? session.hostId,
+        username: hostProfile?.username ?? session.hostId,
+        avatarUrl: hostProfile?.avatarStorageId ?? null,
+      },
+    };
+  },
+});
+
+/**
+ * Test helper: get session participants (mirrors sessions.getSessionParticipants without auth).
+ */
+export const testGetSessionParticipants = query({
+  args: {
+    sessionId: v.id("groupSessions"),
+  },
+  handler: async (ctx, args) => {
+    const participants = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .collect();
+
+    const now = Date.now();
+
+    return await Promise.all(
+      participants.map(async (p) => {
+        const profile = await ctx.db
+          .query("profiles")
+          .withIndex("by_userId", (q) => q.eq("userId", p.userId))
+          .first();
+
+        const derivedStatus =
+          p.status !== "left" && now - p.lastHeartbeatAt <= SESSION_HEARTBEAT_TIMEOUT_MS
+            ? "active"
+            : p.status;
+
+        return {
+          ...p,
+          displayName: profile?.displayName ?? p.userId,
+          username: profile?.username ?? p.userId,
+          avatarUrl: profile?.avatarStorageId ?? null,
+          derivedStatus,
+        };
+      }),
+    );
+  },
+});
+
+/**
+ * Test helper: get session sets (mirrors sessions.getSessionSets without auth).
+ * Traverses workouts (by_sessionId) → workoutExercises → sets. Does NOT read sessionParticipants.
+ */
+export const testGetSessionSets = query({
+  args: {
+    sessionId: v.id("groupSessions"),
+  },
+  handler: async (ctx, args) => {
+    const workouts = await ctx.db
+      .query("workouts")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .collect();
+
+    const participantSets = await Promise.all(
+      workouts.map(async (workout) => {
+        const profile = await ctx.db
+          .query("profiles")
+          .withIndex("by_userId", (q) => q.eq("userId", workout.userId))
+          .first();
+
+        const workoutExercises = await ctx.db
+          .query("workoutExercises")
+          .withIndex("by_workoutId", (q) => q.eq("workoutId", workout._id))
+          .collect();
+
+        const exercises = await Promise.all(
+          workoutExercises.map(async (we) => {
+            const [exercise, sets] = await Promise.all([
+              ctx.db.get(we.exerciseId),
+              ctx.db
+                .query("sets")
+                .withIndex("by_workoutExerciseId", (q) =>
+                  q.eq("workoutExerciseId", we._id),
+                )
+                .collect(),
+            ]);
+
+            return {
+              workoutExerciseId: we._id,
+              exerciseName: exercise?.name ?? "Unknown Exercise",
+              exerciseId: we.exerciseId,
+              order: we.order,
+              sets,
+            };
+          }),
+        );
+
+        return {
+          participantUserId: workout.userId,
+          participantName: profile?.displayName ?? workout.userId,
+          workoutId: workout._id,
+          exercises,
+        };
+      }),
+    );
+
+    return participantSets;
+  },
+});
+
+/**
+ * Test helper: leave session (mirrors sessions.leaveSession without auth).
+ */
+export const testLeaveSession = mutation({
+  args: {
+    testUserId: v.string(),
+    sessionId: v.id("groupSessions"),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    if (session.hostId === args.testUserId) {
+      throw new Error("Host cannot leave session");
+    }
+
+    const participant = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId_userId", (q) =>
+        q.eq("sessionId", args.sessionId).eq("userId", args.testUserId),
+      )
+      .first();
+
+    if (!participant) {
+      throw new Error("Not a participant");
+    }
+
+    await ctx.db.patch(participant._id, { status: "left" });
+  },
+});
+
+/**
+ * Test helper: set a participant's lastHeartbeatAt to a specific timestamp.
+ * Used to simulate stale heartbeats for presence cleanup testing.
+ */
+export const testSetParticipantHeartbeat = mutation({
+  args: {
+    testUserId: v.string(),
+    sessionId: v.id("groupSessions"),
+    lastHeartbeatAt: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const participant = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId_userId", (q) =>
+        q.eq("sessionId", args.sessionId).eq("userId", args.testUserId),
+      )
+      .first();
+
+    if (!participant) throw new Error("Not a participant");
+
+    await ctx.db.patch(participant._id, { lastHeartbeatAt: args.lastHeartbeatAt });
+  },
+});
+
+/**
+ * Test helper: run presence cleanup (mirrors sessions.cleanupPresence for verification scripts).
+ */
+export const testCleanupPresence = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const threshold = now - SESSION_HEARTBEAT_TIMEOUT_MS;
+    let idleCount = 0;
+    let sessionsScanned = 0;
+
+    const waitingSessions = await ctx.db
+      .query("groupSessions")
+      .withIndex("by_status", (q) => q.eq("status", "waiting"))
+      .take(1000);
+
+    const activeSessions = await ctx.db
+      .query("groupSessions")
+      .withIndex("by_status", (q) => q.eq("status", "active"))
+      .take(1000);
+
+    const sessions = [...waitingSessions, ...activeSessions];
+    sessionsScanned = sessions.length;
+
+    for (const session of sessions) {
+      const participants = await ctx.db
+        .query("sessionParticipants")
+        .withIndex("by_sessionId", (q) => q.eq("sessionId", session._id))
+        .collect();
+
+      for (const p of participants) {
+        if (p.status === "active" && p.lastHeartbeatAt < threshold) {
+          await ctx.db.patch(p._id, { status: "idle" });
+          idleCount++;
+        }
+      }
+    }
+
+    return { sessionsScanned, idleCount };
   },
 });

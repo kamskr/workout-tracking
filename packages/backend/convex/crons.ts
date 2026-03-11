@@ -9,4 +9,10 @@ crons.interval(
   internal.challenges.checkDeadlines,
 );
 
+crons.interval(
+  "cleanup session presence",
+  { seconds: 30 },
+  internal.sessions.cleanupPresence,
+);
+
 export default crons;

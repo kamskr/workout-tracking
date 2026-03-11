@@ -87,7 +87,19 @@ const challengeStatus = v.union(
   v.literal("cancelled"),
 );
 
-// Export validators for use in social.ts, testing.ts, leaderboards.ts, and challenges.ts
+const sessionStatus = v.union(
+  v.literal("waiting"),
+  v.literal("active"),
+  v.literal("completed"),
+);
+
+const participantStatus = v.union(
+  v.literal("active"),
+  v.literal("idle"),
+  v.literal("left"),
+);
+
+// Export validators for use in social.ts, testing.ts, leaderboards.ts, challenges.ts, and sessions.ts
 export {
   feedItemType,
   reactionType,
@@ -95,6 +107,8 @@ export {
   leaderboardMetric,
   challengeType,
   challengeStatus,
+  sessionStatus,
+  participantStatus,
 };
 
 // ── Schema ───────────────────────────────────────────────────────────────────
@@ -142,10 +156,12 @@ export default defineSchema({
     completedAt: v.optional(v.number()),
     notes: v.optional(v.string()),
     durationSeconds: v.optional(v.number()),
+    sessionId: v.optional(v.id("groupSessions")),
   })
     .index("by_userId", ["userId"])
     .index("by_userId_status", ["userId", "status"])
-    .index("by_userId_completedAt", ["userId", "completedAt"]),
+    .index("by_userId_completedAt", ["userId", "completedAt"])
+    .index("by_sessionId", ["sessionId"]),
 
   // ── Workout Exercises (join table: workout → exercise) ───────────────────
   workoutExercises: defineTable({
@@ -343,6 +359,32 @@ export default defineSchema({
     .index("by_challengeId_currentValue", ["challengeId", "currentValue"])
     .index("by_userId", ["userId"])
     .index("by_challengeId_userId", ["challengeId", "userId"]),
+
+  // ── Group Sessions ──────────────────────────────────────────────────────
+  // Real-time group workout sessions with invite codes and presence tracking.
+  groupSessions: defineTable({
+    hostId: v.string(),
+    status: sessionStatus,
+    inviteCode: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_hostId", ["hostId"])
+    .index("by_inviteCode", ["inviteCode"])
+    .index("by_status", ["status"]),
+
+  // ── Session Participants ───────────────────────────────────────────────
+  // Tracks each user's presence in a group session with heartbeat-based liveness.
+  sessionParticipants: defineTable({
+    sessionId: v.id("groupSessions"),
+    userId: v.string(),
+    workoutId: v.id("workouts"),
+    lastHeartbeatAt: v.number(),
+    status: participantStatus,
+    joinedAt: v.number(),
+  })
+    .index("by_sessionId", ["sessionId"])
+    .index("by_userId", ["userId"])
+    .index("by_sessionId_userId", ["sessionId", "userId"]),
 
   // ── User Badges ────────────────────────────────────────────────────────
   // Tracks earned badges per user, evaluated on workout completion.

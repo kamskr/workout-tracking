@@ -25,6 +25,7 @@ import type * as openai from "../openai.js";
 import type * as personalRecords from "../personalRecords.js";
 import type * as profiles from "../profiles.js";
 import type * as seed from "../seed.js";
+import type * as sessions from "../sessions.js";
 import type * as sets from "../sets.js";
 import type * as sharing from "../sharing.js";
 import type * as social from "../social.js";
@@ -59,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   personalRecords: typeof personalRecords;
   profiles: typeof profiles;
   seed: typeof seed;
+  sessions: typeof sessions;
   sets: typeof sets;
   sharing: typeof sharing;
   social: typeof social;
