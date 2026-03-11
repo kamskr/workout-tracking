@@ -2,15 +2,29 @@
 
 ## What This Is
 
-A full-stack cross-platform workout tracking application built on a Turborepo monorepo with Next.js (web), Expo (mobile), and Convex (realtime backend). Users log workouts with detailed set tracking (weight, reps, RPE, tempo, rest timers), browse a curated exercise library, save workout templates, view rich analytics and progress charts, follow friends, react to workouts, share and clone workout templates — all synced in realtime across devices.
+A full-stack cross-platform workout tracking application built on a Turborepo monorepo with Next.js (web), Expo (mobile), and Convex (realtime backend). Users log workouts with detailed set tracking (weight, reps, RPE, tempo, rest timers), browse a curated exercise library, save workout templates, view rich analytics and progress charts, follow friends, react to workouts, share and clone workout templates, compete on leaderboards and in challenges, earn achievement badges, and train together in collaborative live workout sessions — all synced in realtime across devices.
 
 ## Core Value
 
-A user can open the app on their phone at the gym, log a workout set-by-set with full detail, and see that data instantly reflected on any other device — with their history, PRs, progress, and social feed always up to date.
+A user can open the app on their phone at the gym, log a workout set-by-set with full detail, and see that data instantly reflected on any other device — with their history, PRs, progress, social feed, and group sessions always up to date.
 
 ## Current State
 
-M001–M005 structurally complete (2026-03-11). 5 milestones, 22 slices, 73 tasks shipped. 23-table normalized Convex schema with 164 decisions recorded. Full feature set across both platforms: core workout logging, analytics with PR tracking and muscle heatmaps, social foundation (profiles, follows, feed, sharing), competitive features (leaderboards, challenges, badges), and collaborative live workouts with session creation, joining, presence heartbeat, live set feed, server-authoritative shared timer, host-only session ending, combined summary view, abandoned session auto-timeout, full workout→hooks integration (finishWorkoutCore), and complete mobile port (GroupSessionScreen, JoinSessionScreen, 4 session components). Mobile app has 7-tab navigation covering all domains. `finishWorkoutCore` lib function is the single source of truth for workout completion hooks (feed, leaderboard, challenge, badge) — called from `finishWorkout`, `endSession`, and `checkSessionTimeouts`. `crons.ts` runs 3 entries: 15-min challenge deadline enforcement, 30s session presence cleanup, 5-min session timeout check. `sessions.ts` has 15 functions covering full group session lifecycle. TypeScript compiles 0 new errors across all 3 packages (backend, web, native). 72/72 M001+M002 backend checks pass. 119 additional checks (42 M003 + 40 M004 + 12 M005/S01 + 10 M005/S02 + 15 M005/S03) written and compile — **execution pending Convex CLI auth** (`npx convex login`). 16 requirements validated, R015–R021 actively progressing — R021 all 4 slices complete (session + presence + timer + lifecycle + summary + hooks integration + mobile port), pending live verification.
+All 5 milestones complete (2026-03-11). 5 milestones, 22 slices, 73 tasks shipped. 23-table normalized Convex schema with 164 decisions recorded (D001–D164). Full feature set across both platforms:
+
+- **Core:** Exercise library (144 exercises), workout CRUD with full set tracking (weight, reps, RPE, tempo, notes), rest timer with 4-level priority chain, workout templates, superset grouping
+- **Analytics:** Personal records (weight/volume/rep PRs), progress charts per exercise, volume analytics with muscle group heatmaps, weekly/monthly summaries
+- **Social:** User profiles with stats, follow system, realtime activity feed with 5 reaction types, workout sharing with privacy controls, clone-as-template
+- **Competitive:** Pre-computed leaderboards with opt-in privacy, 4-type group challenges with cron lifecycle, 15-badge gamification system
+- **Collaborative:** Live group workout sessions with invite codes, realtime presence via heartbeat + cron, live set feed, server-authoritative shared timer, host-only session ending, combined summary, abandoned session auto-timeout, full workout→hooks integration via `finishWorkoutCore`
+
+**Backend:** 7 Convex modules (workouts, exercises, sessions, social, sharing, badges, analytics) + `finishWorkoutCore` lib function as single source of truth for workout completion hooks (feed, leaderboard, challenge, badge). `crons.ts` runs 3 entries: 15-min challenge deadline enforcement, 30s session presence cleanup, 5-min session timeout check. `sessions.ts` has 15 functions covering full group session lifecycle.
+
+**Mobile:** 7-tab navigation (Exercises, Workouts, Templates, Analytics, Feed, Profile, Compete) with typed stack navigators covering all domains.
+
+**Compilation:** TypeScript compiles 0 new errors across all 3 packages (backend: 0, web: 0, native: 44 pre-existing TS2307 `convex/react` path resolution errors).
+
+**Verification:** 72/72 M001+M002 backend checks pass (live). 119 additional checks across M003–M005 (42 + 40 + 37) written and compile — **execution pending Convex CLI auth** (`npx convex login`). 16 requirements validated (R001–R014, R022, R023). 7 requirements active (R015–R021) — all fully implemented, pending live verification to move to validated.
 
 ## Architecture / Key Patterns
 
@@ -26,8 +40,9 @@ M001–M005 structurally complete (2026-03-11). 5 milestones, 22 slices, 73 task
 - **Leaderboards:** Pre-computed entries via non-fatal finishWorkout hook (D107/D108), opt-in filtering at query time (D109/D120), bounded rank scan (D114)
 - **Challenges:** Lifecycle state machine (D111), incremental delta computation (D121), cron-based deadline enforcement + scheduler.runAt precision (D126), creator auto-join (D125)
 - **Badges:** Hardcoded definitions constant (D110/D128), batch-fetch evaluation engine (D129), 4th non-fatal finishWorkout hook, BadgeDisplay on profile page (D130/D131)
+- **Sessions:** Separate sessionParticipants table (D137), heartbeat-based presence with cron cleanup (D139), server-authoritative timer via stored timerEndAt (D138), finishWorkoutCore for unified hook execution (D159)
 - **Styling:** Tailwind CSS (web), React Native StyleSheet (mobile)
-- **Design:** Clean/minimal aesthetic — light theme, Apple Health-inspired
+- **Design:** Clean/minimal aesthetic — light theme, Apple Health-inspired (D007)
 
 ## Capability Contract
 
@@ -37,6 +52,17 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 
 - [x] M001: Core Workout Logging — Exercise library, workout CRUD, full set tracking, rest timer, templates, cross-platform UI
 - [x] M002: Analytics & Progress — PR tracking, progress charts, volume analytics, muscle heatmaps, summaries
-- [x] M003: Social Foundation — User profiles, follow system, activity feed with reactions, workout sharing with privacy controls, mobile social port (verification: partial — 42 checks pending Convex CLI auth)
-- [x] M004: Leaderboards & Challenges — Pre-computed leaderboards with opt-in privacy, 4-type group challenges with cron lifecycle, 15-badge gamification, mobile competitive port (verification: structural + compilation complete, 40 checks pending Convex CLI auth)
-- [x] M005: Collaborative Workouts — Live shared sessions, partner tracking, realtime presence (structural — 37 checks pending Convex CLI auth)
+- [x] M003: Social Foundation — User profiles, follow system, activity feed with reactions, workout sharing with privacy controls, mobile social port (verification: 42 checks pending Convex CLI auth)
+- [x] M004: Leaderboards & Challenges — Pre-computed leaderboards with opt-in privacy, 4-type group challenges with cron lifecycle, 15-badge gamification, mobile competitive port (verification: 40 checks pending Convex CLI auth)
+- [x] M005: Collaborative Live Workouts — Session creation with invite links, realtime presence via heartbeat + cron, live set feed, server-authoritative shared timer, host-controlled lifecycle with combined summary, finishWorkoutCore integration, mobile port (verification: 37 checks pending Convex CLI auth)
+
+## Blockers
+
+- **Convex CLI auth:** `npx convex login` requires interactive terminal with browser. Must resolve before 119 verification checks can execute and R015–R021 can be validated.
+
+## Next Steps
+
+1. Resolve Convex CLI auth to execute all 119 pending verification checks (M003: 42, M004: 40, M005: 37)
+2. Mark R015–R021 as validated once live verification passes
+3. Final milestone-level UAT with multi-device end-to-end proof (two browsers for sessions, two phones for mobile)
+4. Consider future milestones: offline support (R024), community exercise library (R025), structured training programs (R026)
