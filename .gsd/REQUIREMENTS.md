@@ -116,13 +116,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R011 — Cross-Platform UI (Web + Mobile)
 - Class: launchability
-- Status: active
+- Status: validated
 - Description: All M001 features work on both Next.js web and Expo mobile apps. The mobile app is optimized for one-handed gym use. The web app provides a full-width dashboard experience.
 - Why it matters: User explicitly wants both platforms from day one.
 - Source: user
 - Primary owning slice: M001/S06
 - Supporting slices: M001/S01 through M001/S05
-- Validation: unmapped
+- Validation: M001/S06 — All M001 features ported to React Native mobile app: exercise browse with filters (T02), workout CRUD with full set tracking/supersets/previous performance (T03), rest timer with vibration (T04), templates (T04), settings with unit toggle (T01). Both platforms use same Convex backend for realtime sync. TypeScript compiles across all 3 packages (0 errors). All 4 backend verify scripts pass (41/41 checks), proving no regression from mobile client additions. Manual Expo verification required for runtime UX.
 - Notes: UI code is platform-specific (React vs React Native). Backend and types are shared.
 
 ### R012 — Personal Records Tracking
@@ -237,13 +237,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R022 — Clean/Minimal Design Language
 - Class: quality-attribute
-- Status: active
+- Status: validated
 - Description: Light theme, minimal UI, Apple Health-inspired aesthetic. Clean whites, subtle colors, generous whitespace. Mobile optimized for one-handed gym use with large tap targets.
 - Why it matters: User explicitly chose this direction. Consistency across platforms is important.
 - Source: user
 - Primary owning slice: M001/S06
 - Supporting slices: all UI slices
-- Validation: unmapped
+- Validation: M001/S06 — theme.ts defines D007-compliant color constants (white background, system blue accent, subtle grays) used across all mobile screens. Light status bar with dark content. app.json splash changed from blue to white. Consistent spacing, font sizes, large tap targets across all mobile components. Web UI established same design language in S01-S05 with Tailwind. Human UAT required for final design quality assessment.
 - Notes: Establish design tokens and component patterns in M001, carry forward.
 
 ### R023 — Clerk Authentication on Both Platforms
@@ -330,7 +330,7 @@ This file is the explicit capability and coverage contract for the project.
 | R008 | core-capability | validated | M001/S02 | none | M001/S02 — unit preference CRUD + conversion utility verified |
 | R009 | core-capability | validated | M001/S02 | none | M001/S02 — durationSeconds server-side computation verified |
 | R010 | core-capability | validated | M001/S01 | none | M001/S01 — muscle group, equipment, text search filters verified |
-| R011 | launchability | active | M001/S06 | M001/S01-S05 | unmapped |
+| R011 | launchability | validated | M001/S06 | M001/S01-S05 | M001/S06 — all M001 features on mobile, typecheck 3/3, 41/41 backend checks |
 | R012 | core-capability | active | M002/S01 | none | unmapped |
 | R013 | core-capability | active | M002/S02 | none | unmapped |
 | R014 | core-capability | active | M002/S03 | M002/S01 | unmapped |
@@ -341,7 +341,7 @@ This file is the explicit capability and coverage contract for the project.
 | R019 | core-capability | active | M004/S02 | M004/S01 | unmapped |
 | R020 | differentiator | active | M004/S03 | M003/S01 | unmapped |
 | R021 | differentiator | active | M005/S01 | M005/S02 | unmapped |
-| R022 | quality-attribute | active | M001/S06 | all UI slices | unmapped |
+| R022 | quality-attribute | validated | M001/S06 | all UI slices | M001/S06 — theme.ts tokens, light status bar, consistent styling, human UAT pending |
 | R023 | constraint | validated | M001/S01 | none | M001/S01 — /exercises auth gating verified (web) |
 | R024 | continuity | deferred | none | none | unmapped |
 | R025 | core-capability | deferred | none | none | unmapped |
@@ -351,7 +351,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 17
+- Active requirements: 15
 - Mapped to slices: 23
-- Validated: 11 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R023)
+- Validated: 13 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R022, R023)
 - Unmapped active requirements: 0

@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-S05 complete — Users can save completed workouts as reusable templates, browse templates at /templates, start pre-filled workouts from templates, and delete templates. Backend: 5 auth-gated Convex functions (saveAsTemplate, listTemplates, getTemplateWithExercises, deleteTemplate, startWorkoutFromTemplate) with proper validation (reject non-completed, empty workouts, active workout conflicts). Web UI: /templates page with template cards, SaveAsTemplateButton on completed workout cards, navigation between workouts and templates. 8-check verification script proves R006 contract. 11 of 17 active requirements now validated (R006 newly validated). Next: S06 — Mobile App & Cross-Platform Polish.
+M001 complete — All 6 slices delivered. Users can browse 144 exercises with filters, log workouts with full set tracking (weight/reps/RPE/tempo/notes), use a rest timer, save/load workout templates, see previous performance inline, and toggle unit preferences — on both web (Next.js) and mobile (Expo React Native). Both platforms share the same Convex realtime backend. 13 of 17 active requirements validated (R011, R022 newly validated in S06). Mobile app: 4-tab navigation (Exercises, Workouts, Templates, Settings), auth-gated via Clerk, gym-optimized UI with clean/minimal design. All dead notes-era code removed. TypeScript compiles 0 errors across all 3 packages. 41/41 backend verification checks pass. Ready for M002: Analytics & Progress.
 
 ## Architecture / Key Patterns
 
@@ -28,7 +28,7 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 
 ## Milestone Sequence
 
-- [ ] M001: Core Workout Logging — Exercise library, workout CRUD, full set tracking, rest timer, templates, cross-platform UI
+- [x] M001: Core Workout Logging — Exercise library, workout CRUD, full set tracking, rest timer, templates, cross-platform UI
 - [ ] M002: Analytics & Progress — PR tracking, progress charts, volume analytics, muscle heatmaps, summaries
 - [ ] M003: Social Foundation — User profiles, follow system, activity feed, workout sharing
 - [ ] M004: Leaderboards & Challenges — Leaderboards, group challenges, achievements, badges

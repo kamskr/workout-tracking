@@ -3,8 +3,9 @@ import { StyleSheet, View, Text, TouchableOpacity, Image } from "react-native";
 import { RFValue } from "react-native-responsive-fontsize";
 import { useOAuth } from "@clerk/clerk-expo";
 import { AntDesign } from "@expo/vector-icons";
+import { colors, fontFamily } from "../lib/theme";
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = () => {
   const { startOAuthFlow: startGoogleAuthFlow } = useOAuth({
     strategy: "oauth_google",
   });
@@ -14,21 +15,16 @@ const LoginScreen = ({ navigation }) => {
 
   const onPress = async (authType: string) => {
     try {
-      if (authType === "google") {
-        const { createdSessionId, setActive } = await startGoogleAuthFlow();
-        if (createdSessionId) {
-          setActive({ session: createdSessionId });
-          navigation.navigate("NotesDashboardScreen");
-        }
-      } else if (authType === "apple") {
-        const { createdSessionId, setActive } = await startAppleAuthFlow();
-        if (createdSessionId) {
-          setActive({ session: createdSessionId });
-          navigation.navigate("NotesDashboardScreen");
-        }
+      const startFlow =
+        authType === "google" ? startGoogleAuthFlow : startAppleAuthFlow;
+      const { createdSessionId, setActive } = await startFlow();
+      if (createdSessionId && setActive) {
+        // Setting the active session triggers isSignedIn → auth-gated navigator
+        // automatically switches to MainTabs. No manual navigation needed.
+        await setActive({ session: createdSessionId });
       }
     } catch (err) {
-      console.error("OAuth error", err);
+      console.error("[LoginScreen] OAuth error:", err);
     }
   };
 
@@ -36,7 +32,7 @@ const LoginScreen = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.card}>
         <Image
-          source={require("../assets/icons/logo.png")} // Ensure the correct path to your logo image file
+          source={require("../assets/icons/logo.png")}
           style={styles.logo}
         />
         <Text style={styles.title}>Log in to your account</Text>
@@ -44,12 +40,14 @@ const LoginScreen = ({ navigation }) => {
         <TouchableOpacity
           style={styles.buttonGoogle}
           onPress={() => onPress("google")}
+          accessibilityLabel="Continue with Google"
+          accessibilityRole="button"
         >
           <Image
             style={styles.googleIcon}
             source={require("../assets/icons/google.png")}
           />
-          <Text style={{ ...styles.buttonText, color: "#344054" }}>
+          <Text style={[styles.buttonText, { color: colors.text }]}>
             Continue with Google
           </Text>
         </TouchableOpacity>
@@ -57,17 +55,21 @@ const LoginScreen = ({ navigation }) => {
         <TouchableOpacity
           style={styles.buttonApple}
           onPress={() => onPress("apple")}
+          accessibilityLabel="Continue with Apple"
+          accessibilityRole="button"
         >
           <AntDesign name="apple" size={24} color="black" />
           <Text
-            style={{ ...styles.buttonText, color: "#344054", marginLeft: 12 }}
+            style={[styles.buttonText, { color: colors.text, marginLeft: 12 }]}
           >
             Continue with Apple
           </Text>
         </TouchableOpacity>
 
         <View style={styles.signupContainer}>
-          <Text style={{ fontFamily: "Regular" }}>Don’t have an account? </Text>
+          <Text style={{ fontFamily: fontFamily.regular }}>
+            Don't have an account?{" "}
+          </Text>
           <Text>Sign up above.</Text>
         </View>
       </View>
@@ -78,10 +80,10 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.background,
   },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.background,
     padding: 10,
     alignItems: "center",
     width: "98%",
@@ -94,67 +96,29 @@ const styles = StyleSheet.create({
   title: {
     marginTop: 49,
     fontSize: RFValue(21),
-    fontFamily: "SemiBold",
+    fontFamily: fontFamily.semiBold,
   },
   subtitle: {
     marginTop: 8,
     fontSize: RFValue(14),
-    color: "#000",
-    fontFamily: "Regular",
+    color: colors.textSecondary,
+    fontFamily: fontFamily.regular,
     marginBottom: 32,
     textAlign: "center",
   },
-  input: {
-    width: "100%",
-    borderWidth: 1,
-    borderColor: "#D0D5DD",
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 16,
-    fontFamily: "Regular",
-    fontSize: RFValue(14),
-  },
-  buttonEmail: {
-    backgroundColor: "#0D87E1",
-    padding: 15,
-    borderRadius: 10,
-    width: "100%",
-    marginBottom: 24,
-    minHeight: 44,
-  },
   buttonText: {
     textAlign: "center",
-    color: "#FFF",
-    fontFamily: "SemiBold",
+    fontFamily: fontFamily.semiBold,
     fontSize: RFValue(14),
-  },
-  buttonTextWithIcon: {
-    marginLeft: 10,
-  },
-  dividerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    width: "100%",
-    marginBottom: 24,
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#000",
-  },
-  dividerText: {
-    marginHorizontal: 10,
-    color: "#000",
-    fontFamily: "Medium",
   },
   buttonGoogle: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFF",
+    backgroundColor: colors.background,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#D0D5DD",
+    borderColor: colors.border,
     width: "100%",
     marginBottom: 12,
     height: 44,
@@ -163,33 +127,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFF",
+    backgroundColor: colors.background,
     padding: 15,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#D0D5DD",
+    borderColor: colors.border,
     width: "100%",
     marginBottom: 32,
   },
   signupContainer: {
     flexDirection: "row",
   },
-  signupText: {
-    color: "#4D9DE0",
-    fontFamily: "SemiBold",
-  },
   googleIcon: {
     width: 24,
     height: 24,
     marginRight: 12,
-  },
-  errorText: {
-    fontSize: RFValue(14),
-    color: "tomato",
-    fontFamily: "Medium",
-    alignSelf: "flex-start",
-    marginBottom: 8,
-    marginLeft: 4,
   },
 });
 

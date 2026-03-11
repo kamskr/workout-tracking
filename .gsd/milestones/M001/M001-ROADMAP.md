@@ -70,7 +70,7 @@ This milestone is complete only when all are true:
 - [x] **S05: Workout Templates** `risk:low` `depends:[S02]`
   > After this: user can save a completed workout as a template, view saved templates, and start a new workout pre-filled from a template. Works on web.
 
-- [ ] **S06: Mobile App & Cross-Platform Polish** `risk:medium` `depends:[S01,S02,S03,S04,S05]`
+- [x] **S06: Mobile App & Cross-Platform Polish** `risk:medium` `depends:[S01,S02,S03,S04,S05]`
   > After this: all features from S01-S05 work on the Expo mobile app with a gym-optimized UI. Realtime sync between web and mobile is verified. Clean/minimal design is consistent across both platforms.
 
 ## Boundary Map

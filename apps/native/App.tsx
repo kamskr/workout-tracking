@@ -1,4 +1,4 @@
-import { View, StatusBar, Platform } from "react-native";
+import { View, StatusBar } from "react-native";
 import { useFonts } from "expo-font";
 import { LogBox } from "react-native";
 import Navigation from "./src/navigation/Navigation";
@@ -24,19 +24,14 @@ export default function App() {
     return false;
   }
 
-  const STATUS_BAR_HEIGHT =
-    Platform.OS === "ios" ? 50 : StatusBar.currentHeight;
-
   return (
     <ConvexClientProvider>
-      <View style={{ flex: 1 }}>
-        <View style={{ height: STATUS_BAR_HEIGHT, backgroundColor: "#0D87E1" }}>
-          <StatusBar
-            translucent
-            backgroundColor={"#0D87E1"}
-            barStyle="light-content"
-          />
-        </View>
+      <View style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
+        <StatusBar
+          translucent
+          backgroundColor="#FFFFFF"
+          barStyle="dark-content"
+        />
         <Navigation />
       </View>
     </ConvexClientProvider>
