@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-The project is a fresh Turborepo template with a demo notes app. The monorepo structure, Clerk auth, Convex realtime backend, Next.js web app, and Expo mobile app are all wired and functional. No workout-specific code exists yet — the notes schema, queries, and UI will be replaced.
+S01 complete — the full workout-domain Convex schema (8 tables, 14 indexes, 1 search index) is deployed. 144 curated exercises are seeded and browsable at `/exercises` on the web app with muscle group, equipment, and name search filters. Clerk auth gates the exercise page (unauthenticated users are redirected to sign-in). The original notes feature is preserved alongside the new workout tables. Next: S02 — Workout CRUD & Active Workout Session.
 
 ## Architecture / Key Patterns
 

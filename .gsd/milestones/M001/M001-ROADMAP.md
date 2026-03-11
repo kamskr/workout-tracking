@@ -55,7 +55,7 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: Convex Schema & Exercise Library** `risk:high` `depends:[]`
+- [x] **S01: Convex Schema & Exercise Library** `risk:high` `depends:[]`
   > After this: user can sign in, browse 100+ exercises filtered by muscle group and equipment on the web app. Convex schema for the entire workout domain is deployed.
 
 - [ ] **S02: Workout CRUD & Active Workout Session** `risk:high` `depends:[S01]`

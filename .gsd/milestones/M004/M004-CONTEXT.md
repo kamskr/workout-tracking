@@ -5,101 +5,98 @@
 
 ## Project Description
 
-Adds competitive and gamification features — leaderboards (by exercise, time period, bodyweight class), time-limited group challenges, and an achievement/badge system. Drives engagement through competition and collection mechanics.
+Add competitive features: leaderboards for various fitness metrics (strongest lifts, most volume, longest streaks), time-limited group challenges with live standings, and a gamification layer with achievements and badges displayed on user profiles.
 
 ## Why This Milestone
 
-Social features (M003) connect users. Competitive features give them reasons to push harder. Leaderboards and challenges create recurring engagement loops ("Can I beat my ranking this week?"), while badges provide long-term collection motivation.
+Social features (M003) create connections. Competition creates engagement loops. Leaderboards give users a reason to push harder. Challenges create time-bounded urgency. Achievements reward consistency. Together, they turn a logging tool into a game users want to win.
 
 ## User-Visible Outcome
 
 ### When this milestone is complete, the user can:
 
-- View leaderboards for any exercise — see top lifts by absolute weight or by bodyweight class
-- Filter leaderboards by time period (all-time, this month, this week)
-- Create or join time-limited challenges with specific rules (e.g., "most pull-ups in 7 days")
-- See live challenge leaderboards that update as participants log workouts
-- Earn badges for milestones (first workout, 100 workouts, 1000lb total, streak achievements, etc.)
-- View earned badges on their profile
+- View leaderboards ranked by strongest lifts, most volume, or longest streak — filtered by exercise, time period, and bodyweight class
+- Create a challenge (e.g., "most pull-ups this week") and invite friends to join
+- See live challenge standings update as participants log workouts
+- Earn badges for milestones (first workout, 100 workouts, 1000lb total, etc.) and display them on their profile
 
 ### Entry point / environment
 
-- Entry point: Leaderboard tab, challenge section, badge display on profile
-- Environment: local dev, both platforms
-- Live dependencies involved: Convex (data, realtime)
+- Entry point: Leaderboards tab, Challenges page, Profile badges section (both platforms)
+- Environment: local dev and production
+- Live dependencies involved: Convex (realtime DB, scheduled functions for challenge lifecycle)
 
 ## Completion Class
 
-- Contract complete means: Leaderboard rankings compute correctly, challenge rules evaluate accurately against workout data, badge trigger logic fires at the right moments
-- Integration complete means: Logging a qualifying set updates leaderboard position in realtime, challenge progress auto-computes from workout data
-- Operational complete means: Multiple users competing on a leaderboard or challenge see live position changes
+- Contract complete means: Leaderboard rankings computed correctly, challenge lifecycle (create → join → active → complete) works, badge rules trigger accurately
+- Integration complete means: Workout logging automatically updates leaderboard positions and challenge standings in realtime. Badge awards appear on profile.
+- Operational complete means: Leaderboards remain accurate and performant with 100+ participants
 
 ## Final Integrated Acceptance
 
 To call this milestone complete, we must prove:
 
-- Two users opt into a leaderboard for bench press. User A logs a heavier set. The leaderboard updates to reflect User A's higher ranking within seconds.
-- A challenge "20 workouts in 30 days" is created. Participants' progress auto-increments as they complete workouts. The challenge leaderboard is accurate.
-- A user earns the "First Workout" badge on their first completed workout and it appears on their profile.
+- Leaderboard shows correct rankings for bench press 1RM across 5+ users
+- A user creates a challenge, 3 users join, they log workouts, and the standings update correctly in realtime
+- A challenge ends at its deadline and the winner is correctly determined
+- A user earns a badge (e.g., "10 workouts completed") and it appears on their profile immediately
 
 ## Risks and Unknowns
 
-- **Leaderboard computation at scale** — Ranking all users by a metric requires scanning significant data. Convex lacks native aggregation. May need denormalized leaderboard tables updated via triggers.
-- **Anti-cheating** — Self-reported workout data means leaderboards can be gamed. Need to decide on trust model (honor system, outlier detection, or manual moderation).
-- **Badge trigger complexity** — Some badges require complex historical analysis (e.g., "logged a workout every day for 30 days straight"). Need efficient streak detection.
-- **Challenge rule engine** — Challenges have varied rules. Need a flexible but not over-engineered rule definition system.
+- **Leaderboard computation at scale** — Ranking queries across all users for specific exercises could be expensive in Convex. May need pre-computed ranking tables updated via scheduled functions.
+- **Challenge fairness** — Bodyweight normalization for strength challenges (Wilks/DOTS score) adds complexity.
+- **Badge rule engine** — Need a flexible way to define badge triggers without hardcoding each one. Could be a rules table or a set of Convex internal functions.
+- **Opt-in vs. opt-out** — Leaderboard participation must be opt-in to respect users who don't want public ranking.
 
 ## Existing Codebase / Prior Art
 
-- M003 delivers: user profiles, follow system — leaderboards and badges display on profiles
-- M002 delivers: PR tracking — PR data feeds into leaderboard rankings
-- M001 delivers: workout and set data — the raw input for all competitive metrics
+- M001 workout/set data — all competitive metrics derive from logged data
+- M002 analytics/PR data — leaderboard rankings share computation patterns with PR detection
+- M003 social/profiles — leaderboards and badges display on profiles, challenges require the follow/friend graph
 
 > See `.gsd/DECISIONS.md` for all architectural and pattern decisions.
 
 ## Relevant Requirements
 
-- R018 — Leaderboards (primary: S01)
-- R019 — Group challenges (primary: S02)
-- R020 — Achievements and badges (primary: S03)
+- R018 — Leaderboards
+- R019 — Group challenges
+- R020 — Achievements and badges
 
 ## Scope
 
 ### In Scope
 
-- Exercise-specific leaderboards (absolute and bodyweight-relative)
-- Time-filtered leaderboards (all-time, monthly, weekly)
+- Global and filtered leaderboards (by exercise, time period, bodyweight class)
 - Opt-in leaderboard participation
-- Challenge creation with start/end dates and rules
-- Challenge join/leave
-- Live challenge leaderboards
-- Achievement/badge definitions (~20 initial badges)
-- Badge display on profile
-- Both platforms
+- Challenge creation, joining, live standings, completion
+- Challenge types: total reps, total volume, workout count, specific exercise max
+- Achievement/badge system with server-side rule evaluation
+- Badge display on user profiles
+- Cross-platform UI for all competitive features
 
 ### Out of Scope / Non-Goals
 
-- Paid/premium challenges
-- Team-based competitions (beyond simple group challenges)
-- Prize/reward distribution
-- Anti-cheat moderation tools (honor system for now)
+- Betting or real-money stakes
+- Team-based challenges (individual only for now)
+- AI-generated challenges
+- Collaborative live workouts (M005)
 
 ## Technical Constraints
 
-- Leaderboard rankings should update in near-realtime when qualifying sets are logged
-- Badge checks must run server-side to prevent client-side cheating
-- Challenge progress must be derived from actual workout data, not self-reported
-- Convex scheduled functions or triggers may be needed for periodic leaderboard recomputation
+- Rankings must be computed server-side (Convex mutations) to prevent cheating
+- Convex scheduled functions for challenge lifecycle (start, end, winner determination)
+- Badge evaluation runs on set/workout completion — must not slow down the logging path
 
 ## Integration Points
 
-- **M003 profiles** — Badges display on profile, leaderboard entries link to profiles
-- **M002 PR data** — PRs feed into exercise leaderboards
-- **M001 workout/set data** — All metrics computed from workout data
-- **Convex cron jobs** — May need periodic leaderboard snapshot jobs
+- **M001 workout data** — All metrics computed from workout/set records
+- **M002 PR data** — Leaderboards may reuse PR computation logic
+- **M003 profiles** — Badges and rankings displayed on profiles
+- **M003 social** — Challenge invitations may use the follow graph
+- **Convex cron jobs** — For challenge deadline enforcement and periodic leaderboard recalculation
 
 ## Open Questions
 
-- **Leaderboard update strategy** — Realtime (recompute on every qualifying set) or periodic (snapshot every N minutes)? Realtime is ideal but expensive.
-- **Bodyweight class divisions** — Standard powerlifting classes, or custom brackets? Need user bodyweight data (new field).
-- **Badge retroactivity** — When a badge is added, do existing users who already qualify earn it retroactively?
+- **Ranking algorithm** — How to normalize across bodyweight classes? Wilks, DOTS, or simple weight classes?
+- **Badge flexibility** — Hardcoded badge definitions or a data-driven rules engine?
+- **Challenge privacy** — Public challenges (anyone can join) vs. private (invite-only)?

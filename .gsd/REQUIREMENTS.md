@@ -6,13 +6,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R001 — Exercise Library with Curated Seed Data
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: The app ships with a curated JSON seed of ~100-150 common exercises. Each exercise has name, muscle groups (primary/secondary), equipment required, exercise type (strength/cardio/bodyweight/stretch), and instructions. Users can also create custom exercises.
 - Why it matters: Users need exercises to exist before they can log workouts. This is the foundation of the entire data model.
 - Source: user
 - Primary owning slice: M001/S01
 - Supporting slices: none
-- Validation: unmapped
+- Validation: M001/S01 — 144 exercises seeded, queryable with filters, browsable at /exercises. Verified by programmatic script (verify-s01.ts) and browser.
 - Notes: Seed data loaded into Convex on initial setup. Community exercise sharing deferred to M003.
 
 ### R002 — Workout CRUD with Realtime Sync
@@ -105,13 +105,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R010 — Body-Part and Equipment Filtering
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: Users can filter the exercise library by muscle group (chest, back, legs, etc.) and equipment (barbell, dumbbell, cable, bodyweight, etc.). Search by name also supported.
 - Why it matters: With 100+ exercises, users need fast discovery by what they're looking for.
 - Source: inferred
 - Primary owning slice: M001/S01
 - Supporting slices: none
-- Validation: unmapped
+- Validation: M001/S01 — muscle group filter (16 chest results), equipment filter (30 barbell results), text search (19 "press" results), combined filters all verified by script and browser.
 - Notes: Convex indexes on muscleGroup and equipment fields.
 
 ### R011 — Cross-Platform UI (Web + Mobile)
@@ -248,13 +248,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R023 — Clerk Authentication on Both Platforms
 - Class: constraint
-- Status: active
+- Status: validated
 - Description: Authentication uses Clerk on both web (Next.js) and mobile (Expo). Already wired in the template. All Convex queries/mutations are auth-gated.
 - Why it matters: Auth is pre-existing and working. Changing it would be waste.
 - Source: user
 - Primary owning slice: M001/S01
 - Supporting slices: none
-- Validation: unmapped
+- Validation: M001/S01 — /exercises route redirects unauthenticated users to Clerk sign-in (verified in browser). createCustomExercise mutation requires auth. Web platform verified; mobile deferred to S06.
 - Notes: Template already has ConvexProviderWithClerk on both platforms.
 
 ## Deferred
@@ -320,7 +320,7 @@ This file is the explicit capability and coverage contract for the project.
 
 | ID | Class | Status | Primary owner | Supporting | Proof |
 |---|---|---|---|---|---|
-| R001 | core-capability | active | M001/S01 | none | unmapped |
+| R001 | core-capability | validated | M001/S01 | none | M001/S01 — 144 exercises seeded, queryable, browsable |
 | R002 | primary-user-loop | active | M001/S02 | M001/S03 | unmapped |
 | R003 | core-capability | active | M001/S03 | none | unmapped |
 | R004 | core-capability | active | M001/S04 | none | unmapped |
@@ -329,7 +329,7 @@ This file is the explicit capability and coverage contract for the project.
 | R007 | core-capability | active | M001/S03 | none | unmapped |
 | R008 | core-capability | active | M001/S02 | none | unmapped |
 | R009 | core-capability | active | M001/S02 | none | unmapped |
-| R010 | core-capability | active | M001/S01 | none | unmapped |
+| R010 | core-capability | validated | M001/S01 | none | M001/S01 — muscle group, equipment, text search filters verified |
 | R011 | launchability | active | M001/S06 | M001/S01-S05 | unmapped |
 | R012 | core-capability | active | M002/S01 | none | unmapped |
 | R013 | core-capability | active | M002/S02 | none | unmapped |
@@ -342,7 +342,7 @@ This file is the explicit capability and coverage contract for the project.
 | R020 | differentiator | active | M004/S03 | M003/S01 | unmapped |
 | R021 | differentiator | active | M005/S01 | M005/S02 | unmapped |
 | R022 | quality-attribute | active | M001/S06 | all UI slices | unmapped |
-| R023 | constraint | active | M001/S01 | none | unmapped |
+| R023 | constraint | validated | M001/S01 | none | M001/S01 — /exercises auth gating verified (web) |
 | R024 | continuity | deferred | none | none | unmapped |
 | R025 | core-capability | deferred | none | none | unmapped |
 | R026 | core-capability | deferred | none | none | unmapped |
@@ -351,7 +351,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 23
+- Active requirements: 20
 - Mapped to slices: 23
-- Validated: 0
+- Validated: 3 (R001, R010, R023)
 - Unmapped active requirements: 0

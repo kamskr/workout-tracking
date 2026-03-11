@@ -1,0 +1,1442 @@
+[
+  {
+    "name": "Barbell Bench Press",
+    "slug": "barbell-bench-press",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["triceps", "shoulders"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Lie on a flat bench, grip the bar slightly wider than shoulder-width, lower to mid-chest, press up to lockout.",
+    "defaultRestSeconds": 120
+  },
+  {
+    "name": "Incline Barbell Bench Press",
+    "slug": "incline-barbell-bench-press",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["triceps", "shoulders"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Set bench to 30-45 degrees, grip bar slightly wider than shoulders, lower to upper chest, press up.",
+    "defaultRestSeconds": 120
+  },
+  {
+    "name": "Decline Barbell Bench Press",
+    "slug": "decline-barbell-bench-press",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["triceps"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Set bench to decline, grip bar slightly wider than shoulders, lower to lower chest, press up.",
+    "defaultRestSeconds": 120
+  },
+  {
+    "name": "Dumbbell Bench Press",
+    "slug": "dumbbell-bench-press",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["triceps", "shoulders"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Lie on a flat bench holding dumbbells at chest level, press up until arms are extended, lower with control.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Incline Dumbbell Bench Press",
+    "slug": "incline-dumbbell-bench-press",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["triceps", "shoulders"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Set bench to 30-45 degrees, press dumbbells from upper chest to full extension overhead.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Dumbbell Fly",
+    "slug": "dumbbell-fly",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["shoulders"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Lie on a flat bench, hold dumbbells above chest with slight elbow bend, lower in an arc to the sides, squeeze back up.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Cable Fly",
+    "slug": "cable-fly",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["shoulders"],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Set cables at shoulder height, step forward, bring handles together in front of chest with slight elbow bend.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Machine Chest Press",
+    "slug": "machine-chest-press",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["triceps", "shoulders"],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Adjust seat so handles are at mid-chest height, press forward to full extension, return with control.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Push-Up",
+    "slug": "push-up",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["triceps", "shoulders", "core"],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Place hands shoulder-width apart, lower chest to the floor keeping body straight, push back up.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Dip (Chest)",
+    "slug": "dip-chest",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["triceps", "shoulders"],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "On parallel bars, lean forward slightly, lower until upper arms are parallel to floor, press back up.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Pec Deck Machine",
+    "slug": "pec-deck-machine",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["shoulders"],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Sit with back flat against pad, bring arms together in front of chest using machine pads.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Barbell Deadlift",
+    "slug": "barbell-deadlift",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["legs", "core"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Stand with feet hip-width, grip bar outside knees, drive through heels keeping back flat, stand up to lockout.",
+    "defaultRestSeconds": 180
+  },
+  {
+    "name": "Barbell Row",
+    "slug": "barbell-row",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Hinge at hips, grip bar slightly wider than shoulders, pull to lower chest, lower with control.",
+    "defaultRestSeconds": 120
+  },
+  {
+    "name": "Dumbbell Row",
+    "slug": "dumbbell-row",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Place one knee and hand on bench, row dumbbell to hip with opposite arm, squeeze shoulder blade.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Pull-Up",
+    "slug": "pull-up",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Hang from bar with overhand grip, pull chin above bar by driving elbows down, lower with control.",
+    "defaultRestSeconds": 120
+  },
+  {
+    "name": "Chin-Up",
+    "slug": "chin-up",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Hang from bar with underhand grip, pull chin above bar, lower with control.",
+    "defaultRestSeconds": 120
+  },
+  {
+    "name": "Lat Pulldown",
+    "slug": "lat-pulldown",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Grip wide bar attachment, sit with thighs under pad, pull bar to upper chest, return slowly.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Seated Cable Row",
+    "slug": "seated-cable-row",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Sit upright, pull handle to lower chest squeezing shoulder blades together, extend arms with control.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "T-Bar Row",
+    "slug": "t-bar-row",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Straddle the bar, grip handle, hinge at hips, pull bar to chest, lower with control.",
+    "defaultRestSeconds": 120
+  },
+  {
+    "name": "Face Pull",
+    "slug": "face-pull",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["shoulders"],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Set cable at face height with rope attachment, pull toward face with elbows high, squeeze rear delts.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Machine Row",
+    "slug": "machine-row",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Sit with chest against pad, pull handles back squeezing shoulder blades, return with control.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Rack Pull",
+    "slug": "rack-pull",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["legs", "core"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Set bar at knee height in rack, grip and stand up driving hips forward, lower to pins.",
+    "defaultRestSeconds": 150
+  },
+  {
+    "name": "Straight-Arm Pulldown",
+    "slug": "straight-arm-pulldown",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Stand facing cable with bar at top, keeping arms straight pull bar down to thighs, return slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Overhead Press",
+    "slug": "overhead-press",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": ["triceps"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Stand with bar at shoulder height, press overhead to lockout, lower under control.",
+    "defaultRestSeconds": 120
+  },
+  {
+    "name": "Dumbbell Shoulder Press",
+    "slug": "dumbbell-shoulder-press",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": ["triceps"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Sit or stand, hold dumbbells at shoulder height, press overhead to full extension, lower with control.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Arnold Press",
+    "slug": "arnold-press",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": ["triceps"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Start with palms facing you at shoulder height, rotate palms outward as you press overhead.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Lateral Raise",
+    "slug": "lateral-raise",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": [],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Stand holding dumbbells at sides, raise arms to shoulder height with slight elbow bend, lower slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Cable Lateral Raise",
+    "slug": "cable-lateral-raise",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": [],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Stand beside low cable, raise arm to shoulder height with slight elbow bend, lower with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Front Raise",
+    "slug": "front-raise",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": ["chest"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Stand holding dumbbells in front of thighs, raise one or both arms to shoulder height, lower slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Reverse Fly",
+    "slug": "reverse-fly",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": ["back"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Hinge at hips, hold dumbbells below chest, raise arms to sides squeezing rear delts, lower slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Machine Shoulder Press",
+    "slug": "machine-shoulder-press",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": ["triceps"],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Adjust seat so handles are at shoulder height, press up to full extension, lower with control.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Upright Row",
+    "slug": "upright-row",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Hold bar with narrow grip in front of thighs, pull up to chin level leading with elbows, lower slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Shrug",
+    "slug": "shrug",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": [],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Hold dumbbells at sides, elevate shoulders toward ears, hold briefly, lower with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Barbell Curl",
+    "slug": "barbell-curl",
+    "primaryMuscleGroup": "biceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Stand holding bar with underhand grip at hip width, curl to shoulders keeping elbows at sides, lower slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "EZ-Bar Curl",
+    "slug": "ez-bar-curl",
+    "primaryMuscleGroup": "biceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Hold EZ-bar on the angled grips, curl to shoulders keeping elbows stationary, lower with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Dumbbell Curl",
+    "slug": "dumbbell-curl",
+    "primaryMuscleGroup": "biceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Stand holding dumbbells at sides, curl to shoulders alternating or together, lower slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Hammer Curl",
+    "slug": "hammer-curl",
+    "primaryMuscleGroup": "biceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Hold dumbbells with neutral grip (palms facing each other), curl to shoulders, lower with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Concentration Curl",
+    "slug": "concentration-curl",
+    "primaryMuscleGroup": "biceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Sit on bench, brace elbow against inner thigh, curl dumbbell to shoulder, lower slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Preacher Curl",
+    "slug": "preacher-curl",
+    "primaryMuscleGroup": "biceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Rest upper arms on preacher pad, curl bar to shoulders, lower with full extension.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Cable Curl",
+    "slug": "cable-curl",
+    "primaryMuscleGroup": "biceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Stand facing low cable with bar attachment, curl to shoulders, lower with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Incline Dumbbell Curl",
+    "slug": "incline-dumbbell-curl",
+    "primaryMuscleGroup": "biceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Sit on incline bench, let arms hang, curl dumbbells to shoulders with palms up, lower slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Machine Bicep Curl",
+    "slug": "machine-bicep-curl",
+    "primaryMuscleGroup": "biceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Sit on curl machine, place arms on pad, curl handle to shoulders, lower with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Tricep Pushdown",
+    "slug": "tricep-pushdown",
+    "primaryMuscleGroup": "triceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Stand at cable machine with bar or rope at top, push down until arms are extended, return slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Overhead Tricep Extension",
+    "slug": "overhead-tricep-extension",
+    "primaryMuscleGroup": "triceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Hold dumbbell overhead with both hands, lower behind head by bending elbows, extend back up.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Skull Crusher",
+    "slug": "skull-crusher",
+    "primaryMuscleGroup": "triceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Lie on bench, hold EZ-bar above forehead, lower to forehead by bending elbows, extend back up.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Close-Grip Bench Press",
+    "slug": "close-grip-bench-press",
+    "primaryMuscleGroup": "triceps",
+    "secondaryMuscleGroups": ["chest"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Lie on bench with hands shoulder-width apart, lower bar to chest, press up focusing on triceps.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Tricep Dip",
+    "slug": "tricep-dip",
+    "primaryMuscleGroup": "triceps",
+    "secondaryMuscleGroups": ["chest", "shoulders"],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "On parallel bars, keep torso upright, lower until elbows at 90 degrees, press back up.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Cable Overhead Tricep Extension",
+    "slug": "cable-overhead-tricep-extension",
+    "primaryMuscleGroup": "triceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Face away from low cable with rope, extend arms overhead from behind the head.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Tricep Kickback",
+    "slug": "tricep-kickback",
+    "primaryMuscleGroup": "triceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Hinge forward, hold dumbbell with elbow at 90 degrees, extend arm straight back, return slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Diamond Push-Up",
+    "slug": "diamond-push-up",
+    "primaryMuscleGroup": "triceps",
+    "secondaryMuscleGroups": ["chest"],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Place hands together forming a diamond shape, perform push-up keeping elbows close to body.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Machine Tricep Extension",
+    "slug": "machine-tricep-extension",
+    "primaryMuscleGroup": "triceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Sit at machine, place arms on pad, extend arms fully, return with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Barbell Squat",
+    "slug": "barbell-squat",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Bar on upper back, feet shoulder-width, squat until thighs are parallel, drive up through heels.",
+    "defaultRestSeconds": 180
+  },
+  {
+    "name": "Front Squat",
+    "slug": "front-squat",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Hold bar across front delts, squat keeping torso upright until thighs are parallel, drive up.",
+    "defaultRestSeconds": 150
+  },
+  {
+    "name": "Leg Press",
+    "slug": "leg-press",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": [],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Sit in leg press machine, place feet shoulder-width on platform, lower until 90 degrees, press up.",
+    "defaultRestSeconds": 120
+  },
+  {
+    "name": "Romanian Deadlift",
+    "slug": "romanian-deadlift",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["back"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Hold bar at hip height, hinge at hips pushing them back, lower bar along legs to shin, return to standing.",
+    "defaultRestSeconds": 120
+  },
+  {
+    "name": "Dumbbell Romanian Deadlift",
+    "slug": "dumbbell-romanian-deadlift",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["back"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Hold dumbbells at hips, hinge at hips keeping back flat, lower to shin level, squeeze glutes to stand.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Bulgarian Split Squat",
+    "slug": "bulgarian-split-squat",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Rear foot on bench, hold dumbbells at sides, lower until front thigh is parallel, drive up.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Walking Lunge",
+    "slug": "walking-lunge",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Hold dumbbells at sides, step forward into a lunge, drive up and step into the next lunge.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Goblet Squat",
+    "slug": "goblet-squat",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Hold dumbbell vertically at chest, squat between legs keeping torso upright, drive up through heels.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Leg Extension",
+    "slug": "leg-extension",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": [],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Sit in machine with shins behind pad, extend legs to full lockout, lower with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Leg Curl",
+    "slug": "leg-curl",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": [],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Lie face down or sit in curl machine, curl pad toward glutes, lower with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Hack Squat",
+    "slug": "hack-squat",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": [],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Stand on hack squat platform, shoulders under pads, lower until thighs are parallel, drive up.",
+    "defaultRestSeconds": 120
+  },
+  {
+    "name": "Calf Raise (Standing)",
+    "slug": "calf-raise-standing",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": [],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Stand on calf raise machine with shoulders under pads, rise onto toes, lower heels below platform.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Seated Calf Raise",
+    "slug": "seated-calf-raise",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": [],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Sit with knees under pad, rise onto toes squeezing calves, lower heels below platform level.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Hip Thrust",
+    "slug": "hip-thrust",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Sit against bench with bar over hips, drive hips up squeezing glutes at top, lower with control.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Sumo Deadlift",
+    "slug": "sumo-deadlift",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["back", "core"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Wide stance with toes pointed out, grip bar inside knees, drive through heels to stand, lockout hips.",
+    "defaultRestSeconds": 180
+  },
+  {
+    "name": "Kettlebell Swing",
+    "slug": "kettlebell-swing",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core", "shoulders"],
+    "equipment": "kettlebell",
+    "exerciseType": "strength",
+    "instructions": "Hinge at hips, swing kettlebell between legs, snap hips forward to swing to chest height.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Step-Up",
+    "slug": "step-up",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Hold dumbbells, step onto a bench or box with one foot, drive up to standing, step down with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Bodyweight Squat",
+    "slug": "bodyweight-squat",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Stand with feet shoulder-width, squat down keeping chest up, drive through heels to stand.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Pistol Squat",
+    "slug": "pistol-squat",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Stand on one leg, extend the other in front, squat down on the standing leg, drive up to full extension.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Plank",
+    "slug": "plank",
+    "primaryMuscleGroup": "core",
+    "secondaryMuscleGroups": ["shoulders"],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Hold a push-up position on forearms, keep body in a straight line from head to heels, brace core.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Hanging Leg Raise",
+    "slug": "hanging-leg-raise",
+    "primaryMuscleGroup": "core",
+    "secondaryMuscleGroups": [],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Hang from pull-up bar, raise legs to 90 degrees keeping them straight, lower with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Cable Crunch",
+    "slug": "cable-crunch",
+    "primaryMuscleGroup": "core",
+    "secondaryMuscleGroups": [],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Kneel facing cable with rope behind head, crunch down bringing elbows to knees, return slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Ab Wheel Rollout",
+    "slug": "ab-wheel-rollout",
+    "primaryMuscleGroup": "core",
+    "secondaryMuscleGroups": ["shoulders"],
+    "equipment": "other",
+    "exerciseType": "strength",
+    "instructions": "Kneel on floor, grip ab wheel, roll forward extending body, pull back to starting position using core.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Russian Twist",
+    "slug": "russian-twist",
+    "primaryMuscleGroup": "core",
+    "secondaryMuscleGroups": [],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Sit with knees bent, lean back slightly, rotate torso side to side touching the floor beside hips.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Mountain Climber",
+    "slug": "mountain-climber",
+    "primaryMuscleGroup": "core",
+    "secondaryMuscleGroups": ["shoulders", "legs"],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "In push-up position, drive knees alternately toward chest at a fast pace.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Bicycle Crunch",
+    "slug": "bicycle-crunch",
+    "primaryMuscleGroup": "core",
+    "secondaryMuscleGroups": [],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Lie on back, bring opposite elbow to knee while extending the other leg, alternate sides.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Dead Bug",
+    "slug": "dead-bug",
+    "primaryMuscleGroup": "core",
+    "secondaryMuscleGroups": [],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Lie on back with arms and legs raised, lower opposite arm and leg toward floor, return and alternate.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Side Plank",
+    "slug": "side-plank",
+    "primaryMuscleGroup": "core",
+    "secondaryMuscleGroups": ["shoulders"],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Lie on side propped on forearm, lift hips forming a straight line, hold position bracing core.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Pallof Press",
+    "slug": "pallof-press",
+    "primaryMuscleGroup": "core",
+    "secondaryMuscleGroups": [],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Stand sideways to cable, hold handle at chest, press arms straight forward resisting rotation, return.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Cable Woodchop",
+    "slug": "cable-woodchop",
+    "primaryMuscleGroup": "core",
+    "secondaryMuscleGroups": ["shoulders"],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Set cable high, grip handle with both hands, chop diagonally across body rotating torso, return slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Decline Sit-Up",
+    "slug": "decline-sit-up",
+    "primaryMuscleGroup": "core",
+    "secondaryMuscleGroups": [],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Hook feet on decline bench, lie back, curl torso up toward knees, lower with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Treadmill Running",
+    "slug": "treadmill-running",
+    "primaryMuscleGroup": "cardio",
+    "secondaryMuscleGroups": ["legs"],
+    "equipment": "machine",
+    "exerciseType": "cardio",
+    "instructions": "Set desired speed and incline, maintain steady pace with upright posture.",
+    "defaultRestSeconds": 0
+  },
+  {
+    "name": "Stationary Bike",
+    "slug": "stationary-bike",
+    "primaryMuscleGroup": "cardio",
+    "secondaryMuscleGroups": ["legs"],
+    "equipment": "machine",
+    "exerciseType": "cardio",
+    "instructions": "Adjust seat height, pedal at a steady cadence maintaining desired resistance level.",
+    "defaultRestSeconds": 0
+  },
+  {
+    "name": "Rowing Machine",
+    "slug": "rowing-machine",
+    "primaryMuscleGroup": "cardio",
+    "secondaryMuscleGroups": ["back", "legs"],
+    "equipment": "machine",
+    "exerciseType": "cardio",
+    "instructions": "Drive with legs first, then lean back and pull handle to lower chest, reverse the sequence to return.",
+    "defaultRestSeconds": 0
+  },
+  {
+    "name": "Elliptical",
+    "slug": "elliptical",
+    "primaryMuscleGroup": "cardio",
+    "secondaryMuscleGroups": ["legs"],
+    "equipment": "machine",
+    "exerciseType": "cardio",
+    "instructions": "Grip handles, move feet in elliptical motion maintaining upright posture and steady pace.",
+    "defaultRestSeconds": 0
+  },
+  {
+    "name": "Jump Rope",
+    "slug": "jump-rope",
+    "primaryMuscleGroup": "cardio",
+    "secondaryMuscleGroups": ["legs", "shoulders"],
+    "equipment": "other",
+    "exerciseType": "cardio",
+    "instructions": "Hold rope handles, swing over head and jump with both feet, land softly on balls of feet.",
+    "defaultRestSeconds": 30
+  },
+  {
+    "name": "Battle Rope",
+    "slug": "battle-rope",
+    "primaryMuscleGroup": "cardio",
+    "secondaryMuscleGroups": ["shoulders", "core"],
+    "equipment": "other",
+    "exerciseType": "cardio",
+    "instructions": "Hold rope ends, create alternating waves by rapidly raising and lowering arms.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Stairmaster",
+    "slug": "stairmaster",
+    "primaryMuscleGroup": "cardio",
+    "secondaryMuscleGroups": ["legs"],
+    "equipment": "machine",
+    "exerciseType": "cardio",
+    "instructions": "Stand upright, step at a consistent pace, avoid leaning on handrails.",
+    "defaultRestSeconds": 0
+  },
+  {
+    "name": "Kettlebell Goblet Squat",
+    "slug": "kettlebell-goblet-squat",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "kettlebell",
+    "exerciseType": "strength",
+    "instructions": "Hold kettlebell by horns at chest, squat deep keeping elbows between knees, drive up through heels.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Kettlebell Clean and Press",
+    "slug": "kettlebell-clean-and-press",
+    "primaryMuscleGroup": "fullBody",
+    "secondaryMuscleGroups": ["shoulders", "legs", "core"],
+    "equipment": "kettlebell",
+    "exerciseType": "strength",
+    "instructions": "Clean kettlebell to rack position, press overhead to lockout, lower and repeat.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Kettlebell Turkish Get-Up",
+    "slug": "kettlebell-turkish-get-up",
+    "primaryMuscleGroup": "fullBody",
+    "secondaryMuscleGroups": ["core", "shoulders"],
+    "equipment": "kettlebell",
+    "exerciseType": "strength",
+    "instructions": "Lie down holding kettlebell overhead, stand up through a series of controlled movements, reverse to return.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Kettlebell Snatch",
+    "slug": "kettlebell-snatch",
+    "primaryMuscleGroup": "fullBody",
+    "secondaryMuscleGroups": ["shoulders", "legs", "core"],
+    "equipment": "kettlebell",
+    "exerciseType": "strength",
+    "instructions": "Swing kettlebell between legs, drive hips forward and pull bell overhead in one motion, lock out arm.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Resistance Band Pull-Apart",
+    "slug": "resistance-band-pull-apart",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": ["back"],
+    "equipment": "bands",
+    "exerciseType": "strength",
+    "instructions": "Hold band at shoulder width with arms extended, pull apart until band touches chest, return slowly.",
+    "defaultRestSeconds": 30
+  },
+  {
+    "name": "Resistance Band Bicep Curl",
+    "slug": "resistance-band-bicep-curl",
+    "primaryMuscleGroup": "biceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "bands",
+    "exerciseType": "strength",
+    "instructions": "Stand on band, hold ends with underhand grip, curl hands to shoulders, lower with control.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Resistance Band Squat",
+    "slug": "resistance-band-squat",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "bands",
+    "exerciseType": "strength",
+    "instructions": "Stand on band with feet shoulder-width, hold at shoulders, squat and drive up against resistance.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Resistance Band Lateral Walk",
+    "slug": "resistance-band-lateral-walk",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": [],
+    "equipment": "bands",
+    "exerciseType": "strength",
+    "instructions": "Place band around ankles, stand in quarter squat, step sideways maintaining tension, repeat.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Resistance Band Tricep Extension",
+    "slug": "resistance-band-tricep-extension",
+    "primaryMuscleGroup": "triceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "bands",
+    "exerciseType": "strength",
+    "instructions": "Anchor band overhead, grip with both hands behind head, extend arms upward, return slowly.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Barbell Hip Thrust",
+    "slug": "barbell-hip-thrust",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Upper back on bench, bar across hips, drive hips up squeezing glutes at top, lower with control.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Landmine Press",
+    "slug": "landmine-press",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": ["chest", "triceps"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Hold end of barbell at shoulder with one hand, press up and forward to full extension, lower slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Landmine Row",
+    "slug": "landmine-row",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Straddle barbell end, hinge at hips, row the bar to chest with both hands, lower with control.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Dumbbell Pullover",
+    "slug": "dumbbell-pullover",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["back"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Lie across bench, hold dumbbell overhead, lower behind head with slight arm bend, pull back over chest.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Good Morning",
+    "slug": "good-morning",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["back", "core"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Bar on upper back, hinge at hips pushing them back, lower torso until near parallel, return to standing.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Power Clean",
+    "slug": "power-clean",
+    "primaryMuscleGroup": "fullBody",
+    "secondaryMuscleGroups": ["legs", "back", "shoulders"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Start at floor, drive through legs, shrug and pull bar up, catch in front rack position at shoulders.",
+    "defaultRestSeconds": 150
+  },
+  {
+    "name": "Barbell Snatch",
+    "slug": "barbell-snatch",
+    "primaryMuscleGroup": "fullBody",
+    "secondaryMuscleGroups": ["legs", "back", "shoulders"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Wide grip, lift from floor, explosively extend hips, pull bar overhead, catch in squat position.",
+    "defaultRestSeconds": 180
+  },
+  {
+    "name": "Thruster",
+    "slug": "thruster",
+    "primaryMuscleGroup": "fullBody",
+    "secondaryMuscleGroups": ["legs", "shoulders", "core"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Front squat then drive up pressing bar overhead in one smooth motion, lower and repeat.",
+    "defaultRestSeconds": 120
+  },
+  {
+    "name": "Burpee",
+    "slug": "burpee",
+    "primaryMuscleGroup": "fullBody",
+    "secondaryMuscleGroups": ["chest", "legs", "core"],
+    "equipment": "bodyweight",
+    "exerciseType": "plyometric",
+    "instructions": "Drop to floor, perform push-up, jump feet forward, explode up jumping with hands overhead.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Box Jump",
+    "slug": "box-jump",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "bodyweight",
+    "exerciseType": "plyometric",
+    "instructions": "Stand facing box, swing arms and jump onto box landing softly with bent knees, step down.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Jump Squat",
+    "slug": "jump-squat",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "bodyweight",
+    "exerciseType": "plyometric",
+    "instructions": "Squat down then explode upward jumping as high as possible, land softly and repeat.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Tuck Jump",
+    "slug": "tuck-jump",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "bodyweight",
+    "exerciseType": "plyometric",
+    "instructions": "Jump vertically, tuck knees to chest at the peak, extend legs to land softly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Seated Dumbbell Curl",
+    "slug": "seated-dumbbell-curl",
+    "primaryMuscleGroup": "biceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Sit on bench, hold dumbbells at sides with palms up, curl to shoulders alternating arms, lower slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Chest Supported Row",
+    "slug": "chest-supported-row",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Lie chest down on incline bench, row dumbbells up squeezing shoulder blades together, lower slowly.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Single-Arm Cable Row",
+    "slug": "single-arm-cable-row",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps", "core"],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Stand facing cable, pull handle with one arm to hip rotating torso slightly, return slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Incline Dumbbell Fly",
+    "slug": "incline-dumbbell-fly",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["shoulders"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Lie on incline bench, hold dumbbells above with slight bend, lower in arc to sides, squeeze back up.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Close-Grip Lat Pulldown",
+    "slug": "close-grip-lat-pulldown",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Use narrow grip attachment, pull to upper chest squeezing lats, return with control.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Reverse Grip Barbell Row",
+    "slug": "reverse-grip-barbell-row",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Hinge at hips, grip bar underhand shoulder-width, pull to lower chest, lower with control.",
+    "defaultRestSeconds": 120
+  },
+  {
+    "name": "Dumbbell Lateral Lunge",
+    "slug": "dumbbell-lateral-lunge",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Hold dumbbells at sides, step wide to one side bending that knee, push back to standing.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Glute Bridge",
+    "slug": "glute-bridge",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Lie on back with knees bent, drive hips up squeezing glutes at top, lower with control.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Leg Raise",
+    "slug": "leg-raise",
+    "primaryMuscleGroup": "core",
+    "secondaryMuscleGroups": [],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Lie flat on back, raise legs to 90 degrees keeping them straight, lower slowly without touching floor.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "V-Up",
+    "slug": "v-up",
+    "primaryMuscleGroup": "core",
+    "secondaryMuscleGroups": [],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Lie flat, simultaneously raise legs and torso reaching hands toward feet forming a V, lower slowly.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Farmer's Walk",
+    "slug": "farmers-walk",
+    "primaryMuscleGroup": "fullBody",
+    "secondaryMuscleGroups": ["core", "shoulders"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Hold heavy dumbbells at sides, walk with upright posture and controlled steps for distance or time.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Dumbbell Shrug",
+    "slug": "dumbbell-shrug",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": [],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Hold dumbbells at sides, elevate shoulders toward ears, hold briefly at top, lower with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Barbell Shrug",
+    "slug": "barbell-shrug",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": [],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Hold barbell at thigh level with overhand grip, shrug shoulders toward ears, hold, lower slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Spider Curl",
+    "slug": "spider-curl",
+    "primaryMuscleGroup": "biceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Lie chest down on incline bench, let arms hang, curl dumbbells up squeezing biceps, lower slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Reverse Curl",
+    "slug": "reverse-curl",
+    "primaryMuscleGroup": "biceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Hold bar with overhand grip, curl to shoulders keeping elbows at sides, lower with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Wrist Curl",
+    "slug": "wrist-curl",
+    "primaryMuscleGroup": "biceps",
+    "secondaryMuscleGroups": [],
+    "equipment": "barbell",
+    "exerciseType": "strength",
+    "instructions": "Rest forearms on bench with wrists hanging over edge, curl bar up using wrist flexion, lower slowly.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Dumbbell Overhead Press (Standing)",
+    "slug": "dumbbell-overhead-press-standing",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": ["triceps", "core"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Stand holding dumbbells at shoulder height, press overhead to full extension bracing core, lower slowly.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Machine Lateral Raise",
+    "slug": "machine-lateral-raise",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": [],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Sit in machine with arms against pads, raise arms to shoulder height, lower with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Cable Face Pull",
+    "slug": "cable-face-pull",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": ["back"],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Set cable at face height with rope, pull toward face with elbows high and wide, squeeze rear delts.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Kettlebell Row",
+    "slug": "kettlebell-row",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "kettlebell",
+    "exerciseType": "strength",
+    "instructions": "Hinge at hips, row kettlebell to hip, squeeze shoulder blade, lower with control.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Dumbbell Reverse Fly",
+    "slug": "dumbbell-reverse-fly",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": ["back"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Bend over holding dumbbells, raise arms to sides with slight elbow bend, squeeze rear delts, lower.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Lat Prayer Stretch",
+    "slug": "lat-prayer-stretch",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["shoulders"],
+    "equipment": "bodyweight",
+    "exerciseType": "stretch",
+    "instructions": "Kneel, place hands on surface, push hips back stretching lats, hold for 20-30 seconds.",
+    "defaultRestSeconds": 30
+  },
+  {
+    "name": "Chest Stretch",
+    "slug": "chest-stretch",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["shoulders"],
+    "equipment": "bodyweight",
+    "exerciseType": "stretch",
+    "instructions": "Stand in doorway, place forearms on frame, lean forward stretching chest, hold for 20-30 seconds.",
+    "defaultRestSeconds": 30
+  },
+  {
+    "name": "Hip Flexor Stretch",
+    "slug": "hip-flexor-stretch",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": [],
+    "equipment": "bodyweight",
+    "exerciseType": "stretch",
+    "instructions": "Kneel on one knee, push hips forward while keeping torso upright, hold for 20-30 seconds per side.",
+    "defaultRestSeconds": 30
+  },
+  {
+    "name": "Hamstring Stretch",
+    "slug": "hamstring-stretch",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": [],
+    "equipment": "bodyweight",
+    "exerciseType": "stretch",
+    "instructions": "Stand and extend one leg on a low surface, hinge at hips keeping back flat, hold for 20-30 seconds.",
+    "defaultRestSeconds": 30
+  },
+  {
+    "name": "Shoulder Stretch",
+    "slug": "shoulder-stretch",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": [],
+    "equipment": "bodyweight",
+    "exerciseType": "stretch",
+    "instructions": "Cross one arm across chest, use opposite hand to press it closer, hold for 20-30 seconds per side.",
+    "defaultRestSeconds": 30
+  },
+  {
+    "name": "Resistance Band Face Pull",
+    "slug": "resistance-band-face-pull",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": ["back"],
+    "equipment": "bands",
+    "exerciseType": "strength",
+    "instructions": "Anchor band at face height, grip with both hands, pull toward face with elbows high, squeeze rear delts.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Resistance Band Chest Press",
+    "slug": "resistance-band-chest-press",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["triceps", "shoulders"],
+    "equipment": "bands",
+    "exerciseType": "strength",
+    "instructions": "Anchor band behind you at chest height, press forward until arms are extended, return with control.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Resistance Band Row",
+    "slug": "resistance-band-row",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps"],
+    "equipment": "bands",
+    "exerciseType": "strength",
+    "instructions": "Anchor band at chest height, pull toward body squeezing shoulder blades, return slowly.",
+    "defaultRestSeconds": 45
+  },
+  {
+    "name": "Machine Leg Press (Single Leg)",
+    "slug": "machine-leg-press-single-leg",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": [],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Place one foot on platform, press until leg is extended, lower with control, repeat on other side.",
+    "defaultRestSeconds": 90
+  },
+  {
+    "name": "Smith Machine Squat",
+    "slug": "smith-machine-squat",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "machine",
+    "exerciseType": "strength",
+    "instructions": "Stand in Smith machine with bar on upper back, squat until thighs parallel, press up.",
+    "defaultRestSeconds": 120
+  },
+  {
+    "name": "Cable Pull-Through",
+    "slug": "cable-pull-through",
+    "primaryMuscleGroup": "legs",
+    "secondaryMuscleGroups": ["core"],
+    "equipment": "cable",
+    "exerciseType": "strength",
+    "instructions": "Face away from low cable, grip rope between legs, hinge forward, snap hips to stand squeezing glutes.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Inverted Row",
+    "slug": "inverted-row",
+    "primaryMuscleGroup": "back",
+    "secondaryMuscleGroups": ["biceps", "core"],
+    "equipment": "bodyweight",
+    "exerciseType": "bodyweight",
+    "instructions": "Hang under a bar with feet on floor, pull chest to bar squeezing shoulder blades, lower slowly.",
+    "defaultRestSeconds": 60
+  },
+  {
+    "name": "Dumbbell Floor Press",
+    "slug": "dumbbell-floor-press",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": ["triceps"],
+    "equipment": "dumbbell",
+    "exerciseType": "strength",
+    "instructions": "Lie on floor with dumbbells, press up from a dead stop at the bottom, lower until triceps touch floor.",
+    "defaultRestSeconds": 90
+  }
+]
