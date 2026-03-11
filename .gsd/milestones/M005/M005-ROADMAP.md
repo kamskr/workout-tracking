@@ -62,7 +62,7 @@ This milestone is complete only when all are true:
 - [x] **S02: Shared Timer, Session Lifecycle & Combined Summary** `risk:medium` `depends:[S01]`
   > After this: Any participant can start/pause/skip a shared rest timer that counts down in sync across all participants' screens, the host can end the session triggering a combined summary view showing all participants' workout stats, and abandoned sessions auto-complete after 15 minutes of inactivity.
 
-- [ ] **S03: Integration Hardening & Verification** `risk:medium` `depends:[S01,S02]`
+- [x] **S03: Integration Hardening & Verification** `risk:medium` `depends:[S01,S02]`
   > After this: Two real browser windows prove the full end-to-end flow (create → join → log sets → timer → presence idle → end → summary), each participant's workout records flow into finishWorkout hooks (feed, leaderboard, challenge, badge), and a comprehensive verification script with 15+ checks validates all session behaviors programmatically.
 
 - [ ] **S04: Mobile Port** `risk:low` `depends:[S01,S02]`

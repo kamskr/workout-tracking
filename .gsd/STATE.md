@@ -1,9 +1,9 @@
 # GSD State
 
 **Active Milestone:** M005 — Collaborative Live Workouts
-**Active Slice:** None — S02 complete, S03 next
-**Active Task:** None
-**Phase:** M005/S02 complete (2026-03-11). All 4 tasks delivered: backend + verification + web UI + compilation gate. S03 next.
+**Active Slice:** None — S03 complete, S04 next
+**Active Task:** None — ready for S04 planning
+**Phase:** M005/S03 complete (2026-03-11). All 4 tasks done. S04 (Mobile Port) next.
 
 ## Completed Milestones
 - [x] M001: Core Workout Logging ✅ (6 slices, 20 tasks, 13 requirements validated, 41/41 backend checks)
@@ -12,9 +12,9 @@
 - [x] M004: Leaderboards & Challenges ✅ (4 slices, 12 tasks, 0 new requirements validated, 40 checks pending Convex CLI auth)
 
 ## M005 Plan
-- 4 slices planned: S01 ✅ (Session + Presence + Set Feed), S02 ✅ (Timer + Lifecycle + Summary), S03 (Integration + Verification), S04 (Mobile Port)
-- Risk ordering: S01 high ✅ (presence heartbeat pattern proven), S02 medium ✅ (timer sync proven), S03 medium (integration proof), S04 low (mobile port)
-- 22 decisions recorded: D137–D158 (D137-D148 from M005 planning, D149-D154 from S01 execution, D155-D158 from S02 execution)
+- 4 slices planned: S01 ✅ (Session + Presence + Set Feed), S02 ✅ (Timer + Lifecycle + Summary), S03 ✅ (Integration + Verification), S04 (Mobile Port)
+- Risk ordering: S01 high ✅ (presence heartbeat pattern proven), S02 medium ✅ (timer sync proven), S03 medium ✅ (integration proof complete), S04 low (mobile port)
+- 25 decisions recorded: D137–D161 (D137-D148 from M005 planning, D149-D154 from S01, D155-D158 from S02, D159-D161 from S03)
 - Requirement mapping: R021 (primary), R011 (partial — mobile extension)
 - Schema additions: 2 new tables (groupSessions, sessionParticipants), 1 optional field on workouts (sessionId), +3 optional fields on groupSessions (S02)
 - New module: sessions.ts (15 functions: 9 S01 + 6 S02)
@@ -42,6 +42,24 @@
 - SessionSummary.tsx: per-participant workout stats grid for completed sessions
 - Session page: timer + end button + conditional summary view
 
+## M005/S03 Complete ✅
+- [x] T01: Extract finishWorkoutCore and wire into endSession + checkSessionTimeouts ✅ (8m)
+- [x] T02: Add testFinishWorkoutWithAllHooks helper and comprehensive verification script ✅ (15m)
+- [x] T03: Add "Start Group Session" button on workouts page ✅ (6m)
+- [x] T04: TypeScript compilation gate and regression verification ✅ (4m)
+
+### S03 Deliverables
+- `finishWorkoutCore` lib function — single source of truth for workout completion hooks (feed, leaderboard, challenge, badge)
+- `workouts.ts` `finishWorkout` refactored to delegate to `finishWorkoutCore`
+- `sessions.ts` `endSession` calls `finishWorkoutCore` per participant with idempotent skip
+- `sessions.ts` `checkSessionTimeouts` calls `finishWorkoutCore` per participant on auto-complete
+- `testFinishWorkoutWithAllHooks` mutation and `testGetFeedItemsForWorkout` query in testing.ts
+- `testEndSession` and `testCheckSessionTimeouts` updated to mirror production hook pipelines
+- `verify-s03-m05.ts` with 15 checks (SS-23 through SS-37)
+- "Start Group Session" button on /workouts page (createSession + navigation)
+- testing.ts: 94 exports (92 baseline + 2 new)
+- TypeScript: 0 errors backend + web, 0 new errors native
+
 ## Verification Status
 - `tsc --noEmit` backend — ✅ 0 errors
 - `tsc --noEmit` web — ✅ 0 errors
@@ -51,11 +69,12 @@
 - M004 verification scripts: 40 checks pending Convex CLI auth
 - M005/S01 verification script: 12 checks created, pending live Convex backend
 - M005/S02 verification script: 10 checks (SS-13 through SS-22) created, pending live Convex backend
-- **Total pending checks: 104** (blocked on `npx convex login`)
+- M005/S03 verification script: 15 checks (SS-23 through SS-37) created, pending live Convex backend
+- **Total pending checks: 119** (12 S01 + 10 S02 + 15 S03 + 42 M003 + 40 M004, blocked on `npx convex login`)
 
 ## Requirements Status
 - 16 validated (R001-R014, R022, R023)
-- 7 active (R015-R021) — R015-R020 fully implemented pending live verification; R021 S01+S02 complete, S03+S04 remaining
+- 7 active (R015-R021) — R015-R020 fully implemented pending live verification; R021 S01+S02+S03 complete, S04 remaining
 - 3 deferred (R024-R026)
 - 2 out of scope (R027-R028)
 
@@ -66,11 +85,12 @@
 - D137-D148 from M005 planning
 - D149-D154 from M005/S01
 - D155-D158 from M005/S02
+- D159-D161 from M005/S03
 
 ## Blockers
-- **Convex CLI auth:** `npx convex login` requires interactive terminal with browser. Must resolve before 104 verification checks can execute and R015-R020 can be validated.
+- **Convex CLI auth:** `npx convex login` requires interactive terminal with browser. Must resolve before 119 verification checks can execute and R015-R020 can be validated.
 - **Pre-existing:** Next.js 16 deprecated middleware convention may cause 404 on App Router routes
 
 ## Next Steps
-1. Plan and execute M005/S03 (Integration Hardening & Verification)
-2. (Parallel/when available) Resolve Convex CLI auth and run all 104+ pending verification checks
+1. Plan and execute M005/S04 (Mobile Port — GroupSessionScreen, SessionLobbyScreen, JoinSessionScreen)
+2. (Parallel/when available) Resolve Convex CLI auth and run all 119 pending verification checks

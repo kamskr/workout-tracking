@@ -12,6 +12,7 @@
 import { mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getUserId } from "./lib/auth";
+import { finishWorkoutCore } from "./lib/finishWorkoutCore";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -452,8 +453,27 @@ export const endSession = mutation({
       }
     }
 
+    // Finish all in-progress participant workouts (feed, leaderboard, challenge, badge)
+    const sessionWorkouts = await ctx.db
+      .query("workouts")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .collect();
+
+    let finishedWorkoutCount = 0;
+    for (const w of sessionWorkouts) {
+      if (w.status !== "inProgress") continue; // skip already-completed (idempotent)
+      try {
+        await finishWorkoutCore(ctx.db, w.userId, w._id);
+        finishedWorkoutCount++;
+      } catch (err) {
+        console.error(
+          `[Session] endSession: hook error for participant ${w.userId}: ${err}`,
+        );
+      }
+    }
+
     console.log(
-      `[Session] endSession(${args.sessionId}): completed by host ${userId}, ${participants.length} participants marked left`,
+      `[Session] endSession(${args.sessionId}): completed by host ${userId}, ${participants.length} participants marked left, finished ${finishedWorkoutCount} participant workouts`,
     );
   },
 });
@@ -846,6 +866,30 @@ export const checkSessionTimeouts = internalMutation({
             status: "completed",
             completedAt: now,
           });
+
+          // Finish all in-progress participant workouts for the auto-completed session
+          const sessionWorkouts = await ctx.db
+            .query("workouts")
+            .withIndex("by_sessionId", (q) => q.eq("sessionId", session._id))
+            .collect();
+
+          let finishedCount = 0;
+          for (const w of sessionWorkouts) {
+            if (w.status !== "inProgress") continue;
+            try {
+              await finishWorkoutCore(ctx.db, w.userId, w._id);
+              finishedCount++;
+            } catch (err) {
+              console.error(
+                `[Session] checkSessionTimeouts: hook error for participant ${w.userId} in session ${session._id}: ${err}`,
+              );
+            }
+          }
+
+          console.log(
+            `[Session] checkSessionTimeouts: auto-completed session ${session._id}, finished ${finishedCount} participant workouts`,
+          );
+
           autoCompletedCount++;
         }
       } catch (error) {

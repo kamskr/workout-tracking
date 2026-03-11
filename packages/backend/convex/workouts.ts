@@ -1,9 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getUserId } from "./lib/auth";
-import { updateLeaderboardEntries } from "./lib/leaderboardCompute";
-import { updateChallengeProgress } from "./lib/challengeCompute";
-import { evaluateAndAwardBadges } from "./lib/badgeEvaluation";
+import { finishWorkoutCore } from "./lib/finishWorkoutCore";
 
 // ── Mutations ────────────────────────────────────────────────────────────────
 
@@ -33,6 +31,8 @@ export const createWorkout = mutation({
 
 /**
  * Finish an in-progress workout. Computes duration server-side.
+ *
+ * Auth + ownership checks here; all hook logic delegates to finishWorkoutCore.
  */
 export const finishWorkout = mutation({
   args: {
@@ -47,78 +47,7 @@ export const finishWorkout = mutation({
     if (workout.userId !== userId) throw new Error("Workout does not belong to user");
     if (workout.status !== "inProgress") throw new Error("Workout is not in progress");
 
-    const completedAt = Date.now();
-    const durationSeconds = Math.round((completedAt - workout.startedAt!) / 1000);
-
-    await ctx.db.patch(args.id, {
-      status: "completed",
-      completedAt,
-      durationSeconds,
-    });
-
-    // Create feed item (non-fatal — workout completion always succeeds)
-    try {
-      // Count exercises
-      const workoutExercises = await ctx.db
-        .query("workoutExercises")
-        .withIndex("by_workoutId", (q) => q.eq("workoutId", args.id))
-        .collect();
-      const exerciseCount = workoutExercises.length;
-
-      // Count PRs achieved during this workout
-      const prs = await ctx.db
-        .query("personalRecords")
-        .withIndex("by_workoutId", (q) => q.eq("workoutId", args.id))
-        .collect();
-      const prCount = prs.length;
-
-      await ctx.db.insert("feedItems", {
-        authorId: userId,
-        type: "workout_completed",
-        workoutId: args.id,
-        summary: {
-          name: workout.name,
-          durationSeconds,
-          exerciseCount,
-          prCount,
-        },
-        isPublic: workout.isPublic ?? true,
-        createdAt: Date.now(),
-      });
-    } catch (err) {
-      console.error(
-        `[Feed Item] Error creating feed item for workout ${args.id}: ${err}`,
-      );
-    }
-
-    // Update leaderboard entries (non-fatal — workout completion always succeeds)
-    try {
-      await updateLeaderboardEntries(ctx.db, userId, args.id);
-    } catch (err) {
-      console.error(
-        `[Leaderboard] Error updating entries for workout ${args.id}: ${err}`,
-      );
-    }
-
-    // Update challenge progress (non-fatal — workout completion always succeeds)
-    try {
-      await updateChallengeProgress(ctx.db, userId, args.id);
-    } catch (err) {
-      console.error(
-        `[Challenge] Error updating progress for workout ${args.id}: ${err}`,
-      );
-    }
-
-    // Evaluate and award badges (non-fatal — workout completion always succeeds)
-    try {
-      await evaluateAndAwardBadges(ctx.db, userId);
-    } catch (err) {
-      console.error(
-        `[Badge] Error evaluating badges for user ${userId}: ${err}`,
-      );
-    }
-
-    return { completedAt, durationSeconds };
+    return await finishWorkoutCore(ctx.db, userId, args.id);
   },
 });
 

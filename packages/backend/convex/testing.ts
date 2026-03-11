@@ -32,6 +32,7 @@ import { paginationOptsValidator } from "convex/server";
 import { updateLeaderboardEntries } from "./lib/leaderboardCompute";
 import { leaderboardMetric, challengeType, challengeStatus, sessionStatus, participantStatus } from "./schema";
 import { updateChallengeProgress } from "./lib/challengeCompute";
+import { finishWorkoutCore } from "./lib/finishWorkoutCore";
 
 // ── Workout helpers ──────────────────────────────────────────────────────────
 
@@ -111,6 +112,45 @@ export const testFinishWorkout = mutation({
     }
 
     return { completedAt, durationSeconds };
+  },
+});
+
+/**
+ * Test version of finishWorkout that calls the full finishWorkoutCore pipeline
+ * (feed item + leaderboard + challenge + badge hooks). Unlike testFinishWorkout
+ * which only creates a feed item, this mirrors the exact production hook pipeline.
+ *
+ * Idempotent: returns existing values for already-completed workouts.
+ */
+export const testFinishWorkoutWithAllHooks = mutation({
+  args: {
+    testUserId: v.string(),
+    id: v.id("workouts"),
+  },
+  handler: async (ctx, args) => {
+    const workout = await ctx.db.get(args.id);
+    if (!workout) throw new Error("Workout not found");
+    if (workout.userId !== args.testUserId)
+      throw new Error("Workout does not belong to user");
+
+    return await finishWorkoutCore(ctx.db, args.testUserId, args.id);
+  },
+});
+
+/**
+ * Test query to get all feed items for a specific workout.
+ * Enables verification scripts to check that feed items were created
+ * for session participants without needing the full feed pagination flow.
+ */
+export const testGetFeedItemsForWorkout = query({
+  args: {
+    workoutId: v.id("workouts"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("feedItems")
+      .withIndex("by_workoutId", (q) => q.eq("workoutId", args.workoutId))
+      .collect();
   },
 });
 
@@ -3430,6 +3470,8 @@ export const testSkipSharedTimer = mutation({
 /**
  * Test helper: end session (mirrors sessions.endSession without auth).
  * Host-only with idempotent status guard.
+ * Includes finishWorkoutCore sweep for all in-progress participant workouts
+ * (matches production endSession behavior from T01).
  */
 export const testEndSession = mutation({
   args: {
@@ -3469,6 +3511,29 @@ export const testEndSession = mutation({
         await ctx.db.patch(p._id, { status: "left" });
       }
     }
+
+    // Finish all in-progress participant workouts (feed, leaderboard, challenge, badge)
+    const sessionWorkouts = await ctx.db
+      .query("workouts")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .collect();
+
+    let finishedWorkoutCount = 0;
+    for (const w of sessionWorkouts) {
+      if (w.status !== "inProgress") continue;
+      try {
+        await finishWorkoutCore(ctx.db, w.userId, w._id);
+        finishedWorkoutCount++;
+      } catch (err) {
+        console.error(
+          `[Session] testEndSession: hook error for participant ${w.userId}: ${err}`,
+        );
+      }
+    }
+
+    console.log(
+      `[Session] testEndSession(${args.sessionId}): completed, finished ${finishedWorkoutCount} participant workouts`,
+    );
   },
 });
 
@@ -3552,6 +3617,7 @@ export const testGetSessionSummary = query({
 /**
  * Test helper: run session timeout check (mirrors sessions.checkSessionTimeouts).
  * Auto-completes sessions where all participants are stale for 15+ minutes.
+ * Includes finishWorkoutCore sweep for participant workouts (matches production).
  */
 export const testCheckSessionTimeouts = mutation({
   args: {},
@@ -3594,6 +3660,30 @@ export const testCheckSessionTimeouts = mutation({
             status: "completed",
             completedAt: now,
           });
+
+          // Finish all in-progress participant workouts for the auto-completed session
+          const sessionWorkouts = await ctx.db
+            .query("workouts")
+            .withIndex("by_sessionId", (q) => q.eq("sessionId", session._id))
+            .collect();
+
+          let finishedCount = 0;
+          for (const w of sessionWorkouts) {
+            if (w.status !== "inProgress") continue;
+            try {
+              await finishWorkoutCore(ctx.db, w.userId, w._id);
+              finishedCount++;
+            } catch (err) {
+              console.error(
+                `[Session] testCheckSessionTimeouts: hook error for participant ${w.userId} in session ${session._id}: ${err}`,
+              );
+            }
+          }
+
+          console.log(
+            `[Session] testCheckSessionTimeouts: auto-completed session ${session._id}, finished ${finishedCount} participant workouts`,
+          );
+
           autoCompletedCount++;
         }
       } catch (error) {
