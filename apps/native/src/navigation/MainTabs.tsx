@@ -10,7 +10,25 @@ import WorkoutsScreen from "../screens/WorkoutsScreen";
 import ActiveWorkoutScreen from "../screens/ActiveWorkoutScreen";
 import TemplatesScreen from "../screens/TemplatesScreen";
 import AnalyticsScreen from "../screens/AnalyticsScreen";
-import SettingsScreen from "../screens/SettingsScreen";
+import FeedScreen from "../screens/FeedScreen";
+import ProfileScreen from "../screens/ProfileScreen";
+import ProfileSetupScreen from "../screens/ProfileSetupScreen";
+import OtherProfileScreen from "../screens/OtherProfileScreen";
+import SharedWorkoutScreen from "../screens/SharedWorkoutScreen";
+
+// ── Navigation type params ───────────────────────────────────────────────────
+
+export type FeedStackParamList = {
+  FeedMain: undefined;
+  OtherProfile: { userId?: string; username?: string };
+  SharedWorkout: { feedItemId: string };
+};
+
+export type ProfileStackParamList = {
+  ProfileMain: undefined;
+  ProfileSetup: undefined;
+  OtherProfile: { userId?: string; username?: string };
+};
 
 // ── Per-tab stack navigators (allow drill-down within each tab) ──────────────
 
@@ -70,18 +88,31 @@ function AnalyticsTab() {
   );
 }
 
-const SettingsStack = createNativeStackNavigator();
-function SettingsTab() {
+const FeedStack = createNativeStackNavigator<FeedStackParamList>();
+function FeedTab() {
   return (
-    <SettingsStack.Navigator
+    <FeedStack.Navigator
       id={undefined}
       screenOptions={{ headerShown: false }}
     >
-      <SettingsStack.Screen
-        name="SettingsMain"
-        component={SettingsScreen}
-      />
-    </SettingsStack.Navigator>
+      <FeedStack.Screen name="FeedMain" component={FeedScreen} />
+      <FeedStack.Screen name="OtherProfile" component={OtherProfileScreen} />
+      <FeedStack.Screen name="SharedWorkout" component={SharedWorkoutScreen} />
+    </FeedStack.Navigator>
+  );
+}
+
+const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
+function ProfileTab() {
+  return (
+    <ProfileStack.Navigator
+      id={undefined}
+      screenOptions={{ headerShown: false }}
+    >
+      <ProfileStack.Screen name="ProfileMain" component={ProfileScreen} />
+      <ProfileStack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
+      <ProfileStack.Screen name="OtherProfile" component={OtherProfileScreen} />
+    </ProfileStack.Navigator>
   );
 }
 
@@ -94,7 +125,8 @@ const TAB_ICONS: Record<string, { active: TabIconName; inactive: TabIconName }> 
   Workouts: { active: "fitness", inactive: "fitness-outline" },
   Templates: { active: "copy", inactive: "copy-outline" },
   Analytics: { active: "stats-chart", inactive: "stats-chart-outline" },
-  Settings: { active: "settings", inactive: "settings-outline" },
+  Feed: { active: "newspaper", inactive: "newspaper-outline" },
+  Profile: { active: "person", inactive: "person-outline" },
 };
 
 const Tab = createBottomTabNavigator();
@@ -127,7 +159,8 @@ export default function MainTabs() {
       <Tab.Screen name="Workouts" component={WorkoutsTab} />
       <Tab.Screen name="Templates" component={TemplatesTab} />
       <Tab.Screen name="Analytics" component={AnalyticsTab} />
-      <Tab.Screen name="Settings" component={SettingsTab} />
+      <Tab.Screen name="Feed" component={FeedTab} />
+      <Tab.Screen name="Profile" component={ProfileTab} />
     </Tab.Navigator>
   );
 }

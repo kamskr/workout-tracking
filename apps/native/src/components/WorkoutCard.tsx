@@ -13,6 +13,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { formatDuration } from "../lib/units";
 import { colors, fontFamily, spacing } from "../lib/theme";
 import TextInputModal from "./TextInputModal";
+import PrivacyToggleNative from "./social/PrivacyToggleNative";
+import ShareButtonNative from "./social/ShareButtonNative";
 
 interface WorkoutCardProps {
   workout: {
@@ -22,6 +24,7 @@ interface WorkoutCardProps {
     startedAt?: number;
     completedAt?: number;
     durationSeconds?: number;
+    isPublic?: boolean;
   };
 }
 
@@ -139,6 +142,19 @@ function WorkoutCardInner({ workout }: WorkoutCardProps) {
           </View>
         </View>
 
+        {/* Social controls — only on completed workouts */}
+        {isCompleted && (
+          <View style={styles.socialRow}>
+            <PrivacyToggleNative
+              workoutId={workout._id}
+              isPublic={workout.isPublic ?? true}
+            />
+            {workout.isPublic !== false && (
+              <ShareButtonNative workoutId={workout._id} />
+            )}
+          </View>
+        )}
+
         {/* Save as Template button — only on completed workouts */}
         {isCompleted && (
           <TouchableOpacity
@@ -240,6 +256,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: fontFamily.medium,
     color: "#15803D",
+  },
+  socialRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: spacing.sm,
+    gap: spacing.sm,
   },
   templateButton: {
     flexDirection: "row",

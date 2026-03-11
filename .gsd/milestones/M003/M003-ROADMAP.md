@@ -64,7 +64,7 @@ This milestone is complete only when all are true:
 - [x] **S03: Workout Sharing & Privacy** `risk:medium` `depends:[S01, S02]`
   > After this: User can toggle a workout as public/private. Public workouts can be shared to the feed or via a public link (`/shared/[id]`). An unauthenticated visitor can view the shared workout summary. An authenticated user can clone the shared workout as a personal template. Private workouts are excluded from all social surfaces. Proven by backend verification script (privacy gating, share link resolution without auth, clone-as-template, private workout exclusion from feed/profile) and browser walkthrough of share flow + public link + clone.
 
-- [ ] **S04: Mobile Social Port** `risk:low` `depends:[S01, S02, S03]`
+- [x] **S04: Mobile Social Port** `risk:low` `depends:[S01, S02, S03]`
   > After this: All social features work on mobile — Profile tab (view/edit own profile, view others), Feed tab (realtime feed with reactions), share/clone UI, follow/unfollow. Same Convex backend queries, no backend changes. Mobile navigation updated (Profile tab replaces or consolidates Settings, Feed tab added). Proven by TypeScript compilation across all packages, all M003 backend verification scripts still passing, and visual verification in Expo.
 
 ## Boundary Map
