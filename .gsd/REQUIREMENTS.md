@@ -177,8 +177,8 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M003/S02
 - Supporting slices: M003/S01
-- Validation: unmapped
-- Notes: Feed is realtime via Convex subscriptions. Privacy: users can make workouts private.
+- Validation: M003/S02 — 5 social tables (follows, feedItems, reactions, blocks, reports), 11 Convex functions in social.ts, feed item auto-creation in finishWorkout (non-fatal), cascade-delete in deleteWorkout. 15-check verification script (verify-s02-m03.ts) with 3 test users covering follow/unfollow, feed creation, reactions, block filtering, pagination (55 items), cascade delete. Web UI: /feed with usePaginatedQuery + reactions, follow/unfollow on profiles, user search. TypeScript compiles 0 errors (backend), 0 new errors (web). **Pending:** verification script execution blocked by Convex CLI auth — must pass 15/15 before fully validated.
+- Notes: Feed is realtime via Convex subscriptions. Privacy: users can make workouts private (S03). Block/report mutations exist; block UI deferred.
 
 ### R017 — Workout Sharing
 - Class: core-capability

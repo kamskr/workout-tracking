@@ -51,6 +51,41 @@ export const finishWorkout = mutation({
       durationSeconds,
     });
 
+    // Create feed item (non-fatal — workout completion always succeeds)
+    try {
+      // Count exercises
+      const workoutExercises = await ctx.db
+        .query("workoutExercises")
+        .withIndex("by_workoutId", (q) => q.eq("workoutId", args.id))
+        .collect();
+      const exerciseCount = workoutExercises.length;
+
+      // Count PRs achieved during this workout
+      const prs = await ctx.db
+        .query("personalRecords")
+        .withIndex("by_workoutId", (q) => q.eq("workoutId", args.id))
+        .collect();
+      const prCount = prs.length;
+
+      await ctx.db.insert("feedItems", {
+        authorId: userId,
+        type: "workout_completed",
+        workoutId: args.id,
+        summary: {
+          name: workout.name,
+          durationSeconds,
+          exerciseCount,
+          prCount,
+        },
+        isPublic: true,
+        createdAt: Date.now(),
+      });
+    } catch (err) {
+      console.error(
+        `[Feed Item] Error creating feed item for workout ${args.id}: ${err}`,
+      );
+    }
+
     return { completedAt, durationSeconds };
   },
 });
@@ -87,6 +122,26 @@ export const deleteWorkout = mutation({
       }
 
       await ctx.db.delete(we._id);
+    }
+
+    // Cascade: delete associated feed items and their reactions
+    const feedItems = await ctx.db
+      .query("feedItems")
+      .withIndex("by_workoutId", (q) => q.eq("workoutId", args.id))
+      .collect();
+
+    for (const feedItem of feedItems) {
+      // Delete reactions for this feed item
+      const reactions = await ctx.db
+        .query("reactions")
+        .withIndex("by_feedItemId", (q) => q.eq("feedItemId", feedItem._id))
+        .collect();
+
+      for (const reaction of reactions) {
+        await ctx.db.delete(reaction._id);
+      }
+
+      await ctx.db.delete(feedItem._id);
     }
 
     await ctx.db.delete(args.id);

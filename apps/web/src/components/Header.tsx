@@ -57,6 +57,14 @@ export default function Header() {
                 )}
                 {user ? (
                   <div className="hidden sm:flex absolute inset-y-0 right-0 gap-6 items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+                    <Link href="/feed">
+                      <button
+                        type="button"
+                        className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal] font-montserrat px-[22px] py-[11px] hover:text-gray-600 transition-colors"
+                      >
+                        Feed
+                      </button>
+                    </Link>
                     <Link href="/notes">
                       <button
                         type="button"
@@ -105,6 +113,15 @@ export default function Header() {
 
           <DisclosurePanel className="sm:hidden">
             <div className="space-y-1 px-2 pb-3 pt-2 flex flex-col gap-3 items-start">
+              {user && (
+                <DisclosureButton
+                  as={Link}
+                  href="/feed"
+                  className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal]"
+                >
+                  Feed
+                </DisclosureButton>
+              )}
               {navigation.map((item) => (
                 <DisclosureButton
                   key={item.name}

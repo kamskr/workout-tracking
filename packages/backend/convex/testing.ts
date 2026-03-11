@@ -26,6 +26,8 @@ import {
   computePeriodSummary,
 } from "./analytics";
 import { computeCurrentStreak } from "./profiles";
+import { reactionType, reportTargetType } from "./schema";
+import { paginationOptsValidator } from "convex/server";
 
 // ── Workout helpers ──────────────────────────────────────────────────────────
 
@@ -69,6 +71,39 @@ export const testFinishWorkout = mutation({
       durationSeconds,
     });
 
+    // Create feed item (non-fatal — mirrors production finishWorkout)
+    try {
+      const workoutExercises = await ctx.db
+        .query("workoutExercises")
+        .withIndex("by_workoutId", (q) => q.eq("workoutId", args.id))
+        .collect();
+      const exerciseCount = workoutExercises.length;
+
+      const prs = await ctx.db
+        .query("personalRecords")
+        .withIndex("by_workoutId", (q) => q.eq("workoutId", args.id))
+        .collect();
+      const prCount = prs.length;
+
+      await ctx.db.insert("feedItems", {
+        authorId: args.testUserId,
+        type: "workout_completed",
+        workoutId: args.id,
+        summary: {
+          name: workout.name,
+          durationSeconds,
+          exerciseCount,
+          prCount,
+        },
+        isPublic: true,
+        createdAt: Date.now(),
+      });
+    } catch (err) {
+      console.error(
+        `[Feed Item] Error creating feed item for workout ${args.id}: ${err}`,
+      );
+    }
+
     return { completedAt, durationSeconds };
   },
 });
@@ -103,6 +138,25 @@ export const testDeleteWorkout = mutation({
       }
 
       await ctx.db.delete(we._id);
+    }
+
+    // Cascade: delete associated feed items and their reactions
+    const feedItems = await ctx.db
+      .query("feedItems")
+      .withIndex("by_workoutId", (q) => q.eq("workoutId", args.id))
+      .collect();
+
+    for (const feedItem of feedItems) {
+      const reactions = await ctx.db
+        .query("reactions")
+        .withIndex("by_feedItemId", (q) => q.eq("feedItemId", feedItem._id))
+        .collect();
+
+      for (const reaction of reactions) {
+        await ctx.db.delete(reaction._id);
+      }
+
+      await ctx.db.delete(feedItem._id);
     }
 
     await ctx.db.delete(args.id);
@@ -978,6 +1032,447 @@ export const testSearchProfiles = query({
   },
 });
 
+// ── Social test helpers ───────────────────────────────────────────────────────
+
+/**
+ * Test version of followUser — accepts testUserId instead of auth.
+ * Idempotent, rejects self-follow.
+ */
+export const testFollowUser = mutation({
+  args: {
+    testUserId: v.string(),
+    followingId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    if (args.testUserId === args.followingId) {
+      throw new Error("Cannot follow yourself");
+    }
+
+    const existing = await ctx.db
+      .query("follows")
+      .withIndex("by_pair", (q) =>
+        q.eq("followerId", args.testUserId).eq("followingId", args.followingId),
+      )
+      .first();
+
+    if (existing) return existing._id;
+
+    return await ctx.db.insert("follows", {
+      followerId: args.testUserId,
+      followingId: args.followingId,
+      createdAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * Test version of unfollowUser — accepts testUserId instead of auth.
+ */
+export const testUnfollowUser = mutation({
+  args: {
+    testUserId: v.string(),
+    followingId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("follows")
+      .withIndex("by_pair", (q) =>
+        q.eq("followerId", args.testUserId).eq("followingId", args.followingId),
+      )
+      .first();
+
+    if (existing) {
+      await ctx.db.delete(existing._id);
+    }
+  },
+});
+
+/**
+ * Test version of getFollowStatus — accepts testUserId instead of auth.
+ */
+export const testGetFollowStatus = query({
+  args: {
+    testUserId: v.string(),
+    targetUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const [outgoing, incoming] = await Promise.all([
+      ctx.db
+        .query("follows")
+        .withIndex("by_pair", (q) =>
+          q.eq("followerId", args.testUserId).eq("followingId", args.targetUserId),
+        )
+        .first(),
+      ctx.db
+        .query("follows")
+        .withIndex("by_pair", (q) =>
+          q.eq("followerId", args.targetUserId).eq("followingId", args.testUserId),
+        )
+        .first(),
+    ]);
+
+    return {
+      isFollowing: !!outgoing,
+      isFollowedBy: !!incoming,
+    };
+  },
+});
+
+/**
+ * Test version of getFollowCounts — accepts testUserId arg.
+ */
+export const testGetFollowCounts = query({
+  args: {
+    testUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const [followers, following] = await Promise.all([
+      ctx.db
+        .query("follows")
+        .withIndex("by_followingId", (q) => q.eq("followingId", args.testUserId))
+        .collect(),
+      ctx.db
+        .query("follows")
+        .withIndex("by_followerId", (q) => q.eq("followerId", args.testUserId))
+        .collect(),
+    ]);
+
+    return {
+      followers: followers.length,
+      following: following.length,
+    };
+  },
+});
+
+/**
+ * Test version of getFeed — accepts testUserId, uses paginationOpts.
+ */
+export const testGetFeed = query({
+  args: {
+    testUserId: v.string(),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    // 1. Get follow list
+    const followRows = await ctx.db
+      .query("follows")
+      .withIndex("by_followerId", (q) => q.eq("followerId", args.testUserId))
+      .collect();
+    const followedIds = new Set(followRows.map((f) => f.followingId));
+
+    // 2. Get block list
+    const blockRows = await ctx.db
+      .query("blocks")
+      .withIndex("by_blockerId", (q) => q.eq("blockerId", args.testUserId))
+      .collect();
+    const blockedIds = new Set(blockRows.map((b) => b.blockedId));
+
+    // 3. Paginate feedItems by createdAt desc
+    const paginatedResult = await ctx.db
+      .query("feedItems")
+      .withIndex("by_createdAt")
+      .order("desc")
+      .paginate(args.paginationOpts);
+
+    // 4. Post-filter
+    const filteredItems = paginatedResult.page.filter(
+      (item) =>
+        followedIds.has(item.authorId) &&
+        !blockedIds.has(item.authorId) &&
+        item.isPublic,
+    );
+
+    // 5. Resolve author profiles and reaction summaries
+    const enrichedItems = await Promise.all(
+      filteredItems.map(async (item) => {
+        const authorProfile = await ctx.db
+          .query("profiles")
+          .withIndex("by_userId", (q) => q.eq("userId", item.authorId))
+          .first();
+
+        let avatarUrl: string | null = null;
+        if (authorProfile?.avatarStorageId) {
+          avatarUrl =
+            (await ctx.storage.getUrl(authorProfile.avatarStorageId)) ?? null;
+        }
+
+        const author = authorProfile
+          ? {
+              displayName: authorProfile.displayName,
+              username: authorProfile.username,
+              avatarUrl,
+            }
+          : { displayName: "Unknown User", username: "unknown", avatarUrl: null };
+
+        const reactions = await ctx.db
+          .query("reactions")
+          .withIndex("by_feedItemId", (q) => q.eq("feedItemId", item._id))
+          .collect();
+
+        const reactionCounts = new Map<
+          string,
+          { count: number; userHasReacted: boolean }
+        >();
+        for (const r of reactions) {
+          const entry = reactionCounts.get(r.type) ?? {
+            count: 0,
+            userHasReacted: false,
+          };
+          entry.count++;
+          if (r.userId === args.testUserId) entry.userHasReacted = true;
+          reactionCounts.set(r.type, entry);
+        }
+
+        const reactionSummary = Array.from(reactionCounts.entries()).map(
+          ([type, data]) => ({
+            type,
+            count: data.count,
+            userHasReacted: data.userHasReacted,
+          }),
+        );
+
+        return {
+          ...item,
+          author,
+          reactions: reactionSummary,
+        };
+      }),
+    );
+
+    return {
+      ...paginatedResult,
+      page: enrichedItems,
+    };
+  },
+});
+
+/**
+ * Test helper to directly create a feed item (for bulk insertion in pagination tests).
+ */
+export const testCreateFeedItem = mutation({
+  args: {
+    testUserId: v.string(),
+    workoutId: v.id("workouts"),
+    summary: v.object({
+      name: v.string(),
+      durationSeconds: v.number(),
+      exerciseCount: v.number(),
+      prCount: v.number(),
+    }),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("feedItems", {
+      authorId: args.testUserId,
+      type: "workout_completed",
+      workoutId: args.workoutId,
+      summary: args.summary,
+      isPublic: true,
+      createdAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * Test version of addReaction — accepts testUserId instead of auth.
+ * Idempotent, enforces unique constraint.
+ */
+export const testAddReaction = mutation({
+  args: {
+    testUserId: v.string(),
+    feedItemId: v.id("feedItems"),
+    type: reactionType,
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("reactions")
+      .withIndex("by_feedItemId_userId_type", (q) =>
+        q
+          .eq("feedItemId", args.feedItemId)
+          .eq("userId", args.testUserId)
+          .eq("type", args.type),
+      )
+      .first();
+
+    if (existing) return existing._id;
+
+    return await ctx.db.insert("reactions", {
+      feedItemId: args.feedItemId,
+      userId: args.testUserId,
+      type: args.type,
+      createdAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * Test version of removeReaction — accepts testUserId instead of auth.
+ */
+export const testRemoveReaction = mutation({
+  args: {
+    testUserId: v.string(),
+    feedItemId: v.id("feedItems"),
+    type: reactionType,
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("reactions")
+      .withIndex("by_feedItemId_userId_type", (q) =>
+        q
+          .eq("feedItemId", args.feedItemId)
+          .eq("userId", args.testUserId)
+          .eq("type", args.type),
+      )
+      .first();
+
+    if (existing) {
+      await ctx.db.delete(existing._id);
+    }
+  },
+});
+
+/**
+ * Test version of getReactionsForFeedItem — accepts testUserId for user-specific flag.
+ */
+export const testGetReactionsForFeedItem = query({
+  args: {
+    testUserId: v.string(),
+    feedItemId: v.id("feedItems"),
+  },
+  handler: async (ctx, args) => {
+    const reactions = await ctx.db
+      .query("reactions")
+      .withIndex("by_feedItemId", (q) => q.eq("feedItemId", args.feedItemId))
+      .collect();
+
+    const reactionCounts = new Map<
+      string,
+      { count: number; userHasReacted: boolean }
+    >();
+    for (const r of reactions) {
+      const entry = reactionCounts.get(r.type) ?? {
+        count: 0,
+        userHasReacted: false,
+      };
+      entry.count++;
+      if (r.userId === args.testUserId) entry.userHasReacted = true;
+      reactionCounts.set(r.type, entry);
+    }
+
+    return Array.from(reactionCounts.entries()).map(([type, data]) => ({
+      type,
+      count: data.count,
+      userHasReacted: data.userHasReacted,
+    }));
+  },
+});
+
+/**
+ * Test version of blockUser — accepts testUserId instead of auth.
+ * Idempotent, cascade-removes follow relationships.
+ */
+export const testBlockUser = mutation({
+  args: {
+    testUserId: v.string(),
+    blockedId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    if (args.testUserId === args.blockedId) {
+      throw new Error("Cannot block yourself");
+    }
+
+    const existing = await ctx.db
+      .query("blocks")
+      .withIndex("by_pair", (q) =>
+        q.eq("blockerId", args.testUserId).eq("blockedId", args.blockedId),
+      )
+      .first();
+
+    if (existing) return existing._id;
+
+    const blockId = await ctx.db.insert("blocks", {
+      blockerId: args.testUserId,
+      blockedId: args.blockedId,
+      createdAt: Date.now(),
+    });
+
+    // Cascade-remove follow relationships in both directions
+    let removedCount = 0;
+
+    const follow1 = await ctx.db
+      .query("follows")
+      .withIndex("by_pair", (q) =>
+        q.eq("followerId", args.testUserId).eq("followingId", args.blockedId),
+      )
+      .first();
+    if (follow1) {
+      await ctx.db.delete(follow1._id);
+      removedCount++;
+    }
+
+    const follow2 = await ctx.db
+      .query("follows")
+      .withIndex("by_pair", (q) =>
+        q.eq("followerId", args.blockedId).eq("followingId", args.testUserId),
+      )
+      .first();
+    if (follow2) {
+      await ctx.db.delete(follow2._id);
+      removedCount++;
+    }
+
+    if (removedCount > 0) {
+      console.log(
+        `[Block] Removed ${removedCount} follow relationships between ${args.testUserId} and ${args.blockedId}`,
+      );
+    }
+
+    return blockId;
+  },
+});
+
+/**
+ * Test version of unblockUser — accepts testUserId instead of auth.
+ */
+export const testUnblockUser = mutation({
+  args: {
+    testUserId: v.string(),
+    blockedId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("blocks")
+      .withIndex("by_pair", (q) =>
+        q.eq("blockerId", args.testUserId).eq("blockedId", args.blockedId),
+      )
+      .first();
+
+    if (existing) {
+      await ctx.db.delete(existing._id);
+    }
+  },
+});
+
+/**
+ * Test version of reportContent — accepts testUserId instead of auth.
+ */
+export const testReportContent = mutation({
+  args: {
+    testUserId: v.string(),
+    targetType: reportTargetType,
+    targetId: v.string(),
+    reason: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("reports", {
+      reporterId: args.testUserId,
+      targetType: args.targetType,
+      targetId: args.targetId,
+      reason: args.reason,
+      createdAt: Date.now(),
+    });
+  },
+});
+
 // ── Cleanup helper ───────────────────────────────────────────────────────────
 
 /**
@@ -1079,6 +1574,65 @@ export const testCleanup = mutation({
 
     for (const pref of prefs) {
       await ctx.db.delete(pref._id);
+    }
+
+    // Delete social data: follows (both directions)
+    const followsAsFollower = await ctx.db
+      .query("follows")
+      .withIndex("by_followerId", (q) => q.eq("followerId", args.testUserId))
+      .collect();
+    for (const f of followsAsFollower) {
+      await ctx.db.delete(f._id);
+    }
+
+    const followsAsFollowing = await ctx.db
+      .query("follows")
+      .withIndex("by_followingId", (q) => q.eq("followingId", args.testUserId))
+      .collect();
+    for (const f of followsAsFollowing) {
+      await ctx.db.delete(f._id);
+    }
+
+    // Delete feed items authored by user (and their reactions)
+    const feedItems = await ctx.db
+      .query("feedItems")
+      .withIndex("by_authorId_createdAt", (q) => q.eq("authorId", args.testUserId))
+      .collect();
+    for (const fi of feedItems) {
+      const reactions = await ctx.db
+        .query("reactions")
+        .withIndex("by_feedItemId", (q) => q.eq("feedItemId", fi._id))
+        .collect();
+      for (const r of reactions) {
+        await ctx.db.delete(r._id);
+      }
+      await ctx.db.delete(fi._id);
+    }
+
+    // Delete blocks (both directions)
+    const blocksAsBlocker = await ctx.db
+      .query("blocks")
+      .withIndex("by_blockerId", (q) => q.eq("blockerId", args.testUserId))
+      .collect();
+    for (const b of blocksAsBlocker) {
+      await ctx.db.delete(b._id);
+    }
+
+    const blocksAsBlocked = await ctx.db
+      .query("blocks")
+      .withIndex("by_blockedId", (q) => q.eq("blockedId", args.testUserId))
+      .collect();
+    for (const b of blocksAsBlocked) {
+      await ctx.db.delete(b._id);
+    }
+
+    // Delete reports by user
+    const reports = await ctx.db
+      .query("reports")
+      .withIndex("by_reporterId", (q) => q.eq("reporterId", args.testUserId))
+      .collect();
+    for (const r of reports) {
+      await ctx.db.delete(r._id);
     }
 
     // Delete profiles

@@ -19,6 +19,68 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
+function FollowButton({ targetUserId }: { targetUserId: string }) {
+  const followStatus = useQuery(api.social.getFollowStatus, {
+    targetUserId,
+  });
+  const followCounts = useQuery(api.social.getFollowCounts, {
+    userId: targetUserId,
+  });
+
+  const followUser = useMutation(api.social.followUser);
+  const unfollowUser = useMutation(api.social.unfollowUser);
+  const [isToggling, setIsToggling] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleToggle = async () => {
+    setIsToggling(true);
+    try {
+      if (followStatus?.isFollowing) {
+        await unfollowUser({ followingId: targetUserId });
+      } else {
+        await followUser({ followingId: targetUserId });
+      }
+    } catch {
+      // Error handled — UI will update reactively
+    } finally {
+      setIsToggling(false);
+    }
+  };
+
+  if (followStatus === undefined) return null;
+
+  const isFollowing = followStatus.isFollowing;
+
+  return (
+    <div className="flex flex-col items-center gap-2 sm:items-end">
+      <button
+        type="button"
+        onClick={handleToggle}
+        disabled={isToggling}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        data-follow-button
+        className={
+          isFollowing
+            ? isHovered
+              ? "shrink-0 rounded-lg bg-red-600 px-4 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-50"
+              : "shrink-0 rounded-lg bg-gray-900 px-4 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-50"
+            : "shrink-0 rounded-lg border border-gray-300 px-4 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
+        }
+      >
+        {isFollowing ? (isHovered ? "Unfollow" : "Following") : "Follow"}
+      </button>
+      {followCounts && (
+        <p className="text-xs text-gray-500">
+          {followCounts.followers} follower{followCounts.followers !== 1 ? "s" : ""}
+          {" · "}
+          {followCounts.following} following
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function ProfileViewPage() {
   const params = useParams<{ username: string }>();
   const { user } = useUser();
@@ -243,8 +305,8 @@ export default function ProfileViewPage() {
               )}
             </div>
 
-            {/* Edit button (own profile only) */}
-            {isOwnProfile && !isEditing && (
+            {/* Follow button (non-own profiles) or Edit button (own profile) */}
+            {isOwnProfile && !isEditing ? (
               <button
                 type="button"
                 onClick={handleStartEdit}
@@ -252,7 +314,9 @@ export default function ProfileViewPage() {
               >
                 Edit Profile
               </button>
-            )}
+            ) : !isOwnProfile ? (
+              <FollowButton targetUserId={profile.userId} />
+            ) : null}
           </div>
         </div>
 

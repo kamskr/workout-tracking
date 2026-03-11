@@ -18,6 +18,7 @@ import type * as personalRecords from "../personalRecords.js";
 import type * as profiles from "../profiles.js";
 import type * as seed from "../seed.js";
 import type * as sets from "../sets.js";
+import type * as social from "../social.js";
 import type * as templates from "../templates.js";
 import type * as testing from "../testing.js";
 import type * as userPreferences from "../userPreferences.js";
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   profiles: typeof profiles;
   seed: typeof seed;
   sets: typeof sets;
+  social: typeof social;
   templates: typeof templates;
   testing: typeof testing;
   userPreferences: typeof userPreferences;

@@ -49,6 +49,24 @@ const prType = v.union(
 
 const weightUnit = v.union(v.literal("kg"), v.literal("lbs"));
 
+const feedItemType = v.union(v.literal("workout_completed"));
+
+const reactionType = v.union(
+  v.literal("fire"),
+  v.literal("fistBump"),
+  v.literal("clap"),
+  v.literal("strongArm"),
+  v.literal("trophy"),
+);
+
+const reportTargetType = v.union(
+  v.literal("feedItem"),
+  v.literal("profile"),
+);
+
+// Export validators for use in social.ts and testing.ts
+export { feedItemType, reactionType, reportTargetType };
+
 // ── Schema ───────────────────────────────────────────────────────────────────
 
 export default defineSchema({
@@ -184,4 +202,62 @@ export default defineSchema({
   })
     .index("by_userId_exerciseId", ["userId", "exerciseId"])
     .index("by_workoutId", ["workoutId"]),
+
+  // ── Social: Follows ────────────────────────────────────────────────────────
+  follows: defineTable({
+    followerId: v.string(),
+    followingId: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_followerId", ["followerId"])
+    .index("by_followingId", ["followingId"])
+    .index("by_pair", ["followerId", "followingId"]),
+
+  // ── Social: Feed Items ─────────────────────────────────────────────────────
+  // Denormalized event rows created on workout completion (D070/D074).
+  feedItems: defineTable({
+    authorId: v.string(),
+    type: feedItemType,
+    workoutId: v.id("workouts"),
+    summary: v.object({
+      name: v.string(),
+      durationSeconds: v.number(),
+      exerciseCount: v.number(),
+      prCount: v.number(),
+    }),
+    isPublic: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_createdAt", ["createdAt"])
+    .index("by_authorId_createdAt", ["authorId", "createdAt"])
+    .index("by_workoutId", ["workoutId"]),
+
+  // ── Social: Reactions ──────────────────────────────────────────────────────
+  reactions: defineTable({
+    feedItemId: v.id("feedItems"),
+    userId: v.string(),
+    type: reactionType,
+    createdAt: v.number(),
+  })
+    .index("by_feedItemId", ["feedItemId"])
+    .index("by_feedItemId_userId_type", ["feedItemId", "userId", "type"]),
+
+  // ── Social: Blocks ─────────────────────────────────────────────────────────
+  blocks: defineTable({
+    blockerId: v.string(),
+    blockedId: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_blockerId", ["blockerId"])
+    .index("by_blockedId", ["blockedId"])
+    .index("by_pair", ["blockerId", "blockedId"]),
+
+  // ── Social: Reports ────────────────────────────────────────────────────────
+  reports: defineTable({
+    reporterId: v.string(),
+    targetType: reportTargetType,
+    targetId: v.string(),
+    reason: v.string(),
+    createdAt: v.number(),
+  }).index("by_reporterId", ["reporterId"]),
 });

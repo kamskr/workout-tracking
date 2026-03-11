@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-M001 complete, M002 complete, M003/S01 complete (2026-03-11). S01 (User Profiles) shipped — profiles table, 7 CRUD/stats/search Convex functions, 12-check verification script, web UI for profile creation and viewing. 16 of 28 requirements validated, R015 advanced (pending live verification). 10-table normalized schema (profiles added). 72/72 existing backend checks (regression baseline). TypeScript compiles 0 errors for backend. Next: Resolve Convex CLI auth, run verify-s01-m03.ts (12 checks), then M003/S02 (Follow System & Activity Feed).
+M001 complete, M002 complete, M003/S01+S02 complete (2026-03-11). S02 (Follow System & Activity Feed) shipped — 5 social tables, 11 Convex functions in social.ts, feed item lifecycle wired into finishWorkout/deleteWorkout, 15-check verification script, web UI for feed/reactions/follow. 16 of 28 requirements validated, R015+R016 advanced (pending live verification). 15-table normalized schema (follows, feedItems, reactions, blocks, reports added). 72/72 existing backend checks (regression baseline) + 27 new checks (12 S01 + 15 S02, pending execution). TypeScript compiles 0 errors for backend. Next: M003/S03 (Workout Sharing & Privacy).
 
 ## Architecture / Key Patterns
 

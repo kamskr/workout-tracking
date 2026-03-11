@@ -58,7 +58,7 @@ This milestone is complete only when all are true:
 - [x] **S01: User Profiles** `risk:high` `depends:[]`
   > After this: A user visiting the app for the first time sees a profile creation flow (choose username, set bio). Their profile page at `/profile/[username]` displays name, avatar, bio, and workout stats (total workouts, volume). Other authenticated users can view the profile. Proven by backend verification script (profile CRUD, username uniqueness, stats computation) and browser walkthrough of profile creation + view.
 
-- [ ] **S02: Follow System & Activity Feed** `risk:high` `depends:[S01]`
+- [x] **S02: Follow System & Activity Feed** `risk:high` `depends:[S01]`
   > After this: User A can search for and follow User B from their profile page. User B completes a workout and a feed item appears in User A's realtime activity feed at `/feed`. User A can react to the feed item (fire, fist bump, etc) and the reaction count updates live. Feed is paginated. Proven by backend verification script (follow/unfollow, feed item creation on workout completion, reactions, pagination, block filtering) and browser walkthrough of follow → feed → react flow.
 
 - [ ] **S03: Workout Sharing & Privacy** `risk:medium` `depends:[S01, S02]`
