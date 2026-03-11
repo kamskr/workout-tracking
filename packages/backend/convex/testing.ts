@@ -30,7 +30,8 @@ import { computeCurrentStreak } from "./profiles";
 import { reactionType, reportTargetType } from "./schema";
 import { paginationOptsValidator } from "convex/server";
 import { updateLeaderboardEntries } from "./lib/leaderboardCompute";
-import { leaderboardMetric } from "./schema";
+import { leaderboardMetric, challengeType, challengeStatus } from "./schema";
+import { updateChallengeProgress } from "./lib/challengeCompute";
 
 // ── Workout helpers ──────────────────────────────────────────────────────────
 
@@ -1962,6 +1963,34 @@ export const testCleanup = mutation({
       await ctx.db.delete(r._id);
     }
 
+    // Delete challenge participations (by userId index)
+    const challengeParticipations = await ctx.db
+      .query("challengeParticipants")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .collect();
+    for (const cp of challengeParticipations) {
+      await ctx.db.delete(cp._id);
+    }
+
+    // Delete challenges created by this user (and their remaining participants)
+    const challengesCreated = await ctx.db
+      .query("challenges")
+      .withIndex("by_creatorId", (q) => q.eq("creatorId", args.testUserId))
+      .collect();
+    for (const challenge of challengesCreated) {
+      // Delete all participants of this challenge
+      const participants = await ctx.db
+        .query("challengeParticipants")
+        .withIndex("by_challengeId_currentValue", (q) =>
+          q.eq("challengeId", challenge._id),
+        )
+        .collect();
+      for (const p of participants) {
+        await ctx.db.delete(p._id);
+      }
+      await ctx.db.delete(challenge._id);
+    }
+
     // Delete profiles
     const profiles = await ctx.db
       .query("profiles")
@@ -2302,5 +2331,389 @@ export const testGetRawLeaderboardEntries = query({
     }
 
     return entries;
+  },
+});
+
+// ── Challenge test helpers (T02) ─────────────────────────────────────────────
+
+/**
+ * Test version of createChallenge — accepts testUserId directly.
+ * Does NOT schedule via ctx.scheduler (test environment — verification script
+ * calls testActivateChallenge / testCompleteChallenge directly).
+ * Creator auto-joins.
+ */
+export const testCreateChallenge = mutation({
+  args: {
+    testUserId: v.string(),
+    title: v.string(),
+    description: v.optional(v.string()),
+    type: challengeType,
+    exerciseId: v.optional(v.id("exercises")),
+    startAt: v.number(),
+    endAt: v.number(),
+  },
+  handler: async (ctx, args) => {
+    // Validate time bounds
+    if (args.startAt >= args.endAt) {
+      throw new Error("Start time must be before end time");
+    }
+
+    // Exercise-specific types require exerciseId
+    if (
+      (args.type === "totalReps" ||
+        args.type === "totalVolume" ||
+        args.type === "maxWeight") &&
+      !args.exerciseId
+    ) {
+      throw new Error(
+        "Exercise-specific challenge types require an exerciseId",
+      );
+    }
+
+    const now = Date.now();
+    const startsImmediately = args.startAt <= now;
+
+    const challengeId = await ctx.db.insert("challenges", {
+      creatorId: args.testUserId,
+      title: args.title,
+      description: args.description,
+      type: args.type,
+      exerciseId: args.exerciseId,
+      status: startsImmediately ? "active" : "pending",
+      startAt: args.startAt,
+      endAt: args.endAt,
+      createdAt: now,
+    });
+
+    // Creator auto-joins
+    await ctx.db.insert("challengeParticipants", {
+      challengeId,
+      userId: args.testUserId,
+      currentValue: 0,
+      joinedAt: now,
+    });
+
+    return challengeId;
+  },
+});
+
+/**
+ * Test version of joinChallenge — accepts testUserId directly.
+ * Enforces duplicate prevention and participant cap.
+ */
+export const testJoinChallenge = mutation({
+  args: {
+    testUserId: v.string(),
+    challengeId: v.id("challenges"),
+  },
+  handler: async (ctx, args) => {
+    const challenge = await ctx.db.get(args.challengeId);
+    if (!challenge) throw new Error("Challenge not found");
+
+    if (challenge.status !== "pending" && challenge.status !== "active") {
+      throw new Error("Challenge must be pending or active to join");
+    }
+
+    // Check for duplicate join
+    const existing = await ctx.db
+      .query("challengeParticipants")
+      .withIndex("by_challengeId_userId", (q) =>
+        q.eq("challengeId", args.challengeId).eq("userId", args.testUserId),
+      )
+      .first();
+
+    if (existing) {
+      throw new Error("Already joined");
+    }
+
+    // Check participant cap
+    const participants = await ctx.db
+      .query("challengeParticipants")
+      .withIndex("by_challengeId_currentValue", (q) =>
+        q.eq("challengeId", args.challengeId),
+      )
+      .collect();
+
+    if (participants.length >= 100) {
+      throw new Error("Participant cap reached (100)");
+    }
+
+    const participantId = await ctx.db.insert("challengeParticipants", {
+      challengeId: args.challengeId,
+      userId: args.testUserId,
+      currentValue: 0,
+      joinedAt: Date.now(),
+    });
+
+    return participantId;
+  },
+});
+
+/**
+ * Test version of leaveChallenge — accepts testUserId directly.
+ * Creator cannot leave their own challenge.
+ */
+export const testLeaveChallenge = mutation({
+  args: {
+    testUserId: v.string(),
+    challengeId: v.id("challenges"),
+  },
+  handler: async (ctx, args) => {
+    const challenge = await ctx.db.get(args.challengeId);
+    if (!challenge) throw new Error("Challenge not found");
+
+    if (challenge.creatorId === args.testUserId) {
+      throw new Error(
+        "Challenge creator cannot leave — cancel the challenge instead",
+      );
+    }
+
+    const participant = await ctx.db
+      .query("challengeParticipants")
+      .withIndex("by_challengeId_userId", (q) =>
+        q.eq("challengeId", args.challengeId).eq("userId", args.testUserId),
+      )
+      .first();
+
+    if (!participant) {
+      throw new Error("Not a participant in this challenge");
+    }
+
+    await ctx.db.delete(participant._id);
+  },
+});
+
+/**
+ * Test version of cancelChallenge — accepts testUserId directly.
+ * Only creator can cancel. No scheduler cancellation (test env).
+ */
+export const testCancelChallenge = mutation({
+  args: {
+    testUserId: v.string(),
+    challengeId: v.id("challenges"),
+  },
+  handler: async (ctx, args) => {
+    const challenge = await ctx.db.get(args.challengeId);
+    if (!challenge) throw new Error("Challenge not found");
+
+    if (challenge.creatorId !== args.testUserId) {
+      throw new Error("Only the challenge creator can cancel");
+    }
+
+    if (challenge.status !== "pending" && challenge.status !== "active") {
+      throw new Error("Challenge must be pending or active to cancel");
+    }
+
+    await ctx.db.patch(args.challengeId, {
+      status: "cancelled",
+    });
+  },
+});
+
+/**
+ * Test version of getChallengeStandings — no auth required.
+ * Returns participants ordered by currentValue desc with profile enrichment.
+ */
+export const testGetChallengeStandings = query({
+  args: {
+    challengeId: v.id("challenges"),
+  },
+  handler: async (ctx, args) => {
+    const challenge = await ctx.db.get(args.challengeId);
+    if (!challenge) throw new Error("Challenge not found");
+
+    const participants = await ctx.db
+      .query("challengeParticipants")
+      .withIndex("by_challengeId_currentValue", (q) =>
+        q.eq("challengeId", args.challengeId),
+      )
+      .order("desc")
+      .take(100);
+
+    const enriched = await Promise.all(
+      participants.map(async (p) => {
+        const profile = await ctx.db
+          .query("profiles")
+          .withIndex("by_userId", (q) => q.eq("userId", p.userId))
+          .first();
+
+        return {
+          ...p,
+          displayName: profile?.displayName ?? p.userId,
+          username: profile?.username ?? p.userId,
+        };
+      }),
+    );
+
+    return { challenge, participants: enriched };
+  },
+});
+
+/**
+ * Test version of listChallenges — no auth, optional status filter.
+ */
+export const testListChallenges = query({
+  args: {
+    status: v.optional(challengeStatus),
+  },
+  handler: async (ctx, args) => {
+    let challenges;
+
+    if (args.status) {
+      challenges = await ctx.db
+        .query("challenges")
+        .withIndex("by_status", (q) => q.eq("status", args.status!))
+        .order("desc")
+        .take(50);
+    } else {
+      challenges = await ctx.db.query("challenges").order("desc").take(50);
+    }
+
+    // Enrich with participant count
+    const enriched = await Promise.all(
+      challenges.map(async (c) => {
+        const participants = await ctx.db
+          .query("challengeParticipants")
+          .withIndex("by_challengeId_currentValue", (q) =>
+            q.eq("challengeId", c._id),
+          )
+          .collect();
+
+        return {
+          ...c,
+          participantCount: participants.length,
+        };
+      }),
+    );
+
+    return enriched;
+  },
+});
+
+/**
+ * Test version of getChallenge — no auth. Returns challenge doc + participant count.
+ */
+export const testGetChallenge = query({
+  args: {
+    challengeId: v.id("challenges"),
+  },
+  handler: async (ctx, args) => {
+    const challenge = await ctx.db.get(args.challengeId);
+    if (!challenge) throw new Error("Challenge not found");
+
+    const participants = await ctx.db
+      .query("challengeParticipants")
+      .withIndex("by_challengeId_currentValue", (q) =>
+        q.eq("challengeId", args.challengeId),
+      )
+      .collect();
+
+    return {
+      ...challenge,
+      participantCount: participants.length,
+    };
+  },
+});
+
+/**
+ * Test version of completeChallenge — mirrors the internal mutation.
+ * Idempotent: returns early if challenge is not "active".
+ * Determines winner (highest currentValue) and transitions to "completed".
+ */
+export const testCompleteChallenge = mutation({
+  args: {
+    challengeId: v.id("challenges"),
+  },
+  handler: async (ctx, args) => {
+    const challenge = await ctx.db.get(args.challengeId);
+    if (!challenge) throw new Error("Challenge not found");
+
+    if (challenge.status !== "active") {
+      console.log(
+        `[Challenge] testCompleteChallenge(${args.challengeId}): already ${challenge.status}, skipping`,
+      );
+      return;
+    }
+
+    // Find winner: top participant by currentValue
+    const topParticipant = await ctx.db
+      .query("challengeParticipants")
+      .withIndex("by_challengeId_currentValue", (q) =>
+        q.eq("challengeId", args.challengeId),
+      )
+      .order("desc")
+      .first();
+
+    await ctx.db.patch(args.challengeId, {
+      status: "completed",
+      winnerId: topParticipant?.userId ?? undefined,
+      completedAt: Date.now(),
+    });
+
+    console.log(
+      `[Challenge] testCompleteChallenge(${args.challengeId}): completed, winner=${topParticipant?.userId ?? "none"}`,
+    );
+  },
+});
+
+/**
+ * Test version of activateChallenge — mirrors the internal mutation.
+ * Transitions pending → active.
+ */
+export const testActivateChallenge = mutation({
+  args: {
+    challengeId: v.id("challenges"),
+  },
+  handler: async (ctx, args) => {
+    const challenge = await ctx.db.get(args.challengeId);
+    if (!challenge) throw new Error("Challenge not found");
+
+    if (challenge.status !== "pending") {
+      console.log(
+        `[Challenge] testActivateChallenge(${args.challengeId}): already ${challenge.status}, skipping`,
+      );
+      return;
+    }
+
+    await ctx.db.patch(args.challengeId, {
+      status: "active",
+    });
+
+    console.log(
+      `[Challenge] testActivateChallenge(${args.challengeId}): activated`,
+    );
+  },
+});
+
+/**
+ * Test helper to get raw participant docs (no profile enrichment).
+ * Useful for assertions in the verification script.
+ */
+export const testGetRawParticipants = query({
+  args: {
+    challengeId: v.id("challenges"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("challengeParticipants")
+      .withIndex("by_challengeId_currentValue", (q) =>
+        q.eq("challengeId", args.challengeId),
+      )
+      .order("desc")
+      .collect();
+  },
+});
+
+/**
+ * Test helper to call updateChallengeProgress for a user+workout
+ * after testFinishWorkout (the test finishWorkout doesn't call challenge hooks).
+ */
+export const testUpdateChallengeProgress = mutation({
+  args: {
+    testUserId: v.string(),
+    workoutId: v.id("workouts"),
+  },
+  handler: async (ctx, args) => {
+    await updateChallengeProgress(ctx.db, args.testUserId, args.workoutId);
   },
 });

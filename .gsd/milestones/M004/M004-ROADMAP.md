@@ -61,7 +61,7 @@ This milestone is complete only when all are true:
 - [x] **S01: Leaderboards — Backend + Web UI** `risk:high` `depends:[]`
   > After this: A user visits the Leaderboards page on web, sees top-10 rankings for Bench Press 1RM across multiple users, filters by exercise and time period, and their own rank is displayed — all backed by pre-computed leaderboard entries updated on workout completion.
 
-- [ ] **S02: Group Challenges — Backend + Web UI** `risk:high` `depends:[S01]`
+- [x] **S02: Group Challenges — Backend + Web UI** `risk:high` `depends:[S01]`
   > After this: A user creates a "Most Pull-ups This Week" challenge on web, friends join via the challenges page, logging pull-up sets updates the live standings, and a scheduled function completes the challenge at deadline with the correct winner — the project's first use of Convex cron jobs and ctx.scheduler.runAt.
 
 - [ ] **S03: Achievements & Badges — Backend + Web UI** `risk:medium` `depends:[S01]`

@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-M001 complete, M002 complete, M003 complete, M004/S01 complete (2026-03-11). Leaderboard backend and web UI shipped: pre-computed leaderboardEntries table (16th table), 3 metrics (e1RM/volume/reps), opt-in filtering, 4 auth-gated Convex functions, web UI at /leaderboards with exercise/metric/period pickers and ranked table. 16-table normalized Convex schema. TypeScript compiles 0 new errors across all 3 packages. 54 pending verification checks (42 M003 + 12 M004/S01) — **execution pending Convex CLI auth** (`npx convex login`). 72/72 M001+M002 regression baseline. 16 requirements validated, R015-R018 fully implemented but remain active pending live verification. Next: S02 Group Challenges planning.
+M001 complete, M002 complete, M003 complete, M004/S01+S02 complete (2026-03-11). Leaderboards and Group Challenges backend + web UI shipped. 20-table normalized Convex schema (added challenges + challengeParticipants). Challenge system: 4 types (workoutCount/totalReps/totalVolume/maxWeight), lifecycle state machine (pending→active→completed/cancelled), cron-based deadline enforcement (crons.ts), scheduler-based precision completion, 7 public + 3 internal Convex functions, /challenges web page with full CRUD. TypeScript compiles 0 new errors across all 3 packages. 70 pending verification checks (42 M003 + 12 M004/S01 + 16 M004/S02) — **execution pending Convex CLI auth** (`npx convex login`). 72/72 M001+M002 regression baseline. 16 requirements validated, R015-R019 fully implemented but remain active pending live verification. Next: S03 Achievements & Badges.
 
 ## Architecture / Key Patterns
 
@@ -24,6 +24,7 @@ M001 complete, M002 complete, M003 complete, M004/S01 complete (2026-03-11). Lea
 - **Privacy:** Defense-in-depth (D098) — isPublic checked on both feedItems and workouts, cascade updates on toggle
 - **Sharing:** Public Convex queries (no auth required) + Clerk middleware exclusion for /shared routes (D075)
 - **Leaderboards:** Pre-computed entries via non-fatal finishWorkout hook (D107/D108), opt-in filtering at query time (D109/D120), bounded rank scan (D114)
+- **Challenges:** Lifecycle state machine (D111), incremental delta computation (D121), cron-based deadline enforcement + scheduler.runAt precision (D126), creator auto-join (D125)
 - **Styling:** Tailwind CSS (web), React Native StyleSheet (mobile)
 - **Design:** Clean/minimal aesthetic — light theme, Apple Health-inspired
 

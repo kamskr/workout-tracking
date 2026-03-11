@@ -73,8 +73,29 @@ const leaderboardMetric = v.union(
   v.literal("reps"),
 );
 
-// Export validators for use in social.ts, testing.ts, and leaderboards.ts
-export { feedItemType, reactionType, reportTargetType, leaderboardMetric };
+const challengeType = v.union(
+  v.literal("totalReps"),
+  v.literal("totalVolume"),
+  v.literal("workoutCount"),
+  v.literal("maxWeight"),
+);
+
+const challengeStatus = v.union(
+  v.literal("pending"),
+  v.literal("active"),
+  v.literal("completed"),
+  v.literal("cancelled"),
+);
+
+// Export validators for use in social.ts, testing.ts, leaderboards.ts, and challenges.ts
+export {
+  feedItemType,
+  reactionType,
+  reportTargetType,
+  leaderboardMetric,
+  challengeType,
+  challengeStatus,
+};
 
 // ── Schema ───────────────────────────────────────────────────────────────────
 
@@ -291,4 +312,35 @@ export default defineSchema({
       "value",
     ])
     .index("by_userId", ["userId"]),
+
+  // ── Challenges ──────────────────────────────────────────────────────────
+  // Time-limited group challenges with lifecycle: pending → active → completed/cancelled.
+  challenges: defineTable({
+    creatorId: v.string(),
+    title: v.string(),
+    description: v.optional(v.string()),
+    type: challengeType,
+    exerciseId: v.optional(v.id("exercises")),
+    status: challengeStatus,
+    startAt: v.number(),
+    endAt: v.number(),
+    winnerId: v.optional(v.string()),
+    completedAt: v.optional(v.number()),
+    scheduledCompletionId: v.optional(v.id("_scheduled_functions")),
+    createdAt: v.number(),
+  })
+    .index("by_status", ["status"])
+    .index("by_creatorId", ["creatorId"]),
+
+  // ── Challenge Participants ──────────────────────────────────────────────
+  // Tracks each user's participation and running score in a challenge.
+  challengeParticipants: defineTable({
+    challengeId: v.id("challenges"),
+    userId: v.string(),
+    currentValue: v.number(),
+    joinedAt: v.number(),
+  })
+    .index("by_challengeId_currentValue", ["challengeId", "currentValue"])
+    .index("by_userId", ["userId"])
+    .index("by_challengeId_userId", ["challengeId", "userId"]),
 });

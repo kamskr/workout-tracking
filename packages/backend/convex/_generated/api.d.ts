@@ -9,9 +9,12 @@
  */
 
 import type * as analytics from "../analytics.js";
+import type * as challenges from "../challenges.js";
+import type * as crons from "../crons.js";
 import type * as exercises from "../exercises.js";
 import type * as leaderboards from "../leaderboards.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_challengeCompute from "../lib/challengeCompute.js";
 import type * as lib_leaderboardCompute from "../lib/leaderboardCompute.js";
 import type * as lib_prDetection from "../lib/prDetection.js";
 import type * as notes from "../notes.js";
@@ -37,9 +40,12 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
+  challenges: typeof challenges;
+  crons: typeof crons;
   exercises: typeof exercises;
   leaderboards: typeof leaderboards;
   "lib/auth": typeof lib_auth;
+  "lib/challengeCompute": typeof lib_challengeCompute;
   "lib/leaderboardCompute": typeof lib_leaderboardCompute;
   "lib/prDetection": typeof lib_prDetection;
   notes: typeof notes;

@@ -73,6 +73,14 @@ export default function Header() {
                         Leaderboards
                       </button>
                     </Link>
+                    <Link href="/challenges">
+                      <button
+                        type="button"
+                        className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal] font-montserrat px-[22px] py-[11px] hover:text-gray-600 transition-colors"
+                      >
+                        Challenges
+                      </button>
+                    </Link>
                     <Link href="/notes">
                       <button
                         type="button"
@@ -136,6 +144,13 @@ export default function Header() {
                     className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal]"
                   >
                     Leaderboards
+                  </DisclosureButton>
+                  <DisclosureButton
+                    as={Link}
+                    href="/challenges"
+                    className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal]"
+                  >
+                    Challenges
                   </DisclosureButton>
                 </>
               )}

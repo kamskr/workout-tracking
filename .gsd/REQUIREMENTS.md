@@ -210,8 +210,8 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M004/S02
 - Supporting slices: M004/S01
-- Validation: unmapped
-- Notes: Challenge progress computed from workout data, not self-reported.
+- Validation: M004/S02 — `challenges` + `challengeParticipants` tables with status state machine (pending → active → completed → cancelled), 4 challenge types (workoutCount, totalReps, totalVolume, maxWeight), 7 auth-gated Convex functions, incremental progress computation in finishWorkout (non-fatal), `crons.ts` with 15-min deadline check, `ctx.scheduler.runAt` for precise completion/activation scheduling. Web UI at /challenges with status filtering, create form, standings table, join/leave/cancel actions. 16-check verification script (verify-s02-m04.ts) across 4 test users covers full lifecycle (create → join → activate → log progress → standings → complete → winner determination). TypeScript compiles 0 new errors. **Pending live validation:** verification script execution requires live Convex backend — must pass 16/16 to move to validated.
+- Notes: Challenge progress computed from workout data, not self-reported. Stale currentValue on workout deletion is a known limitation (D127).
 
 ### R020 — Achievements and Badges
 - Class: differentiator
@@ -338,7 +338,7 @@ This file is the explicit capability and coverage contract for the project.
 | R016 | core-capability | active | M003/S02 | M003/S01 | M003/S02 — 15-check verification script + web+mobile UI (pending live execution) |
 | R017 | core-capability | active | M003/S03 | M003/S01, M001/S05 | M003/S03 — 15-check verification script + web UI (pending live execution) |
 | R018 | core-capability | active | M004/S01 | M003/S01 | M004/S01 — 12-check verification script + web UI (pending live execution) |
-| R019 | core-capability | active | M004/S02 | M004/S01 | unmapped |
+| R019 | core-capability | active | M004/S02 | M004/S01 | M004/S02 — 16-check verification + web UI (pending live execution) |
 | R020 | differentiator | active | M004/S03 | M003/S01 | unmapped |
 | R021 | differentiator | active | M005/S01 | M005/S02 | unmapped |
 | R022 | quality-attribute | validated | M001/S06 | all UI slices | M001/S06 — theme.ts tokens, light status bar, consistent styling, human UAT pending |
