@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as analytics from "../analytics.js";
 import type * as exercises from "../exercises.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_prDetection from "../lib/prDetection.js";
@@ -30,6 +31,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  analytics: typeof analytics;
   exercises: typeof exercises;
   "lib/auth": typeof lib_auth;
   "lib/prDetection": typeof lib_prDetection;

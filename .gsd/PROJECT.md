@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-M001 complete, M002/S01 complete (2026-03-11). 14 of 28 requirements validated. Core workout logging fully functional on web and mobile. M002/S01 added personal records tracking: weight PR (Epley 1RM), volume PR (session total), and rep PR (single-set max) detected inside `logSet` mutation, stored in `personalRecords` table, and surfaced as reactive 🏆 badges during live web workouts. 12/12 PR verification checks pass, 53/53 total backend checks pass (zero regressions). 9-table normalized schema. TypeScript compiles 0 errors across all 3 packages. Next: S02 (progress charts per exercise).
+M001 complete, M002/S01-S02 complete (2026-03-11). 15 of 28 requirements validated. Core workout logging fully functional on web and mobile. M002/S01 added personal records tracking (weight/volume/rep PRs) with reactive 🏆 badges. M002/S02 added exercise progress charts: `getExerciseProgress` query produces time-series data, Recharts line chart at `/exercises/[id]` shows weight, volume, and estimated 1RM progression with time period filtering. 61/61 total backend checks pass (zero regressions). 9-table normalized schema. TypeScript compiles 0 errors across all 3 packages. Next: S03 (volume analytics, muscle heatmap, summaries).
 
 ## Architecture / Key Patterns
 

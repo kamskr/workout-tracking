@@ -138,14 +138,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R013 — Progress Charts Per Exercise
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: Users can view line/bar charts showing their progress over time for any exercise — weight progression, volume progression, estimated 1RM over time.
 - Why it matters: Visual progress is a key retention driver. Users want to see the trend line going up.
 - Source: user
 - Primary owning slice: M002/S02
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Charting library TBD — needs to work on both web and React Native.
+- Validation: M002/S02 — `getExerciseProgress` query produces accurate time-series data (8/8 backend checks). Recharts line chart on web at `/exercises/[id]` with dual Y-axes (weight/1RM + volume), time period filtering (30d/90d/6mo/1yr/all-time), loading/empty states. ExerciseCard links to detail page. Mobile charts deferred to S04 (Victory Native XL).
+- Notes: Web uses Recharts 3.8.0. Mobile will use Victory Native XL (S04). Data shape contract: `{ date, maxWeight, totalVolume, estimated1RM? }[]`.
 
 ### R014 — Volume Analytics and Muscle Group Heatmaps
 - Class: core-capability
@@ -332,7 +332,7 @@ This file is the explicit capability and coverage contract for the project.
 | R010 | core-capability | validated | M001/S01 | none | M001/S01 — muscle group, equipment, text search filters verified |
 | R011 | launchability | validated | M001/S06 | M001/S01-S05 | M001/S06 — all M001 features on mobile, typecheck 3/3, 41/41 backend checks |
 | R012 | core-capability | validated | M002/S01 | none | M002/S01 — 12/12 backend checks, reactive 🏆 badge on web |
-| R013 | core-capability | active | M002/S02 | none | unmapped |
+| R013 | core-capability | validated | M002/S02 | none | M002/S02 — 8/8 backend checks, Recharts chart on web |
 | R014 | core-capability | active | M002/S03 | M002/S01 | unmapped |
 | R015 | core-capability | active | M003/S01 | none | unmapped |
 | R016 | core-capability | active | M003/S02 | M003/S01 | unmapped |
@@ -353,5 +353,5 @@ This file is the explicit capability and coverage contract for the project.
 
 - Active requirements: 14
 - Mapped to slices: 23
-- Validated: 14 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R022, R023)
+- Validated: 15 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R013, R022, R023)
 - Unmapped active requirements: 0

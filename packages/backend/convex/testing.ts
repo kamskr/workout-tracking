@@ -20,6 +20,7 @@ import {
 } from "./_generated/server";
 import { v } from "convex/values";
 import { detectAndStorePRs, type PRDetectionResult } from "./lib/prDetection";
+import { computeExerciseProgress } from "./analytics";
 
 // ── Workout helpers ──────────────────────────────────────────────────────────
 
@@ -870,5 +871,45 @@ export const testCleanup = mutation({
     for (const pref of prefs) {
       await ctx.db.delete(pref._id);
     }
+  },
+});
+
+// ── Exercise Progress helpers ────────────────────────────────────────────────
+
+/**
+ * Test version of getExerciseProgress that accepts testUserId instead of auth.
+ */
+export const testGetExerciseProgress = query({
+  args: {
+    testUserId: v.string(),
+    exerciseId: v.id("exercises"),
+    periodDays: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    return await computeExerciseProgress(
+      ctx.db,
+      args.testUserId,
+      args.exerciseId,
+      args.periodDays,
+    );
+  },
+});
+
+/**
+ * Patch a workout's completedAt timestamp — for testing time-range filters.
+ */
+export const testPatchWorkoutCompletedAt = mutation({
+  args: {
+    testUserId: v.string(),
+    workoutId: v.id("workouts"),
+    completedAt: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const workout = await ctx.db.get(args.workoutId);
+    if (!workout) throw new Error("Workout not found");
+    if (workout.userId !== args.testUserId)
+      throw new Error("Workout does not belong to user");
+
+    await ctx.db.patch(args.workoutId, { completedAt: args.completedAt });
   },
 });

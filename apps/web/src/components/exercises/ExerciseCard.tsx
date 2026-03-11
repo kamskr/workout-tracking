@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /** Shape returned by the listExercises query. */
@@ -60,20 +61,22 @@ function formatLabel(value: string): string {
 
 export default function ExerciseCard({ exercise }: ExerciseCardProps) {
   return (
-    <div
-      className={cn(
-        "group rounded-xl border border-gray-200 bg-white p-4 shadow-sm",
-        "transition-all hover:border-gray-300 hover:shadow-md",
-      )}
-    >
-      <h3 className="text-sm font-semibold text-gray-900 group-hover:text-primary transition-colors">
-        {exercise.name}
-      </h3>
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        <Badge label={exercise.primaryMuscleGroup} />
-        <Badge label={exercise.equipment} />
-        <Badge label={exercise.exerciseType} />
+    <Link href={`/exercises/${exercise._id}`} className="block">
+      <div
+        className={cn(
+          "group rounded-xl border border-gray-200 bg-white p-4 shadow-sm",
+          "transition-all hover:border-gray-300 hover:shadow-md",
+        )}
+      >
+        <h3 className="text-sm font-semibold text-gray-900 group-hover:text-primary transition-colors">
+          {exercise.name}
+        </h3>
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          <Badge label={exercise.primaryMuscleGroup} />
+          <Badge label={exercise.equipment} />
+          <Badge label={exercise.exerciseType} />
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }

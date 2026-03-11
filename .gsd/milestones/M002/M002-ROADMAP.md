@@ -57,7 +57,7 @@ This milestone is complete only when all are true:
 - [x] **S01: Personal Records — Detection & Live Notification** `risk:high` `depends:[]`
   > After this: User logs a set during a web workout and sees a 🏆 badge appear in realtime when they hit a new 1RM, volume PR, or rep PR — verified by backend script and live browser demo.
 
-- [ ] **S02: Progress Charts Per Exercise** `risk:medium` `depends:[S01]`
+- [x] **S02: Progress Charts Per Exercise** `risk:medium` `depends:[S01]`
   > After this: User opens any exercise and views a Recharts line chart showing weight, volume, and estimated 1RM progression over time on web — with accurate data verified against raw sets.
 
 - [ ] **S03: Volume Analytics, Muscle Heatmap & Summaries** `risk:medium` `depends:[S01]`

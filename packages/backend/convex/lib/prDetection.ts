@@ -40,7 +40,7 @@ interface ExistingSetRecord {
  * For 1 rep, returns actual weight.
  * Returns undefined if reps > 15 (unreliable above this range).
  */
-function estimateOneRepMax(weight: number, reps: number): number | undefined {
+export function estimateOneRepMax(weight: number, reps: number): number | undefined {
   if (reps > 15) return undefined;
   if (reps <= 1) return weight;
   return weight * (1 + reps / 30);
