@@ -17,6 +17,7 @@ import type { RouteProp } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import FollowButtonNative from "../components/social/FollowButtonNative";
 import ProfileStatsNative from "../components/social/ProfileStatsNative";
+import BadgeDisplayNative from "../components/competitive/BadgeDisplayNative";
 import { colors, fontFamily, spacing } from "../lib/theme";
 import type { WeightUnit } from "../lib/units";
 
@@ -136,6 +137,12 @@ export default function OtherProfileScreen() {
               <Text style={styles.bio}>{profile.bio}</Text>
             ) : null}
           </View>
+        </View>
+
+        {/* Badges section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Badges</Text>
+          <BadgeDisplayNative userId={profile.userId} isOwnProfile={false} />
         </View>
 
         {/* Stats section */}

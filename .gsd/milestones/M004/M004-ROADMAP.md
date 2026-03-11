@@ -67,7 +67,7 @@ This milestone is complete only when all are true:
 - [x] **S03: Achievements & Badges — Backend + Web UI** `risk:medium` `depends:[S01]`
   > After this: A user completes their 10th workout and a "Dedicated Lifter" badge appears on their profile page immediately — with ~15 hardcoded badge definitions evaluated server-side on workout completion, and a badges section visible on any user's profile.
 
-- [ ] **S04: Mobile Competitive Port** `risk:low` `depends:[S01,S02,S03]`
+- [x] **S04: Mobile Competitive Port** `risk:low` `depends:[S01,S02,S03]`
   > After this: All leaderboard, challenge, and badge features work on mobile with native UI components — leaderboard screen with exercise/period pickers, challenge creation and standings screens, badge display on profile — consuming the same Convex backend with zero backend changes.
 
 ## Boundary Map

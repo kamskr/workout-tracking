@@ -17,6 +17,7 @@ import { api } from "@packages/backend/convex/_generated/api";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ProfileStatsNative from "../components/social/ProfileStatsNative";
+import BadgeDisplayNative from "../components/competitive/BadgeDisplayNative";
 import { colors, fontFamily, spacing } from "../lib/theme";
 import { formatRestTime, type WeightUnit } from "../lib/units";
 
@@ -56,6 +57,7 @@ export default function ProfileScreen() {
   const updateProfile = useMutation(api.profiles.updateProfile);
   const setUnit = useMutation(api.userPreferences.setUnitPreference);
   const setRest = useMutation(api.userPreferences.setDefaultRestSeconds);
+  const setLeaderboardOptIn = useMutation(api.leaderboards.setLeaderboardOptIn);
 
   // Edit state
   const [isEditing, setIsEditing] = useState(false);
@@ -123,6 +125,13 @@ export default function ProfileScreen() {
     },
     [currentRest, setRest],
   );
+
+  const handleLeaderboardOptInToggle = useCallback(() => {
+    const currentOptIn = profile?.leaderboardOptIn === true;
+    setLeaderboardOptIn({ optIn: !currentOptIn }).catch((err: unknown) =>
+      console.error("[ProfileScreen] setLeaderboardOptIn failed:", err),
+    );
+  }, [profile?.leaderboardOptIn, setLeaderboardOptIn]);
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -291,6 +300,12 @@ export default function ProfileScreen() {
           )}
         </View>
 
+        {/* Badges section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Badges</Text>
+          <BadgeDisplayNative userId={userId!} isOwnProfile={true} />
+        </View>
+
         {/* Stats section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Workout Stats</Text>
@@ -301,6 +316,8 @@ export default function ProfileScreen() {
         <SettingsSection
           weightUnit={weightUnit}
           currentRest={currentRest}
+          leaderboardOptIn={profile.leaderboardOptIn === true}
+          onLeaderboardOptInToggle={handleLeaderboardOptInToggle}
           onUnitToggle={handleUnitToggle}
           onRestChange={handleRestChange}
           onSignOut={handleSignOut}
@@ -315,12 +332,16 @@ export default function ProfileScreen() {
 function SettingsSection({
   weightUnit,
   currentRest,
+  leaderboardOptIn,
+  onLeaderboardOptInToggle,
   onUnitToggle,
   onRestChange,
   onSignOut,
 }: {
   weightUnit: string;
   currentRest: number;
+  leaderboardOptIn?: boolean;
+  onLeaderboardOptInToggle?: () => void;
   onUnitToggle: () => void;
   onRestChange: (delta: number) => void;
   onSignOut: () => void;
@@ -346,6 +367,37 @@ function SettingsSection({
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Leaderboard Opt-In */}
+      {onLeaderboardOptInToggle != null && (
+        <View style={settingsStyles.row}>
+          <Text style={settingsStyles.label}>Show on leaderboards</Text>
+          <TouchableOpacity
+            style={
+              leaderboardOptIn
+                ? settingsStyles.toggleButton
+                : settingsStyles.optInOutlineButton
+            }
+            onPress={onLeaderboardOptInToggle}
+            accessibilityLabel={
+              leaderboardOptIn
+                ? "Opt out of leaderboards"
+                : "Opt in to leaderboards"
+            }
+            accessibilityRole="button"
+          >
+            <Text
+              style={
+                leaderboardOptIn
+                  ? settingsStyles.toggleText
+                  : settingsStyles.optInOutlineText
+              }
+            >
+              {leaderboardOptIn ? "Opted In" : "Opt In"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Default Rest Time */}
       <View style={settingsStyles.restSection}>
@@ -679,6 +731,18 @@ const settingsStyles = StyleSheet.create({
     color: colors.text,
     minWidth: 80,
     textAlign: "center",
+  },
+  optInOutlineButton: {
+    borderWidth: 1,
+    borderColor: colors.accent,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 8,
+  },
+  optInOutlineText: {
+    color: colors.accent,
+    fontFamily: fontFamily.semiBold,
+    fontSize: 14,
   },
   signOutButton: {
     backgroundColor: colors.backgroundSecondary,

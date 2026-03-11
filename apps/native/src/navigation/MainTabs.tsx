@@ -15,6 +15,9 @@ import ProfileScreen from "../screens/ProfileScreen";
 import ProfileSetupScreen from "../screens/ProfileSetupScreen";
 import OtherProfileScreen from "../screens/OtherProfileScreen";
 import SharedWorkoutScreen from "../screens/SharedWorkoutScreen";
+import ChallengesScreen from "../screens/ChallengesScreen";
+import LeaderboardScreen from "../screens/LeaderboardScreen";
+import ChallengeDetailScreen from "../screens/ChallengeDetailScreen";
 
 // ── Navigation type params ───────────────────────────────────────────────────
 
@@ -28,6 +31,12 @@ export type ProfileStackParamList = {
   ProfileMain: undefined;
   ProfileSetup: undefined;
   OtherProfile: { userId?: string; username?: string };
+};
+
+export type CompeteStackParamList = {
+  CompeteMain: undefined;
+  Leaderboard: undefined;
+  ChallengeDetail: { challengeId: string };
 };
 
 // ── Per-tab stack navigators (allow drill-down within each tab) ──────────────
@@ -116,6 +125,20 @@ function ProfileTab() {
   );
 }
 
+const CompeteStack = createNativeStackNavigator<CompeteStackParamList>();
+function CompeteTab() {
+  return (
+    <CompeteStack.Navigator
+      id={undefined}
+      screenOptions={{ headerShown: false }}
+    >
+      <CompeteStack.Screen name="CompeteMain" component={ChallengesScreen} />
+      <CompeteStack.Screen name="Leaderboard" component={LeaderboardScreen} />
+      <CompeteStack.Screen name="ChallengeDetail" component={ChallengeDetailScreen} />
+    </CompeteStack.Navigator>
+  );
+}
+
 // ── Bottom Tab Navigator ─────────────────────────────────────────────────────
 
 type TabIconName = React.ComponentProps<typeof Ionicons>["name"];
@@ -126,6 +149,7 @@ const TAB_ICONS: Record<string, { active: TabIconName; inactive: TabIconName }> 
   Templates: { active: "copy", inactive: "copy-outline" },
   Analytics: { active: "stats-chart", inactive: "stats-chart-outline" },
   Feed: { active: "newspaper", inactive: "newspaper-outline" },
+  Compete: { active: "trophy", inactive: "trophy-outline" },
   Profile: { active: "person", inactive: "person-outline" },
 };
 
@@ -160,6 +184,7 @@ export default function MainTabs() {
       <Tab.Screen name="Templates" component={TemplatesTab} />
       <Tab.Screen name="Analytics" component={AnalyticsTab} />
       <Tab.Screen name="Feed" component={FeedTab} />
+      <Tab.Screen name="Compete" component={CompeteTab} />
       <Tab.Screen name="Profile" component={ProfileTab} />
     </Tab.Navigator>
   );
