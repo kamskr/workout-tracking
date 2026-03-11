@@ -60,7 +60,7 @@ This milestone is complete only when all are true:
 - [x] **S02: Progress Charts Per Exercise** `risk:medium` `depends:[S01]`
   > After this: User opens any exercise and views a Recharts line chart showing weight, volume, and estimated 1RM progression over time on web — with accurate data verified against raw sets.
 
-- [ ] **S03: Volume Analytics, Muscle Heatmap & Summaries** `risk:medium` `depends:[S01]`
+- [x] **S03: Volume Analytics, Muscle Heatmap & Summaries** `risk:medium` `depends:[S01]`
   > After this: User sees an analytics dashboard on web with a muscle group heatmap, volume breakdown by muscle group, and weekly/monthly summary cards — all showing correct aggregated data.
 
 - [ ] **S04: Mobile Analytics — Charts, Heatmap & PRs** `risk:medium` `depends:[S01,S02,S03]`

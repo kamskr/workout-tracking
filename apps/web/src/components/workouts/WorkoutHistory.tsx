@@ -24,6 +24,9 @@ export default function WorkoutHistory() {
         </p>
         <div className="flex items-center gap-2">
           <Button variant="outline" asChild>
+            <Link href="/analytics">Analytics</Link>
+          </Button>
+          <Button variant="outline" asChild>
             <Link href="/templates">Templates</Link>
           </Button>
           <Button asChild>

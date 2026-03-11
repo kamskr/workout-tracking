@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-M001 complete, M002/S01-S02 complete (2026-03-11). 15 of 28 requirements validated. Core workout logging fully functional on web and mobile. M002/S01 added personal records tracking (weight/volume/rep PRs) with reactive 🏆 badges. M002/S02 added exercise progress charts: `getExerciseProgress` query produces time-series data, Recharts line chart at `/exercises/[id]` shows weight, volume, and estimated 1RM progression with time period filtering. 61/61 total backend checks pass (zero regressions). 9-table normalized schema. TypeScript compiles 0 errors across all 3 packages. Next: S03 (volume analytics, muscle heatmap, summaries).
+M001 complete, M002/S01-S03 complete (2026-03-11). 16 of 28 requirements validated. Core workout logging fully functional on web and mobile. M002/S01 added personal records tracking (weight/volume/rep PRs) with reactive 🏆 badges. M002/S02 added exercise progress charts at `/exercises/[id]`. M002/S03 added analytics dashboard at `/analytics` with volume-by-muscle-group aggregation, custom SVG muscle heatmap (7 body regions), Recharts bar chart, and weekly/monthly summary cards. 72/72 total backend checks pass (zero regressions). 9-table normalized schema. TypeScript compiles 0 errors across all 3 packages. Next: S04 (mobile analytics — port charts, heatmap, PRs to React Native).
 
 ## Architecture / Key Patterns
 

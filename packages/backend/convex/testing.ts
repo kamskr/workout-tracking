@@ -20,7 +20,11 @@ import {
 } from "./_generated/server";
 import { v } from "convex/values";
 import { detectAndStorePRs, type PRDetectionResult } from "./lib/prDetection";
-import { computeExerciseProgress } from "./analytics";
+import {
+  computeExerciseProgress,
+  computeVolumeByMuscleGroup,
+  computePeriodSummary,
+} from "./analytics";
 
 // ── Workout helpers ──────────────────────────────────────────────────────────
 
@@ -911,5 +915,48 @@ export const testPatchWorkoutCompletedAt = mutation({
       throw new Error("Workout does not belong to user");
 
     await ctx.db.patch(args.workoutId, { completedAt: args.completedAt });
+  },
+});
+
+// ── Volume Analytics helpers ─────────────────────────────────────────────────
+
+/**
+ * Test version of getVolumeByMuscleGroup that accepts testUserId instead of auth.
+ */
+export const testGetVolumeByMuscleGroup = query({
+  args: {
+    testUserId: v.string(),
+    periodDays: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    return await computeVolumeByMuscleGroup(
+      ctx.db,
+      args.testUserId,
+      args.periodDays,
+    );
+  },
+});
+
+/**
+ * Test version of getWeeklySummary that accepts testUserId instead of auth.
+ */
+export const testGetWeeklySummary = query({
+  args: {
+    testUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await computePeriodSummary(ctx.db, args.testUserId, 7);
+  },
+});
+
+/**
+ * Test version of getMonthlySummary that accepts testUserId instead of auth.
+ */
+export const testGetMonthlySummary = query({
+  args: {
+    testUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await computePeriodSummary(ctx.db, args.testUserId, 30);
   },
 });

@@ -149,14 +149,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R014 — Volume Analytics and Muscle Group Heatmaps
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: Dashboard showing total volume per muscle group over configurable time periods. Visual muscle group heatmap showing which areas are being trained most/least. Weekly and monthly summary views.
 - Why it matters: Helps users identify imbalances and ensure balanced training coverage.
 - Source: user
 - Primary owning slice: M002/S03
 - Supporting slices: M002/S01
-- Validation: unmapped
-- Notes: Volume = sets × reps × weight. Muscle group mapping comes from exercise library data.
+- Validation: M002/S03 — 11/11 backend checks (verify-s03-m02.ts) prove volume aggregation accuracy, secondary muscle attribution (50%), warmup exclusion, bodyweight handling, time-range filtering, weekly/monthly summary totals, top exercises ranking, and empty state. Web dashboard at `/analytics` renders MuscleHeatmap (7 color-coded SVG body regions), VolumeByMuscleGroupChart (Recharts horizontal bar chart), WeeklySummaryCard, MonthlySummaryCard with period selector (7d/30d/90d/All Time). All data-analytics-* attributes present for programmatic verification. Mobile port deferred to S04.
+- Notes: Volume = sets × reps × weight. Muscle group mapping comes from exercise library data. Secondary muscles attributed at 50% for heatmap only.
 
 ### R015 — User Profiles
 - Class: core-capability
@@ -333,7 +333,7 @@ This file is the explicit capability and coverage contract for the project.
 | R011 | launchability | validated | M001/S06 | M001/S01-S05 | M001/S06 — all M001 features on mobile, typecheck 3/3, 41/41 backend checks |
 | R012 | core-capability | validated | M002/S01 | none | M002/S01 — 12/12 backend checks, reactive 🏆 badge on web |
 | R013 | core-capability | validated | M002/S02 | none | M002/S02 — 8/8 backend checks, Recharts chart on web |
-| R014 | core-capability | active | M002/S03 | M002/S01 | unmapped |
+| R014 | core-capability | validated | M002/S03 | M002/S01 | M002/S03 — 11/11 backend checks, web dashboard with heatmap + charts + summaries |
 | R015 | core-capability | active | M003/S01 | none | unmapped |
 | R016 | core-capability | active | M003/S02 | M003/S01 | unmapped |
 | R017 | core-capability | active | M003/S03 | M003/S01, M001/S05 | unmapped |
@@ -353,5 +353,5 @@ This file is the explicit capability and coverage contract for the project.
 
 - Active requirements: 14
 - Mapped to slices: 23
-- Validated: 15 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R013, R022, R023)
+- Validated: 16 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R013, R014, R022, R023)
 - Unmapped active requirements: 0
