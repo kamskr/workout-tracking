@@ -429,6 +429,54 @@ export const testGetPreviousPerformance = query({
   },
 });
 
+// ── Rest Timer helpers ───────────────────────────────────────────────────────
+
+export const testUpdateRestSeconds = mutation({
+  args: {
+    testUserId: v.string(),
+    workoutExerciseId: v.id("workoutExercises"),
+    restSeconds: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const workoutExercise = await ctx.db.get(args.workoutExerciseId);
+    if (!workoutExercise) throw new Error("Workout exercise not found");
+
+    const workout = await ctx.db.get(workoutExercise.workoutId);
+    if (!workout) throw new Error("Workout not found");
+    if (workout.userId !== args.testUserId)
+      throw new Error("Workout does not belong to user");
+    if (workout.status !== "inProgress")
+      throw new Error("Workout is not in progress");
+
+    await ctx.db.patch(args.workoutExerciseId, {
+      restSeconds: args.restSeconds,
+    });
+  },
+});
+
+export const testSetDefaultRestSeconds = mutation({
+  args: {
+    testUserId: v.string(),
+    defaultRestSeconds: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("userPreferences")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, { defaultRestSeconds: args.defaultRestSeconds });
+    } else {
+      await ctx.db.insert("userPreferences", {
+        userId: args.testUserId,
+        weightUnit: "kg",
+        defaultRestSeconds: args.defaultRestSeconds,
+      });
+    }
+  },
+});
+
 // ── Cleanup helper ───────────────────────────────────────────────────────────
 
 /**

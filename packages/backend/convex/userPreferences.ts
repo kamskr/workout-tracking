@@ -27,6 +27,34 @@ export const getPreferences = query({
 // ── Mutations ────────────────────────────────────────────────────────────────
 
 /**
+ * Set the user's default rest seconds preference. Upserts — creates if missing, patches if exists.
+ */
+export const setDefaultRestSeconds = mutation({
+  args: {
+    defaultRestSeconds: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("User not found");
+
+    const existing = await ctx.db
+      .query("userPreferences")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, { defaultRestSeconds: args.defaultRestSeconds });
+    } else {
+      await ctx.db.insert("userPreferences", {
+        userId,
+        weightUnit: "kg",
+        defaultRestSeconds: args.defaultRestSeconds,
+      });
+    }
+  },
+});
+
+/**
  * Set the user's weight unit preference. Upserts — creates if missing, patches if exists.
  */
 export const setUnitPreference = mutation({

@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-S03 complete — Workout logging extended with RPE/tempo/notes per set, superset exercise grouping (create/remove with visual indicators), and inline previous performance display ("Last: 3×10 @ 60 kg"). Backend: 12 new/extended Convex mutations and queries with RPE validation (1-10). Web UI: SetRow with 6 input fields, WorkoutExerciseItem with previous performance text, WorkoutExerciseList with superset visual grouping and selection mode. 12-check programmatic verification proves R003, R005, R007. 9 of 17 active requirements now validated. Next: S04 — Rest Timer.
+S04 complete — Rest timer auto-starts after logging a set with circular SVG countdown, pause/resume/skip/±15s adjust controls, per-exercise rest duration configuration, and completion beep. Backend: updateRestSeconds and setDefaultRestSeconds mutations with 4-level priority chain (workoutExercise → exercise default → user pref → 60s fallback). Timer state is local React context (D008). 6-check verification script proves backend contract. 10 of 17 active requirements now validated (R004 newly validated). Next: S05 — Workout Templates.
 
 ## Architecture / Key Patterns
 

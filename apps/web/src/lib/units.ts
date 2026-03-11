@@ -29,6 +29,17 @@ export function formatWeight(kg: number, unit: WeightUnit): string {
 }
 
 /**
+ * Format rest time in seconds to "M:SS" format.
+ * Examples: 90 → "1:30", 5 → "0:05", 0 → "0:00", 125 → "2:05"
+ */
+export function formatRestTime(seconds: number): string {
+  if (seconds < 0) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+/**
  * Format a duration in seconds to a human-readable string.
  * - 0 seconds → "0m"
  * - 45 seconds → "0m" (rounds down to minutes)

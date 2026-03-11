@@ -6,6 +6,8 @@ import { api } from "@packages/backend/convex/_generated/api";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
 import { formatWeight, type WeightUnit } from "@/lib/units";
 import SetRow from "./SetRow";
+import RestDurationConfig from "./RestDurationConfig";
+import { useRestTimer } from "./RestTimerContext";
 import { Button } from "@/components/common/button";
 import { cn } from "@/lib/utils";
 
@@ -26,12 +28,14 @@ interface ExerciseItemData {
     exerciseId: Id<"exercises">;
     order: number;
     supersetGroupId?: string;
+    restSeconds?: number;
   };
   exercise: {
     _id: Id<"exercises">;
     name: string;
     primaryMuscleGroup: string;
     equipment: string;
+    defaultRestSeconds?: number;
   } | null;
   sets: SetData[];
 }
@@ -45,6 +49,8 @@ interface WorkoutExerciseItemProps {
   selected?: boolean;
   /** Called when the selection checkbox is toggled. */
   onSelectionChange?: (id: Id<"workoutExercises">, selected: boolean) => void;
+  /** User-level default rest seconds from preferences (lowest priority in the chain). */
+  userDefaultRestSeconds?: number;
 }
 
 /**
@@ -88,11 +94,13 @@ export default function WorkoutExerciseItem({
   selectable = false,
   selected = false,
   onSelectionChange,
+  userDefaultRestSeconds,
 }: WorkoutExerciseItemProps) {
   const logSet = useMutation(api.sets.logSet);
   const removeExercise = useMutation(
     api.workoutExercises.removeExerciseFromWorkout,
   );
+  const { startTimer } = useRestTimer();
   const [isRemoving, setIsRemoving] = useState(false);
 
   // Previous performance query
@@ -103,11 +111,24 @@ export default function WorkoutExerciseItem({
       : "skip",
   );
 
+  // Resolve rest duration via priority chain:
+  // exercise-level override → exercise default → user preference → 60s fallback
+  const resolvedRestSeconds =
+    data.workoutExercise.restSeconds ??
+    data.exercise?.defaultRestSeconds ??
+    userDefaultRestSeconds ??
+    60;
+
   const handleAddSet = useCallback(async () => {
     await logSet({
       workoutExerciseId: data.workoutExercise._id,
     });
-  }, [logSet, data.workoutExercise._id]);
+
+    // Start rest timer after successful set log (duration 0 = disabled)
+    if (resolvedRestSeconds > 0) {
+      startTimer(resolvedRestSeconds, data.exercise?.name ?? "Exercise");
+    }
+  }, [logSet, data.workoutExercise._id, resolvedRestSeconds, startTimer, data.exercise?.name]);
 
   const handleRemoveExercise = useCallback(async () => {
     const confirmed = window.confirm(
@@ -178,6 +199,12 @@ export default function WorkoutExerciseItem({
                 First time! 🎉
               </p>
             )}
+            {/* Per-exercise rest duration config */}
+            <RestDurationConfig
+              workoutExerciseId={data.workoutExercise._id}
+              currentRestSeconds={resolvedRestSeconds}
+              isOverride={data.workoutExercise.restSeconds !== undefined}
+            />
           </div>
         </div>
         <Button

@@ -8,6 +8,8 @@ import type { WeightUnit } from "@/lib/units";
 import ActiveWorkoutHeader from "./ActiveWorkoutHeader";
 import WorkoutExerciseList from "./WorkoutExerciseList";
 import ExercisePicker from "./ExercisePicker";
+import { RestTimerProvider } from "./RestTimerContext";
+import RestTimerDisplay from "./RestTimerDisplay";
 
 export default function ActiveWorkout() {
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -139,26 +141,35 @@ export default function ActiveWorkout() {
   }
 
   const { workout, exercises } = workoutDetails;
+  const userDefaultRestSeconds =
+    preferences && "defaultRestSeconds" in preferences
+      ? preferences.defaultRestSeconds
+      : undefined;
 
   return (
-    <div className="space-y-6">
-      <ActiveWorkoutHeader
-        workoutId={workout._id}
-        name={workout.name ?? "Workout"}
-        startedAt={workout.startedAt!}
-      />
+    <RestTimerProvider>
+      <div className="space-y-6">
+        <ActiveWorkoutHeader
+          workoutId={workout._id}
+          name={workout.name ?? "Workout"}
+          startedAt={workout.startedAt!}
+        />
 
-      <WorkoutExerciseList
-        exercises={exercises}
-        unit={unit}
-        onAddExercise={() => setPickerOpen(true)}
-      />
+        <RestTimerDisplay />
 
-      <ExercisePicker
-        open={pickerOpen}
-        onClose={() => setPickerOpen(false)}
-        workoutId={workout._id}
-      />
-    </div>
+        <WorkoutExerciseList
+          exercises={exercises}
+          unit={unit}
+          onAddExercise={() => setPickerOpen(true)}
+          userDefaultRestSeconds={userDefaultRestSeconds}
+        />
+
+        <ExercisePicker
+          open={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          workoutId={workout._id}
+        />
+      </div>
+    </RestTimerProvider>
   );
 }

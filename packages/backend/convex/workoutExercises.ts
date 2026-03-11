@@ -157,6 +157,30 @@ export const clearSupersetGroup = mutation({
   },
 });
 
+/**
+ * Update the rest seconds override on a workout exercise.
+ * Pass `restSeconds` as a number to set, or undefined to clear.
+ */
+export const updateRestSeconds = mutation({
+  args: {
+    workoutExerciseId: v.id("workoutExercises"),
+    restSeconds: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("User not found");
+
+    const workoutExercise = await ctx.db.get(args.workoutExerciseId);
+    if (!workoutExercise) throw new Error("Workout exercise not found");
+
+    await verifyWorkoutOwnershipAndStatus(ctx, workoutExercise.workoutId, userId);
+
+    await ctx.db.patch(args.workoutExerciseId, {
+      restSeconds: args.restSeconds,
+    });
+  },
+});
+
 // ── Queries ──────────────────────────────────────────────────────────────────
 
 /**

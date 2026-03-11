@@ -39,14 +39,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R004 — Rest Timer Between Sets
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: An auto-starting countdown timer begins when a set is logged. Default rest time is configurable per exercise. Visual countdown with notification when rest is complete. Timer can be manually adjusted, paused, or skipped.
 - Why it matters: Rest timing is critical for training effectiveness. Auto-start reduces friction during workouts.
 - Source: user
 - Primary owning slice: M001/S04
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Notifications require platform-specific handling (web notifications API, Expo push).
+- Validation: M001/S04 — Backend: updateRestSeconds and setDefaultRestSeconds mutations proven by verify-s04.ts (6 checks: set/clear restSeconds, set defaultRestSeconds, 3-level priority chain resolution). UI: RestTimerContext state machine (idle→running→paused→completed→idle), RestTimerDisplay with SVG circular countdown, RestDurationConfig per-exercise inline control — all compile with full type safety. Timer auto-starts after logSet with 4-level priority chain (workoutExercise.restSeconds → exercise.defaultRestSeconds → userPreferences.defaultRestSeconds → 60s). Duration of 0 skips timer. Web Audio beep on completion. Mobile deferred to S06.
+- Notes: Timer state is local only (D008). Completion notification is Web Audio beep; browser notification API and Expo push deferred.
 
 ### R005 — Superset and Circuit Grouping
 - Class: core-capability
@@ -323,7 +323,7 @@ This file is the explicit capability and coverage contract for the project.
 | R001 | core-capability | validated | M001/S01 | none | M001/S01 — 144 exercises seeded, queryable, browsable |
 | R002 | primary-user-loop | validated | M001/S02 | M001/S03 | M001/S02 — workout lifecycle verified by verify-s02.ts (11 checks) |
 | R003 | core-capability | validated | M001/S03 | none | M001/S03 — RPE/tempo/notes round-trip + RPE validation verified |
-| R004 | core-capability | active | M001/S04 | none | unmapped |
+| R004 | core-capability | validated | M001/S04 | none | M001/S04 — rest timer auto-start, priority chain, per-exercise config verified |
 | R005 | core-capability | validated | M001/S03 | none | M001/S03 — superset set/clear mutations verified |
 | R006 | core-capability | active | M001/S05 | none | unmapped |
 | R007 | core-capability | validated | M001/S03 | none | M001/S03 — previous performance query returns correct data or null |
@@ -353,5 +353,5 @@ This file is the explicit capability and coverage contract for the project.
 
 - Active requirements: 17
 - Mapped to slices: 23
-- Validated: 9 (R001, R002, R003, R005, R007, R008, R009, R010, R023)
+- Validated: 10 (R001, R002, R003, R004, R005, R007, R008, R009, R010, R023)
 - Unmapped active requirements: 0

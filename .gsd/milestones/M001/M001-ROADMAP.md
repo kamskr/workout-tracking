@@ -64,7 +64,7 @@ This milestone is complete only when all are true:
 - [x] **S03: Full Set Tracking, Supersets & Previous Performance** `risk:medium` `depends:[S02]`
   > After this: user can log RPE, tempo, and notes per set. Exercises can be grouped into supersets. Previous performance appears inline when logging. All on web.
 
-- [ ] **S04: Rest Timer** `risk:medium` `depends:[S02]`
+- [x] **S04: Rest Timer** `risk:medium` `depends:[S02]`
   > After this: rest timer auto-starts after logging a set with visual countdown. Configurable per exercise. Can be paused, adjusted, or skipped. Works on web.
 
 - [ ] **S05: Workout Templates** `risk:low` `depends:[S02]`

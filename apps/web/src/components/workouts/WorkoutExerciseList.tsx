@@ -41,12 +41,15 @@ interface WorkoutExerciseListProps {
   exercises: ExerciseItemData[];
   unit: WeightUnit;
   onAddExercise: () => void;
+  /** User-level default rest seconds from preferences. */
+  userDefaultRestSeconds?: number;
 }
 
 export default function WorkoutExerciseList({
   exercises,
   unit,
   onAddExercise,
+  userDefaultRestSeconds,
 }: WorkoutExerciseListProps) {
   const setSupersetGroup = useMutation(
     api.workoutExercises.setSupersetGroup,
@@ -244,6 +247,7 @@ export default function WorkoutExerciseList({
               selectable={selectionMode && isSelectableExercise(item)}
               selected={selectedIds.has(item.workoutExercise._id)}
               onSelectionChange={handleSelectionChange}
+              userDefaultRestSeconds={userDefaultRestSeconds}
             />
           );
         }
@@ -286,6 +290,7 @@ export default function WorkoutExerciseList({
                   unit={unit}
                   selectable={false}
                   selected={false}
+                  userDefaultRestSeconds={userDefaultRestSeconds}
                 />
                 {/* Remove from superset button */}
                 <button
