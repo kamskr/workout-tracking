@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
@@ -25,6 +25,7 @@ interface SetData {
 interface ExerciseItemData {
   workoutExercise: {
     _id: Id<"workoutExercises">;
+    workoutId: Id<"workouts">;
     exerciseId: Id<"exercises">;
     order: number;
     supersetGroupId?: string;
@@ -110,6 +111,18 @@ export default function WorkoutExerciseItem({
       ? { exerciseId: data.workoutExercise.exerciseId }
       : "skip",
   );
+
+  // PR badge — subscribe to all PRs for this workout, filter for this exercise
+  const workoutPRs = useQuery(api.personalRecords.getWorkoutPRs, {
+    workoutId: data.workoutExercise.workoutId,
+  });
+
+  const exercisePRs = useMemo(() => {
+    if (!workoutPRs) return [];
+    return workoutPRs.filter(
+      (pr) => pr.exerciseId === data.workoutExercise.exerciseId,
+    );
+  }, [workoutPRs, data.workoutExercise.exerciseId]);
 
   // Resolve rest duration via priority chain:
   // exercise-level override → exercise default → user preference → 60s fallback
@@ -198,6 +211,29 @@ export default function WorkoutExerciseItem({
               <p className="mt-0.5 text-xs text-emerald-600/70">
                 First time! 🎉
               </p>
+            )}
+            {/* PR badges — appear reactively after a set triggers a PR */}
+            {exercisePRs.length > 0 && (
+              <div className="mt-1 flex flex-wrap gap-1" data-pr-badge>
+                {exercisePRs.map((pr) => (
+                  <span
+                    key={pr.type}
+                    className={cn(
+                      "inline-flex items-center gap-0.5 rounded-full px-2 py-0.5",
+                      "bg-amber-50 text-amber-700 border border-amber-200/60",
+                      "text-[11px] font-medium leading-tight",
+                      "animate-[pr-badge-in_0.3s_ease-out]",
+                    )}
+                  >
+                    🏆{" "}
+                    {pr.type === "weight"
+                      ? "Weight PR"
+                      : pr.type === "volume"
+                        ? "Volume PR"
+                        : "Reps PR"}
+                  </span>
+                ))}
+              </div>
             )}
             {/* Per-exercise rest duration config */}
             <RestDurationConfig

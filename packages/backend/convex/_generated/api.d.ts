@@ -10,8 +10,10 @@
 
 import type * as exercises from "../exercises.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_prDetection from "../lib/prDetection.js";
 import type * as notes from "../notes.js";
 import type * as openai from "../openai.js";
+import type * as personalRecords from "../personalRecords.js";
 import type * as seed from "../seed.js";
 import type * as sets from "../sets.js";
 import type * as templates from "../templates.js";
@@ -30,8 +32,10 @@ import type {
 declare const fullApi: ApiFromModules<{
   exercises: typeof exercises;
   "lib/auth": typeof lib_auth;
+  "lib/prDetection": typeof lib_prDetection;
   notes: typeof notes;
   openai: typeof openai;
+  personalRecords: typeof personalRecords;
   seed: typeof seed;
   sets: typeof sets;
   templates: typeof templates;

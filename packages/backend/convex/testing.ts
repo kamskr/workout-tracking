@@ -19,6 +19,7 @@ import {
   query,
 } from "./_generated/server";
 import { v } from "convex/values";
+import { detectAndStorePRs, type PRDetectionResult } from "./lib/prDetection";
 
 // ── Workout helpers ──────────────────────────────────────────────────────────
 
@@ -188,53 +189,112 @@ export const testAddExercise = mutation({
 
 // ── Set helpers ──────────────────────────────────────────────────────────────
 
-export const testLogSet = mutation({
+/**
+ * Shared handler logic for testLogSet and testLogSetWithPR.
+ * Returns { setId, prs } — callers decide which fields to expose.
+ */
+async function _testLogSetCore(
+  ctx: { db: any },
   args: {
-    testUserId: v.string(),
-    workoutExerciseId: v.id("workoutExercises"),
-    weight: v.optional(v.number()),
-    reps: v.optional(v.number()),
-    rpe: v.optional(v.number()),
-    tempo: v.optional(v.string()),
-    notes: v.optional(v.string()),
-    isWarmup: v.optional(v.boolean()),
+    testUserId: string;
+    workoutExerciseId: any;
+    weight?: number;
+    reps?: number;
+    rpe?: number;
+    tempo?: string;
+    notes?: string;
+    isWarmup?: boolean;
   },
+): Promise<{ setId: any; prs: PRDetectionResult }> {
+  const workoutExercise = await ctx.db.get(args.workoutExerciseId);
+  if (!workoutExercise) throw new Error("Workout exercise not found");
+
+  const workout = await ctx.db.get(workoutExercise.workoutId);
+  if (!workout) throw new Error("Workout not found");
+  if (workout.userId !== args.testUserId)
+    throw new Error("Workout does not belong to user");
+  if (workout.status !== "inProgress")
+    throw new Error("Workout is not in progress");
+
+  // RPE validation
+  if (args.rpe !== undefined && (args.rpe < 1 || args.rpe > 10)) {
+    throw new Error("RPE must be between 1 and 10");
+  }
+
+  const isWarmup = args.isWarmup ?? false;
+
+  const existingSets = await ctx.db
+    .query("sets")
+    .withIndex("by_workoutExerciseId", (q: any) =>
+      q.eq("workoutExerciseId", args.workoutExerciseId),
+    )
+    .collect();
+
+  const setId = await ctx.db.insert("sets", {
+    workoutExerciseId: args.workoutExerciseId,
+    setNumber: existingSets.length + 1,
+    weight: args.weight,
+    reps: args.reps,
+    rpe: args.rpe,
+    tempo: args.tempo,
+    notes: args.notes,
+    isWarmup,
+    completedAt: Date.now(),
+  });
+
+  // PR Detection (non-fatal)
+  let prs: PRDetectionResult = {};
+  try {
+    prs = await detectAndStorePRs(
+      ctx.db,
+      args.testUserId,
+      workoutExercise.exerciseId,
+      workoutExercise.workoutId,
+      setId,
+      { weight: args.weight, reps: args.reps, isWarmup },
+      existingSets.map((s: any) => ({
+        weight: s.weight,
+        reps: s.reps,
+        isWarmup: s.isWarmup,
+      })),
+    );
+  } catch (err) {
+    console.error("[Test PR Detection] Error:", err);
+  }
+
+  return { setId, prs };
+}
+
+const testLogSetArgs = {
+  testUserId: v.string(),
+  workoutExerciseId: v.id("workoutExercises"),
+  weight: v.optional(v.number()),
+  reps: v.optional(v.number()),
+  rpe: v.optional(v.number()),
+  tempo: v.optional(v.string()),
+  notes: v.optional(v.string()),
+  isWarmup: v.optional(v.boolean()),
+};
+
+/**
+ * Log a set with PR detection. Returns just the setId for backward compatibility.
+ * Existing verify scripts (S02–S05) depend on this returning a bare Id.
+ */
+export const testLogSet = mutation({
+  args: testLogSetArgs,
   handler: async (ctx, args) => {
-    const workoutExercise = await ctx.db.get(args.workoutExerciseId);
-    if (!workoutExercise) throw new Error("Workout exercise not found");
-
-    const workout = await ctx.db.get(workoutExercise.workoutId);
-    if (!workout) throw new Error("Workout not found");
-    if (workout.userId !== args.testUserId)
-      throw new Error("Workout does not belong to user");
-    if (workout.status !== "inProgress")
-      throw new Error("Workout is not in progress");
-
-    // RPE validation
-    if (args.rpe !== undefined && (args.rpe < 1 || args.rpe > 10)) {
-      throw new Error("RPE must be between 1 and 10");
-    }
-
-    const existingSets = await ctx.db
-      .query("sets")
-      .withIndex("by_workoutExerciseId", (q) =>
-        q.eq("workoutExerciseId", args.workoutExerciseId),
-      )
-      .collect();
-
-    const setId = await ctx.db.insert("sets", {
-      workoutExerciseId: args.workoutExerciseId,
-      setNumber: existingSets.length + 1,
-      weight: args.weight,
-      reps: args.reps,
-      rpe: args.rpe,
-      tempo: args.tempo,
-      notes: args.notes,
-      isWarmup: args.isWarmup ?? false,
-      completedAt: Date.now(),
-    });
-
+    const { setId } = await _testLogSetCore(ctx, args);
     return setId;
+  },
+});
+
+/**
+ * Log a set with PR detection. Returns { setId, prs } for PR-specific verification.
+ */
+export const testLogSetWithPR = mutation({
+  args: testLogSetArgs,
+  handler: async (ctx, args) => {
+    return await _testLogSetCore(ctx, args);
   },
 });
 
@@ -658,6 +718,56 @@ export const testStartFromTemplate = mutation({
   },
 });
 
+// ── Personal Records helpers ─────────────────────────────────────────────
+
+export const testGetWorkoutPRs = query({
+  args: {
+    testUserId: v.string(),
+    workoutId: v.id("workouts"),
+  },
+  handler: async (ctx, args) => {
+    const workout = await ctx.db.get(args.workoutId);
+    if (!workout) throw new Error("Workout not found");
+    if (workout.userId !== args.testUserId)
+      throw new Error("Workout does not belong to user");
+
+    const prs = await ctx.db
+      .query("personalRecords")
+      .withIndex("by_workoutId", (q) => q.eq("workoutId", args.workoutId))
+      .collect();
+
+    // Join exercise names
+    const results = await Promise.all(
+      prs.map(async (pr) => {
+        const exercise = await ctx.db.get(pr.exerciseId);
+        return {
+          ...pr,
+          exerciseName: exercise?.name ?? "Unknown",
+        };
+      }),
+    );
+
+    return results;
+  },
+});
+
+export const testGetPersonalRecords = query({
+  args: {
+    testUserId: v.string(),
+    exerciseId: v.id("exercises"),
+  },
+  handler: async (ctx, args) => {
+    const prs = await ctx.db
+      .query("personalRecords")
+      .withIndex("by_userId_exerciseId", (q) =>
+        q.eq("userId", args.testUserId).eq("exerciseId", args.exerciseId),
+      )
+      .collect();
+
+    return prs;
+  },
+});
+
 // ── Cleanup helper ───────────────────────────────────────────────────────────
 
 /**
@@ -716,6 +826,39 @@ export const testCleanup = mutation({
       }
 
       await ctx.db.delete(workout._id);
+    }
+
+    // Delete personal records — sweep by workoutId for each workout
+    for (const workout of workouts) {
+      const prsByWorkout = await ctx.db
+        .query("personalRecords")
+        .withIndex("by_workoutId", (q) => q.eq("workoutId", workout._id))
+        .collect();
+
+      for (const pr of prsByWorkout) {
+        await ctx.db.delete(pr._id);
+      }
+    }
+
+    // Also sweep personal records by userId+exerciseId (catches orphans)
+    // We need to query all exercises to sweep, but a simpler approach:
+    // query all personalRecords that match any workout we deleted above
+    // might miss records if the workout was already deleted. Use a full table
+    // scan filtered by userId as a safety net.
+    const allPrs = await ctx.db
+      .query("personalRecords")
+      .withIndex("by_userId_exerciseId", (q) =>
+        q.eq("userId", args.testUserId),
+      )
+      .collect();
+
+    for (const pr of allPrs) {
+      // May already be deleted from the workoutId sweep — use try/catch
+      try {
+        await ctx.db.delete(pr._id);
+      } catch {
+        // Already deleted in the workoutId sweep
+      }
     }
 
     // Delete user preferences

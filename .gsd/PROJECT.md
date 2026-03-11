@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-M001 complete (verified 2026-03-11) — All 6 slices delivered and verified. 13 of 13 M001 requirements validated. Users can browse 144 exercises with filters, log workouts with full set tracking (weight/reps/RPE/tempo/notes), use a rest timer, save/load workout templates, see previous performance inline, and toggle unit preferences — on both web (Next.js) and mobile (Expo React Native). Both platforms share the same Convex realtime backend (8-table normalized schema, 17+ auth-gated functions). Mobile app: 4-tab navigation (Exercises, Workouts, Templates, Settings), auth-gated via Clerk, gym-optimized UI with clean/minimal design. TypeScript compiles 0 errors across all 3 packages. 41/41 backend verification checks pass across 4 scripts. See `.gsd/milestones/M001/M001-SUMMARY.md` for full milestone summary. Ready for M002: Analytics & Progress.
+M001 complete, M002/S01 complete (2026-03-11). 14 of 28 requirements validated. Core workout logging fully functional on web and mobile. M002/S01 added personal records tracking: weight PR (Epley 1RM), volume PR (session total), and rep PR (single-set max) detected inside `logSet` mutation, stored in `personalRecords` table, and surfaced as reactive 🏆 badges during live web workouts. 12/12 PR verification checks pass, 53/53 total backend checks pass (zero regressions). 9-table normalized schema. TypeScript compiles 0 errors across all 3 packages. Next: S02 (progress charts per exercise).
 
 ## Architecture / Key Patterns
 

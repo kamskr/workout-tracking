@@ -54,7 +54,7 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: Personal Records — Detection & Live Notification** `risk:high` `depends:[]`
+- [x] **S01: Personal Records — Detection & Live Notification** `risk:high` `depends:[]`
   > After this: User logs a set during a web workout and sees a 🏆 badge appear in realtime when they hit a new 1RM, volume PR, or rep PR — verified by backend script and live browser demo.
 
 - [ ] **S02: Progress Charts Per Exercise** `risk:medium` `depends:[S01]`

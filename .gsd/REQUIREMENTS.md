@@ -127,14 +127,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R012 — Personal Records Tracking
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: The app automatically identifies and highlights personal records (1RM, volume PR, max reps at a weight). PRs are flagged in real-time during a workout and visible in exercise history.
 - Why it matters: PRs are the primary motivator for gym-goers. Missing a PR notification is a missed dopamine hit.
 - Source: user
 - Primary owning slice: M002/S01
 - Supporting slices: none
-- Validation: unmapped
-- Notes: PR detection logic runs on set completion, comparing against all historical data for that exercise.
+- Validation: M002/S01 — Weight PR (Epley 1RM), volume PR (session total), rep PR (single-set max) detected inside logSet mutation, stored in personalRecords table. 12-check verification script (verify-s01-m02.ts) proves all 3 PR types, warmup/missing-data edge cases, metadata integrity, query filtering, and no false positives. Web UI renders reactive 🏆 badge via useQuery(getWorkoutPRs) subscription. Mobile PR badges deferred to S04.
+- Notes: PR detection logic runs on set completion, comparing against all historical data for that exercise. Rep PR is exercise-wide, not per weight tier (D053).
 
 ### R013 — Progress Charts Per Exercise
 - Class: core-capability
@@ -331,7 +331,7 @@ This file is the explicit capability and coverage contract for the project.
 | R009 | core-capability | validated | M001/S02 | none | M001/S02 — durationSeconds server-side computation verified |
 | R010 | core-capability | validated | M001/S01 | none | M001/S01 — muscle group, equipment, text search filters verified |
 | R011 | launchability | validated | M001/S06 | M001/S01-S05 | M001/S06 — all M001 features on mobile, typecheck 3/3, 41/41 backend checks |
-| R012 | core-capability | active | M002/S01 | none | unmapped |
+| R012 | core-capability | validated | M002/S01 | none | M002/S01 — 12/12 backend checks, reactive 🏆 badge on web |
 | R013 | core-capability | active | M002/S02 | none | unmapped |
 | R014 | core-capability | active | M002/S03 | M002/S01 | unmapped |
 | R015 | core-capability | active | M003/S01 | none | unmapped |
@@ -351,7 +351,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 15
+- Active requirements: 14
 - Mapped to slices: 23
-- Validated: 13 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R022, R023)
+- Validated: 14 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R022, R023)
 - Unmapped active requirements: 0

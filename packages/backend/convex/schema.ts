@@ -41,6 +41,12 @@ const workoutStatus = v.union(
   v.literal("completed"),
 );
 
+const prType = v.union(
+  v.literal("weight"),
+  v.literal("volume"),
+  v.literal("reps"),
+);
+
 const weightUnit = v.union(v.literal("kg"), v.literal("lbs"));
 
 // ── Schema ───────────────────────────────────────────────────────────────────
@@ -89,7 +95,8 @@ export default defineSchema({
     durationSeconds: v.optional(v.number()),
   })
     .index("by_userId", ["userId"])
-    .index("by_userId_status", ["userId", "status"]),
+    .index("by_userId_status", ["userId", "status"])
+    .index("by_userId_completedAt", ["userId", "completedAt"]),
 
   // ── Workout Exercises (join table: workout → exercise) ───────────────────
   workoutExercises: defineTable({
@@ -142,4 +149,19 @@ export default defineSchema({
     weightUnit: weightUnit,
     defaultRestSeconds: v.optional(v.number()),
   }).index("by_userId", ["userId"]),
+
+  // ── Personal Records ─────────────────────────────────────────────────────
+  // Stores the current best for each exercise × PR type per user (D044).
+  // PR detection runs inside `logSet` and upserts into this table.
+  personalRecords: defineTable({
+    userId: v.string(),
+    exerciseId: v.id("exercises"),
+    type: prType,
+    value: v.number(),
+    setId: v.id("sets"),
+    workoutId: v.id("workouts"),
+    achievedAt: v.number(),
+  })
+    .index("by_userId_exerciseId", ["userId", "exerciseId"])
+    .index("by_workoutId", ["workoutId"]),
 });

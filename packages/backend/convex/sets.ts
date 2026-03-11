@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getUserId } from "./lib/auth";
+import { detectAndStorePRs } from "./lib/prDetection";
 
 // ── RPE validation ───────────────────────────────────────────────────────────
 
@@ -64,6 +65,8 @@ export const logSet = mutation({
       )
       .collect();
 
+    const isWarmup = args.isWarmup ?? false;
+
     const setId = await ctx.db.insert("sets", {
       workoutExerciseId: args.workoutExerciseId,
       setNumber: existingSets.length + 1,
@@ -72,11 +75,37 @@ export const logSet = mutation({
       rpe: args.rpe,
       tempo: args.tempo,
       notes: args.notes,
-      isWarmup: args.isWarmup ?? false,
+      isWarmup,
       completedAt: Date.now(),
     });
 
-    return setId;
+    // ── PR Detection ─────────────────────────────────────────────────────
+    // Non-fatal: errors are caught so set logging always succeeds.
+    let prs: { weight?: boolean; volume?: boolean; reps?: boolean } = {};
+    try {
+      const workoutExercise = await ctx.db.get(args.workoutExerciseId);
+      if (workoutExercise) {
+        const { workoutId, exerciseId } = workoutExercise;
+        prs = await detectAndStorePRs(
+          ctx.db,
+          userId,
+          exerciseId,
+          workoutId,
+          setId,
+          { weight: args.weight, reps: args.reps, isWarmup },
+          existingSets.map((s) => ({
+            weight: s.weight,
+            reps: s.reps,
+            isWarmup: s.isWarmup,
+          })),
+        );
+      }
+    } catch (err) {
+      // PR detection failure is non-fatal — log but don't break set logging
+      console.error("[PR Detection] Error:", err);
+    }
+
+    return { setId, prs };
   },
 });
 
