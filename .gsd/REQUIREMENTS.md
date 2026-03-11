@@ -28,13 +28,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R003 — Full Set Tracking (Weight, Reps, RPE, Tempo, Notes)
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: Each set within a workout exercise records: weight, reps, RPE (rate of perceived exertion, 1-10 scale), tempo (eccentric/pause/concentric/pause notation), and optional notes. Input fields adapt per exercise type — bodyweight exercises skip weight, cardio tracks distance+duration instead.
 - Why it matters: User explicitly requested full tracking depth. This differentiates from basic workout apps.
 - Source: user
 - Primary owning slice: M001/S03
 - Supporting slices: none
-- Validation: unmapped
+- Validation: M001/S03 — logSet/updateSet accept rpe, tempo, notes. RPE validated 1-10 (out-of-range rejected). Partial update preserves unmodified fields. Round-trip verified by verify-s03.ts (4 checks). Web UI: SetRow renders RPE (number input), tempo (text input), notes (collapsible row) with onBlur save pattern (D021).
 - Notes: RPE and tempo are optional fields — never required.
 
 ### R004 — Rest Timer Between Sets
@@ -50,14 +50,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R005 — Superset and Circuit Grouping
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: Users can group 2+ exercises into a superset or circuit within a workout. Grouped exercises share rest timers and display together visually.
 - Why it matters: Supersets are a fundamental training pattern — without them, the tracker can't represent real gym workouts accurately.
 - Source: inferred
 - Primary owning slice: M001/S03
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Implemented as an exercise grouping concept in the data model, not a separate entity.
+- Validation: M001/S03 — setSupersetGroup sets groupId on multiple exercises, clearSupersetGroup clears one while others retain. Verified by verify-s03.ts (2 checks). Web UI: "Group Superset" selection mode with checkbox selection + floating "Create Superset" button. Grouped exercises render in colored-border containers with "Superset" badge. "Remove from superset" per exercise.
+- Notes: Implemented as an exercise grouping concept in the data model, not a separate entity. Shared rest timers deferred to S04.
 
 ### R006 — Workout Templates
 - Class: core-capability
@@ -72,13 +72,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R007 — Previous Performance Display
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: When logging sets for an exercise, the app displays what the user did last time for that exercise ("Last: 3×10 @ 135 lbs"). This appears inline next to the input fields.
 - Why it matters: Progressive overload is the core principle of training — users must see their previous numbers to know what to beat.
 - Source: inferred
 - Primary owning slice: M001/S03
 - Supporting slices: none
-- Validation: unmapped
+- Validation: M001/S03 — getPreviousPerformance query returns structured { exerciseName, sets, workoutDate, workoutName } or null. Returns correct sets (weight/reps) from most recent completed workout. Returns null for never-done exercises. Verified by verify-s03.ts (6 checks). Web UI: WorkoutExerciseItem shows "Last: 3×10 @ 60 kg" inline below exercise name with unit-aware formatting. "First time! 🎉" badge for new exercises.
 - Notes: Queries the most recent workout containing that exercise.
 
 ### R008 — Unit Preference (kg/lbs)
@@ -322,11 +322,11 @@ This file is the explicit capability and coverage contract for the project.
 |---|---|---|---|---|---|
 | R001 | core-capability | validated | M001/S01 | none | M001/S01 — 144 exercises seeded, queryable, browsable |
 | R002 | primary-user-loop | validated | M001/S02 | M001/S03 | M001/S02 — workout lifecycle verified by verify-s02.ts (11 checks) |
-| R003 | core-capability | active | M001/S03 | none | unmapped |
+| R003 | core-capability | validated | M001/S03 | none | M001/S03 — RPE/tempo/notes round-trip + RPE validation verified |
 | R004 | core-capability | active | M001/S04 | none | unmapped |
-| R005 | core-capability | active | M001/S03 | none | unmapped |
+| R005 | core-capability | validated | M001/S03 | none | M001/S03 — superset set/clear mutations verified |
 | R006 | core-capability | active | M001/S05 | none | unmapped |
-| R007 | core-capability | active | M001/S03 | none | unmapped |
+| R007 | core-capability | validated | M001/S03 | none | M001/S03 — previous performance query returns correct data or null |
 | R008 | core-capability | validated | M001/S02 | none | M001/S02 — unit preference CRUD + conversion utility verified |
 | R009 | core-capability | validated | M001/S02 | none | M001/S02 — durationSeconds server-side computation verified |
 | R010 | core-capability | validated | M001/S01 | none | M001/S01 — muscle group, equipment, text search filters verified |
@@ -353,5 +353,5 @@ This file is the explicit capability and coverage contract for the project.
 
 - Active requirements: 17
 - Mapped to slices: 23
-- Validated: 6 (R001, R002, R008, R009, R010, R023)
+- Validated: 9 (R001, R002, R003, R005, R007, R008, R009, R010, R023)
 - Unmapped active requirements: 0

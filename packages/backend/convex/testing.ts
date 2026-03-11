@@ -194,6 +194,9 @@ export const testLogSet = mutation({
     workoutExerciseId: v.id("workoutExercises"),
     weight: v.optional(v.number()),
     reps: v.optional(v.number()),
+    rpe: v.optional(v.number()),
+    tempo: v.optional(v.string()),
+    notes: v.optional(v.string()),
     isWarmup: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -207,6 +210,11 @@ export const testLogSet = mutation({
     if (workout.status !== "inProgress")
       throw new Error("Workout is not in progress");
 
+    // RPE validation
+    if (args.rpe !== undefined && (args.rpe < 1 || args.rpe > 10)) {
+      throw new Error("RPE must be between 1 and 10");
+    }
+
     const existingSets = await ctx.db
       .query("sets")
       .withIndex("by_workoutExerciseId", (q) =>
@@ -219,6 +227,9 @@ export const testLogSet = mutation({
       setNumber: existingSets.length + 1,
       weight: args.weight,
       reps: args.reps,
+      rpe: args.rpe,
+      tempo: args.tempo,
+      notes: args.notes,
       isWarmup: args.isWarmup ?? false,
       completedAt: Date.now(),
     });
@@ -262,6 +273,159 @@ export const testGetPreferences = query({
       .first();
 
     return prefs ?? { weightUnit: "kg" as const };
+  },
+});
+
+export const testUpdateSet = mutation({
+  args: {
+    testUserId: v.string(),
+    setId: v.id("sets"),
+    weight: v.optional(v.number()),
+    reps: v.optional(v.number()),
+    rpe: v.optional(v.number()),
+    tempo: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    isWarmup: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // RPE validation
+    if (args.rpe !== undefined && (args.rpe < 1 || args.rpe > 10)) {
+      throw new Error("RPE must be between 1 and 10");
+    }
+
+    const set = await ctx.db.get(args.setId);
+    if (!set) throw new Error("Set not found");
+
+    const workoutExercise = await ctx.db.get(set.workoutExerciseId);
+    if (!workoutExercise) throw new Error("Workout exercise not found");
+
+    const workout = await ctx.db.get(workoutExercise.workoutId);
+    if (!workout) throw new Error("Workout not found");
+    if (workout.userId !== args.testUserId)
+      throw new Error("Workout does not belong to user");
+
+    const patch: Record<string, unknown> = {};
+    if (args.weight !== undefined) patch.weight = args.weight;
+    if (args.reps !== undefined) patch.reps = args.reps;
+    if (args.rpe !== undefined) patch.rpe = args.rpe;
+    if (args.tempo !== undefined) patch.tempo = args.tempo;
+    if (args.notes !== undefined) patch.notes = args.notes;
+    if (args.isWarmup !== undefined) patch.isWarmup = args.isWarmup;
+
+    if (Object.keys(patch).length > 0) {
+      await ctx.db.patch(args.setId, patch);
+    }
+  },
+});
+
+// ── Superset helpers ─────────────────────────────────────────────────────────
+
+export const testSetSupersetGroup = mutation({
+  args: {
+    testUserId: v.string(),
+    workoutExerciseIds: v.array(v.id("workoutExercises")),
+    supersetGroupId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    for (const weId of args.workoutExerciseIds) {
+      const workoutExercise = await ctx.db.get(weId);
+      if (!workoutExercise) throw new Error("Workout exercise not found");
+
+      const workout = await ctx.db.get(workoutExercise.workoutId);
+      if (!workout) throw new Error("Workout not found");
+      if (workout.userId !== args.testUserId)
+        throw new Error("Workout does not belong to user");
+
+      await ctx.db.patch(weId, { supersetGroupId: args.supersetGroupId });
+    }
+  },
+});
+
+export const testClearSupersetGroup = mutation({
+  args: {
+    testUserId: v.string(),
+    workoutExerciseId: v.id("workoutExercises"),
+  },
+  handler: async (ctx, args) => {
+    const workoutExercise = await ctx.db.get(args.workoutExerciseId);
+    if (!workoutExercise) throw new Error("Workout exercise not found");
+
+    const workout = await ctx.db.get(workoutExercise.workoutId);
+    if (!workout) throw new Error("Workout not found");
+    if (workout.userId !== args.testUserId)
+      throw new Error("Workout does not belong to user");
+
+    await ctx.db.patch(args.workoutExerciseId, {
+      supersetGroupId: undefined,
+    });
+  },
+});
+
+// ── Previous Performance helper ──────────────────────────────────────────────
+
+export const testGetPreviousPerformance = query({
+  args: {
+    testUserId: v.string(),
+    exerciseId: v.id("exercises"),
+  },
+  handler: async (ctx, args) => {
+    // Get all workoutExercises that reference this exercise
+    const workoutExercises = await ctx.db
+      .query("workoutExercises")
+      .withIndex("by_exerciseId", (q) => q.eq("exerciseId", args.exerciseId))
+      .collect();
+
+    if (workoutExercises.length === 0) return null;
+
+    // For each, fetch the parent workout and filter for user's completed workouts
+    const candidates: {
+      workoutExercise: (typeof workoutExercises)[0];
+      workout: any;
+    }[] = [];
+
+    for (const we of workoutExercises) {
+      const workout = await ctx.db.get(we.workoutId);
+      if (
+        workout &&
+        workout.userId === args.testUserId &&
+        workout.status === "completed" &&
+        workout.completedAt
+      ) {
+        candidates.push({ workoutExercise: we, workout });
+      }
+    }
+
+    if (candidates.length === 0) return null;
+
+    // Sort by completedAt desc, take the most recent
+    candidates.sort((a, b) => b.workout.completedAt - a.workout.completedAt);
+    const best = candidates[0]!;
+
+    // Fetch sets for the winning workoutExercise
+    const sets = await ctx.db
+      .query("sets")
+      .withIndex("by_workoutExerciseId", (q) =>
+        q.eq("workoutExerciseId", best.workoutExercise._id),
+      )
+      .collect();
+
+    sets.sort((a, b) => a.setNumber - b.setNumber);
+
+    // Fetch exercise name for display convenience
+    const exercise = await ctx.db.get(args.exerciseId);
+
+    return {
+      exerciseName: exercise?.name ?? "Unknown",
+      sets: sets.map((s) => ({
+        setNumber: s.setNumber,
+        weight: s.weight,
+        reps: s.reps,
+        rpe: s.rpe,
+        tempo: s.tempo,
+      })),
+      workoutDate: best.workout.completedAt,
+      workoutName: best.workout.name,
+    };
   },
 });
 

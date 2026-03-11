@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-S02 complete — 17 auth-gated Convex functions provide full workout CRUD (create, add exercises, log sets, finish, delete), unit preference management, and workout details queries. Web UI at `/workouts` (history) and `/workouts/active` (live workout with exercise picker, set logging, duration timer, unit toggle). 15-check programmatic verification proves R002, R008, R009 at integration level. Next: S03 — Full Set Tracking, Supersets & Previous Performance.
+S03 complete — Workout logging extended with RPE/tempo/notes per set, superset exercise grouping (create/remove with visual indicators), and inline previous performance display ("Last: 3×10 @ 60 kg"). Backend: 12 new/extended Convex mutations and queries with RPE validation (1-10). Web UI: SetRow with 6 input fields, WorkoutExerciseItem with previous performance text, WorkoutExerciseList with superset visual grouping and selection mode. 12-check programmatic verification proves R003, R005, R007. 9 of 17 active requirements now validated. Next: S04 — Rest Timer.
 
 ## Architecture / Key Patterns
 

@@ -107,6 +107,56 @@ export const reorderExercises = mutation({
   },
 });
 
+/**
+ * Set a superset group ID on multiple workout exercises.
+ * All exercises must belong to the same workout owned by the user.
+ */
+export const setSupersetGroup = mutation({
+  args: {
+    workoutExerciseIds: v.array(v.id("workoutExercises")),
+    supersetGroupId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("User not found");
+
+    for (const weId of args.workoutExerciseIds) {
+      const workoutExercise = await ctx.db.get(weId);
+      if (!workoutExercise) throw new Error("Workout exercise not found");
+
+      const workout = await ctx.db.get(workoutExercise.workoutId);
+      if (!workout) throw new Error("Workout not found");
+      if (workout.userId !== userId)
+        throw new Error("Workout does not belong to user");
+
+      await ctx.db.patch(weId, { supersetGroupId: args.supersetGroupId });
+    }
+  },
+});
+
+/**
+ * Clear the superset group ID from a single workout exercise.
+ */
+export const clearSupersetGroup = mutation({
+  args: {
+    workoutExerciseId: v.id("workoutExercises"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("User not found");
+
+    const workoutExercise = await ctx.db.get(args.workoutExerciseId);
+    if (!workoutExercise) throw new Error("Workout exercise not found");
+
+    const workout = await ctx.db.get(workoutExercise.workoutId);
+    if (!workout) throw new Error("Workout not found");
+    if (workout.userId !== userId)
+      throw new Error("Workout does not belong to user");
+
+    await ctx.db.patch(args.workoutExerciseId, { supersetGroupId: undefined });
+  },
+});
+
 // ── Queries ──────────────────────────────────────────────────────────────────
 
 /**

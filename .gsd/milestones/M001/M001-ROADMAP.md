@@ -61,7 +61,7 @@ This milestone is complete only when all are true:
 - [x] **S02: Workout CRUD & Active Workout Session** `risk:high` `depends:[S01]`
   > After this: user can start a workout on web, add exercises, log sets with weight and reps, finish the workout, and see it in their history. Duration auto-tracks. Unit preference (kg/lbs) is respected.
 
-- [ ] **S03: Full Set Tracking, Supersets & Previous Performance** `risk:medium` `depends:[S02]`
+- [x] **S03: Full Set Tracking, Supersets & Previous Performance** `risk:medium` `depends:[S02]`
   > After this: user can log RPE, tempo, and notes per set. Exercises can be grouped into supersets. Previous performance appears inline when logging. All on web.
 
 - [ ] **S04: Rest Timer** `risk:medium` `depends:[S02]`

@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
-import type { WeightUnit } from "@/lib/units";
+import { formatWeight, type WeightUnit } from "@/lib/units";
 import SetRow from "./SetRow";
 import { Button } from "@/components/common/button";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,9 @@ interface SetData {
   setNumber: number;
   weight?: number;
   reps?: number;
+  rpe?: number;
+  tempo?: string;
+  notes?: string;
   isWarmup: boolean;
 }
 
@@ -22,6 +25,7 @@ interface ExerciseItemData {
     _id: Id<"workoutExercises">;
     exerciseId: Id<"exercises">;
     order: number;
+    supersetGroupId?: string;
   };
   exercise: {
     _id: Id<"exercises">;
@@ -35,17 +39,69 @@ interface ExerciseItemData {
 interface WorkoutExerciseItemProps {
   data: ExerciseItemData;
   unit: WeightUnit;
+  /** Whether to show the selection checkbox for superset grouping. */
+  selectable?: boolean;
+  /** Whether this exercise is currently selected. */
+  selected?: boolean;
+  /** Called when the selection checkbox is toggled. */
+  onSelectionChange?: (id: Id<"workoutExercises">, selected: boolean) => void;
+}
+
+/**
+ * Summarise previous performance sets into a compact string.
+ * Example: "3×10 @ 60 kg, 3×8 @ 65 kg"
+ *
+ * Groups consecutive sets with the same weight+reps and shows count prefix.
+ */
+function formatPreviousPerformance(
+  sets: { weight?: number; reps?: number }[],
+  unit: WeightUnit,
+): string {
+  if (sets.length === 0) return "";
+
+  // Group consecutive identical (weight, reps) pairs
+  const groups: { weight?: number; reps?: number; count: number }[] = [];
+  for (const s of sets) {
+    const last = groups[groups.length - 1];
+    if (last && last.weight === s.weight && last.reps === s.reps) {
+      last.count++;
+    } else {
+      groups.push({ weight: s.weight, reps: s.reps, count: 1 });
+    }
+  }
+
+  return groups
+    .map((g) => {
+      const repsStr = g.reps != null ? `${g.reps}` : "?";
+      const setStr = `${g.count}×${repsStr}`;
+      if (g.weight != null && g.weight > 0) {
+        return `${setStr} @ ${formatWeight(g.weight, unit)}`;
+      }
+      return setStr;
+    })
+    .join(", ");
 }
 
 export default function WorkoutExerciseItem({
   data,
   unit,
+  selectable = false,
+  selected = false,
+  onSelectionChange,
 }: WorkoutExerciseItemProps) {
   const logSet = useMutation(api.sets.logSet);
   const removeExercise = useMutation(
     api.workoutExercises.removeExerciseFromWorkout,
   );
   const [isRemoving, setIsRemoving] = useState(false);
+
+  // Previous performance query
+  const previousPerformance = useQuery(
+    api.sets.getPreviousPerformance,
+    data.workoutExercise.exerciseId
+      ? { exerciseId: data.workoutExercise.exerciseId }
+      : "skip",
+  );
 
   const handleAddSet = useCallback(async () => {
     await logSet({
@@ -70,28 +126,59 @@ export default function WorkoutExerciseItem({
 
   const sortedSets = [...data.sets].sort((a, b) => a.setNumber - b.setNumber);
 
+  const prevPerfSummary =
+    previousPerformance && previousPerformance.sets.length > 0
+      ? formatPreviousPerformance(previousPerformance.sets, unit)
+      : null;
+
   return (
     <div
       className={cn(
         "rounded-xl border border-gray-200 bg-white shadow-sm transition-opacity",
         isRemoving && "pointer-events-none opacity-50",
+        selected && "ring-2 ring-primary/40",
       )}
     >
       {/* Exercise header */}
       <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-        <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-semibold text-gray-900">
-            {data.exercise?.name ?? "Unknown Exercise"}
-          </h3>
-          {data.exercise && (
-            <p className="mt-0.5 text-xs text-gray-500 capitalize">
-              {data.exercise.primaryMuscleGroup.replace(
-                /([a-z])([A-Z])/g,
-                "$1 $2",
-              )}{" "}
-              · {data.exercise.equipment}
-            </p>
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          {selectable && (
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={(e) =>
+                onSelectionChange?.(data.workoutExercise._id, e.target.checked)
+              }
+              className="h-4 w-4 shrink-0 rounded border-gray-300 text-primary accent-primary"
+              aria-label={`Select ${data.exercise?.name ?? "exercise"} for superset`}
+            />
           )}
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-gray-900">
+              {data.exercise?.name ?? "Unknown Exercise"}
+            </h3>
+            {data.exercise && (
+              <p className="mt-0.5 text-xs text-gray-500 capitalize">
+                {data.exercise.primaryMuscleGroup.replace(
+                  /([a-z])([A-Z])/g,
+                  "$1 $2",
+                )}{" "}
+                · {data.exercise.equipment}
+              </p>
+            )}
+            {/* Previous performance display (R007) */}
+            {prevPerfSummary && (
+              <p className="mt-0.5 text-xs text-blue-600/80">
+                Last: {prevPerfSummary}
+              </p>
+            )}
+            {/* First-time badge: show only when query has resolved and returned null */}
+            {previousPerformance === null && (
+              <p className="mt-0.5 text-xs text-emerald-600/70">
+                First time! 🎉
+              </p>
+            )}
+          </div>
         </div>
         <Button
           variant="ghost"
@@ -124,14 +211,22 @@ export default function WorkoutExerciseItem({
           <span className="w-8 text-center text-[10px] font-medium uppercase text-gray-400">
             Set
           </span>
-          <span className="flex-1 text-[10px] font-medium uppercase text-gray-400">
+          <span className="min-w-0 flex-[2] text-[10px] font-medium uppercase text-gray-400">
             Weight
           </span>
-          <span className="flex-1 text-[10px] font-medium uppercase text-gray-400">
+          <span className="min-w-0 flex-[2] text-[10px] font-medium uppercase text-gray-400">
             Reps
           </span>
-          <span className="w-8" />
-          <span className="w-7" />
+          <span className="w-14 shrink-0 text-center text-[10px] font-medium uppercase text-gray-400">
+            RPE
+          </span>
+          <span className="w-24 shrink-0 text-[10px] font-medium uppercase text-gray-400">
+            Tempo
+          </span>
+          {/* Spacers for notes toggle, warmup toggle, delete button */}
+          <span className="w-6 shrink-0" />
+          <span className="w-8 shrink-0" />
+          <span className="w-7 shrink-0" />
         </div>
       )}
 
@@ -170,3 +265,5 @@ export default function WorkoutExerciseItem({
     </div>
   );
 }
+
+export type { ExerciseItemData, SetData };
