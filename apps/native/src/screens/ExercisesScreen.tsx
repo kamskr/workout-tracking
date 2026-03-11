@@ -7,6 +7,8 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import ExerciseFilters, {
@@ -22,6 +24,7 @@ const INITIAL_FILTERS: ExerciseFilterState = {
 };
 
 export default function ExercisesScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const [filters, setFilters] = useState<ExerciseFilterState>(INITIAL_FILTERS);
 
   // Build query args — only include non-empty filter values (same pattern as web)
@@ -41,8 +44,15 @@ export default function ExercisesScreen() {
   const isEmpty = exercises !== undefined && exercises.length === 0;
 
   const renderItem = useCallback(
-    ({ item }: { item: Exercise }) => <ExerciseCard exercise={item} />,
-    [],
+    ({ item }: { item: Exercise }) => (
+      <ExerciseCard
+        exercise={item}
+        onPress={() =>
+          navigation.navigate("ExerciseDetail", { exerciseId: item._id })
+        }
+      />
+    ),
+    [navigation],
   );
 
   const keyExtractor = useCallback((item: Exercise) => item._id, []);

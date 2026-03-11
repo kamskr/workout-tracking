@@ -122,7 +122,7 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M001/S06
 - Supporting slices: M001/S01 through M001/S05
-- Validation: M001/S06 — All M001 features ported to React Native mobile app: exercise browse with filters (T02), workout CRUD with full set tracking/supersets/previous performance (T03), rest timer with vibration (T04), templates (T04), settings with unit toggle (T01). Both platforms use same Convex backend for realtime sync. TypeScript compiles across all 3 packages (0 errors). All 4 backend verify scripts pass (41/41 checks), proving no regression from mobile client additions. Manual Expo verification required for runtime UX.
+- Validation: M001/S06 — All M001 features ported to React Native mobile app: exercise browse with filters (T02), workout CRUD with full set tracking/supersets/previous performance (T03), rest timer with vibration (T04), templates (T04), settings with unit toggle (T01). M002/S04 — All M002 analytics features ported to mobile: PR badges, exercise progress charts (Victory Native XL), muscle heatmap (react-native-svg), volume bar chart, summary cards. Both platforms use same Convex backend for realtime sync. TypeScript compiles across all 3 packages (0 errors). 72/72 backend checks pass. Manual Expo verification required for runtime UX.
 - Notes: UI code is platform-specific (React vs React Native). Backend and types are shared.
 
 ### R012 — Personal Records Tracking
@@ -133,7 +133,7 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M002/S01
 - Supporting slices: none
-- Validation: M002/S01 — Weight PR (Epley 1RM), volume PR (session total), rep PR (single-set max) detected inside logSet mutation, stored in personalRecords table. 12-check verification script (verify-s01-m02.ts) proves all 3 PR types, warmup/missing-data edge cases, metadata integrity, query filtering, and no false positives. Web UI renders reactive 🏆 badge via useQuery(getWorkoutPRs) subscription. Mobile PR badges deferred to S04.
+- Validation: M002/S01 — Weight PR (Epley 1RM), volume PR (session total), rep PR (single-set max) detected inside logSet mutation, stored in personalRecords table. 12-check verification script (verify-s01-m02.ts) proves all 3 PR types, warmup/missing-data edge cases, metadata integrity, query filtering, and no false positives. Web UI renders reactive 🏆 badge via useQuery(getWorkoutPRs) subscription. M002/S04 — Mobile 🏆 PR badges render in WorkoutExerciseItem with same reactive subscription pattern (D055). Cross-platform delivery complete.
 - Notes: PR detection logic runs on set completion, comparing against all historical data for that exercise. Rep PR is exercise-wide, not per weight tier (D053).
 
 ### R013 — Progress Charts Per Exercise
@@ -144,8 +144,8 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M002/S02
 - Supporting slices: none
-- Validation: M002/S02 — `getExerciseProgress` query produces accurate time-series data (8/8 backend checks). Recharts line chart on web at `/exercises/[id]` with dual Y-axes (weight/1RM + volume), time period filtering (30d/90d/6mo/1yr/all-time), loading/empty states. ExerciseCard links to detail page. Mobile charts deferred to S04 (Victory Native XL).
-- Notes: Web uses Recharts 3.8.0. Mobile will use Victory Native XL (S04). Data shape contract: `{ date, maxWeight, totalVolume, estimated1RM? }[]`.
+- Validation: M002/S02 — `getExerciseProgress` query produces accurate time-series data (8/8 backend checks). Recharts line chart on web at `/exercises/[id]` with dual Y-axes (weight/1RM + volume), time period filtering (30d/90d/6mo/1yr/all-time), loading/empty states. ExerciseCard links to detail page. M002/S04 — Mobile ExerciseDetailScreen with Victory Native XL line chart (3 metrics, dual y-axes, period selector) consuming same getExerciseProgress query. Cross-platform delivery complete.
+- Notes: Web uses Recharts 3.8.0. Mobile uses Victory Native XL 41.x (D046). Data shape contract: `{ date, maxWeight, totalVolume, estimated1RM? }[]`.
 
 ### R014 — Volume Analytics and Muscle Group Heatmaps
 - Class: core-capability
@@ -155,7 +155,7 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M002/S03
 - Supporting slices: M002/S01
-- Validation: M002/S03 — 11/11 backend checks (verify-s03-m02.ts) prove volume aggregation accuracy, secondary muscle attribution (50%), warmup exclusion, bodyweight handling, time-range filtering, weekly/monthly summary totals, top exercises ranking, and empty state. Web dashboard at `/analytics` renders MuscleHeatmap (7 color-coded SVG body regions), VolumeByMuscleGroupChart (Recharts horizontal bar chart), WeeklySummaryCard, MonthlySummaryCard with period selector (7d/30d/90d/All Time). All data-analytics-* attributes present for programmatic verification. Mobile port deferred to S04.
+- Validation: M002/S03 — 11/11 backend checks (verify-s03-m02.ts) prove volume aggregation accuracy, secondary muscle attribution (50%), warmup exclusion, bodyweight handling, time-range filtering, weekly/monthly summary totals, top exercises ranking, and empty state. Web dashboard at `/analytics` renders MuscleHeatmap (7 color-coded SVG body regions), VolumeByMuscleGroupChart (Recharts horizontal bar chart), WeeklySummaryCard, MonthlySummaryCard with period selector (7d/30d/90d/All Time). All data-analytics-* attributes present for programmatic verification. M002/S04 — Mobile Analytics tab with MuscleHeatmapNative (react-native-svg), VolumeBarChartNative (Victory Native XL), WeeklySummaryCardNative, MonthlySummaryCardNative, PeriodSelector — all consuming same backend queries. Cross-platform delivery complete.
 - Notes: Volume = sets × reps × weight. Muscle group mapping comes from exercise library data. Secondary muscles attributed at 50% for heatmap only.
 
 ### R015 — User Profiles

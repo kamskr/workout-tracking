@@ -13,6 +13,7 @@ export interface Exercise {
 
 interface ExerciseCardProps {
   exercise: Exercise;
+  onPress?: () => void;
 }
 
 /** Badge background + text color pairs keyed by value. */
@@ -65,13 +66,14 @@ function Badge({ label }: { label: string }) {
   );
 }
 
-function ExerciseCardInner({ exercise }: ExerciseCardProps) {
+function ExerciseCardInner({ exercise, onPress }: ExerciseCardProps) {
   return (
     <TouchableOpacity
       style={styles.card}
       activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={exercise.name}
+      onPress={onPress}
     >
       <Text style={styles.name} numberOfLines={1}>
         {exercise.name}

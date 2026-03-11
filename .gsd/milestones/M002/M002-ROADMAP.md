@@ -63,7 +63,7 @@ This milestone is complete only when all are true:
 - [x] **S03: Volume Analytics, Muscle Heatmap & Summaries** `risk:medium` `depends:[S01]`
   > After this: User sees an analytics dashboard on web with a muscle group heatmap, volume breakdown by muscle group, and weekly/monthly summary cards — all showing correct aggregated data.
 
-- [ ] **S04: Mobile Analytics — Charts, Heatmap & PRs** `risk:medium` `depends:[S01,S02,S03]`
+- [x] **S04: Mobile Analytics — Charts, Heatmap & PRs** `risk:medium` `depends:[S01,S02,S03]`
   > After this: All analytics features (PR badges, progress charts, heatmap, summaries) work on mobile with Victory Native XL charts and react-native-svg heatmap — same data accuracy as web.
 
 ## Boundary Map

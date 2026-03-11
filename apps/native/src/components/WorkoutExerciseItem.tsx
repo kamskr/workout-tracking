@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from "react";
+import React, { useState, useCallback, useMemo, memo } from "react";
 import {
   StyleSheet,
   View,
@@ -20,6 +20,7 @@ import type { SetData } from "./SetRow";
 interface ExerciseItemData {
   workoutExercise: {
     _id: Id<"workoutExercises">;
+    workoutId: Id<"workouts">;
     exerciseId: Id<"exercises">;
     order: number;
     supersetGroupId?: string;
@@ -133,6 +134,21 @@ function WorkoutExerciseItemInner({
       : "skip",
   );
 
+  // PR badge — subscribe to all PRs for this workout, filter for this exercise (D055)
+  const workoutPRs = useQuery(
+    api.personalRecords.getWorkoutPRs,
+    data.workoutExercise.workoutId
+      ? { workoutId: data.workoutExercise.workoutId }
+      : "skip",
+  );
+
+  const exercisePRs = useMemo(() => {
+    if (!workoutPRs) return [];
+    return workoutPRs.filter(
+      (pr) => pr.exerciseId === data.workoutExercise.exerciseId,
+    );
+  }, [workoutPRs, data.workoutExercise.exerciseId]);
+
   const handleAddSet = useCallback(async () => {
     try {
       await logSet({ workoutExerciseId: data.workoutExercise._id });
@@ -227,6 +243,23 @@ function WorkoutExerciseItemInner({
             {/* First-time badge */}
             {previousPerformance === null && (
               <Text style={styles.firstTime}>First time! 🎉</Text>
+            )}
+            {/* PR badges — appear reactively after a set triggers a PR (D055) */}
+            {exercisePRs.length > 0 && (
+              <View style={styles.prBadgeRow}>
+                {exercisePRs.map((pr) => (
+                  <View key={pr.type} style={styles.prBadge}>
+                    <Text style={styles.prBadgeText}>
+                      🏆{" "}
+                      {pr.type === "weight"
+                        ? "Weight PR"
+                        : pr.type === "volume"
+                          ? "Volume PR"
+                          : "Reps PR"}
+                    </Text>
+                  </View>
+                ))}
+              </View>
             )}
             {/* Rest duration config */}
             <View style={styles.restConfigRow}>
@@ -355,6 +388,25 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.medium,
     color: colors.success,
     marginTop: 2,
+  },
+  prBadgeRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 4,
+    marginTop: 4,
+  },
+  prBadge: {
+    backgroundColor: "#FEF3C7",
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "#F59E0B",
+  },
+  prBadgeText: {
+    fontSize: 11,
+    fontFamily: fontFamily.medium,
+    color: "#92400E",
   },
   restConfigRow: {
     marginTop: 4,

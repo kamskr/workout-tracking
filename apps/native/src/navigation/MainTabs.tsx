@@ -5,9 +5,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors, fontFamily } from "../lib/theme";
 
 import ExercisesScreen from "../screens/ExercisesScreen";
+import ExerciseDetailScreen from "../screens/ExerciseDetailScreen";
 import WorkoutsScreen from "../screens/WorkoutsScreen";
 import ActiveWorkoutScreen from "../screens/ActiveWorkoutScreen";
 import TemplatesScreen from "../screens/TemplatesScreen";
+import AnalyticsScreen from "../screens/AnalyticsScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 
 // ── Per-tab stack navigators (allow drill-down within each tab) ──────────────
@@ -20,6 +22,7 @@ function ExercisesTab() {
       screenOptions={{ headerShown: false }}
     >
       <ExercisesStack.Screen name="ExercisesList" component={ExercisesScreen} />
+      <ExercisesStack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} />
     </ExercisesStack.Navigator>
   );
 }
@@ -52,6 +55,21 @@ function TemplatesTab() {
   );
 }
 
+const AnalyticsStack = createNativeStackNavigator();
+function AnalyticsTab() {
+  return (
+    <AnalyticsStack.Navigator
+      id={undefined}
+      screenOptions={{ headerShown: false }}
+    >
+      <AnalyticsStack.Screen
+        name="AnalyticsMain"
+        component={AnalyticsScreen}
+      />
+    </AnalyticsStack.Navigator>
+  );
+}
+
 const SettingsStack = createNativeStackNavigator();
 function SettingsTab() {
   return (
@@ -75,6 +93,7 @@ const TAB_ICONS: Record<string, { active: TabIconName; inactive: TabIconName }> 
   Exercises: { active: "barbell", inactive: "barbell-outline" },
   Workouts: { active: "fitness", inactive: "fitness-outline" },
   Templates: { active: "copy", inactive: "copy-outline" },
+  Analytics: { active: "stats-chart", inactive: "stats-chart-outline" },
   Settings: { active: "settings", inactive: "settings-outline" },
 };
 
@@ -107,6 +126,7 @@ export default function MainTabs() {
       <Tab.Screen name="Exercises" component={ExercisesTab} />
       <Tab.Screen name="Workouts" component={WorkoutsTab} />
       <Tab.Screen name="Templates" component={TemplatesTab} />
+      <Tab.Screen name="Analytics" component={AnalyticsTab} />
       <Tab.Screen name="Settings" component={SettingsTab} />
     </Tab.Navigator>
   );
