@@ -1,10 +1,12 @@
 /**
  * Group workout sessions: real-time collaborative workouts with invite codes,
- * participant presence tracking, and a shared live set feed.
+ * participant presence tracking, shared timer, session lifecycle, and combined summary.
  *
- * Mutations: createSession, joinSession, leaveSession, sendHeartbeat
- * Queries: getSession, getSessionByInviteCode, getSessionParticipants, getSessionSets
- * Internal: cleanupPresence (cron-driven)
+ * Mutations: createSession, joinSession, leaveSession, sendHeartbeat,
+ *            startSharedTimer, pauseSharedTimer, skipSharedTimer, endSession
+ * Queries: getSession, getSessionByInviteCode, getSessionParticipants, getSessionSets,
+ *          getSessionSummary
+ * Internal: cleanupPresence, checkSessionTimeouts (cron-driven)
  */
 
 import { mutation, query, internalMutation } from "./_generated/server";
@@ -278,6 +280,184 @@ export const sendHeartbeat = mutation({
   },
 });
 
+/**
+ * Start a shared rest timer visible to all session participants.
+ *
+ * Any participant can call (D140). Sets sharedTimerEndAt and sharedTimerDurationSeconds
+ * on the session doc for real-time sync.
+ */
+export const startSharedTimer = mutation({
+  args: {
+    sessionId: v.id("groupSessions"),
+    durationSeconds: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    // Validate participant membership
+    const participant = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId_userId", (q) =>
+        q.eq("sessionId", args.sessionId).eq("userId", userId),
+      )
+      .first();
+
+    if (!participant || participant.status === "left") {
+      throw new Error("Not an active participant");
+    }
+
+    await ctx.db.patch(args.sessionId, {
+      sharedTimerEndAt: Date.now() + args.durationSeconds * 1000,
+      sharedTimerDurationSeconds: args.durationSeconds,
+    });
+
+    console.log(
+      `[Session] startSharedTimer(${args.sessionId}): ${userId} started ${args.durationSeconds}s timer`,
+    );
+  },
+});
+
+/**
+ * Pause the shared rest timer — clears the countdown but keeps duration for UI default.
+ *
+ * Any participant can call.
+ */
+export const pauseSharedTimer = mutation({
+  args: {
+    sessionId: v.id("groupSessions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    // Validate participant membership
+    const participant = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId_userId", (q) =>
+        q.eq("sessionId", args.sessionId).eq("userId", userId),
+      )
+      .first();
+
+    if (!participant || participant.status === "left") {
+      throw new Error("Not an active participant");
+    }
+
+    await ctx.db.patch(args.sessionId, {
+      sharedTimerEndAt: undefined,
+    });
+
+    console.log(
+      `[Session] pauseSharedTimer(${args.sessionId}): ${userId} paused timer`,
+    );
+  },
+});
+
+/**
+ * Skip the shared rest timer — semantically "skip rest", clears countdown.
+ *
+ * Any participant can call.
+ */
+export const skipSharedTimer = mutation({
+  args: {
+    sessionId: v.id("groupSessions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    // Validate participant membership
+    const participant = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId_userId", (q) =>
+        q.eq("sessionId", args.sessionId).eq("userId", userId),
+      )
+      .first();
+
+    if (!participant || participant.status === "left") {
+      throw new Error("Not an active participant");
+    }
+
+    await ctx.db.patch(args.sessionId, {
+      sharedTimerEndAt: undefined,
+    });
+
+    console.log(
+      `[Session] skipSharedTimer(${args.sessionId}): ${userId} skipped timer`,
+    );
+  },
+});
+
+/**
+ * End a group session. Host-only.
+ *
+ * Idempotent: returns early (no error) if already completed.
+ * Patches session to completed, clears timer, and marks all non-"left"
+ * participants as "left". Follows completeChallenge pattern (D111).
+ */
+export const endSession = mutation({
+  args: {
+    sessionId: v.id("groupSessions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    // Host-only check
+    if (session.hostId !== userId) {
+      console.log(
+        `[Session] endSession(${args.sessionId}): rejected — ${userId} is not host`,
+      );
+      throw new Error("Only the host can end the session");
+    }
+
+    // Idempotent: already completed → return early
+    if (session.status === "completed") {
+      console.log(
+        `[Session] endSession(${args.sessionId}): already completed, skipping`,
+      );
+      return;
+    }
+
+    const now = Date.now();
+
+    // Patch session to completed
+    await ctx.db.patch(args.sessionId, {
+      status: "completed",
+      completedAt: now,
+      sharedTimerEndAt: undefined,
+    });
+
+    // Mark all non-"left" participants as "left"
+    const participants = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .collect();
+
+    for (const p of participants) {
+      if (p.status !== "left") {
+        await ctx.db.patch(p._id, { status: "left" });
+      }
+    }
+
+    console.log(
+      `[Session] endSession(${args.sessionId}): completed by host ${userId}, ${participants.length} participants marked left`,
+    );
+  },
+});
+
 // ══════════════════════════════════════════════════════════════════════════════
 // Queries
 // ══════════════════════════════════════════════════════════════════════════════
@@ -474,6 +654,93 @@ export const getSessionSets = query({
   },
 });
 
+/**
+ * Get a combined summary of a completed (or in-progress) session.
+ *
+ * Aggregates per-participant stats: exerciseCount, setCount, totalVolume,
+ * durationSeconds. Returns session metadata + array of participant summaries.
+ */
+export const getSessionSummary = query({
+  args: {
+    sessionId: v.id("groupSessions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    // Get all workouts in this session
+    const workouts = await ctx.db
+      .query("workouts")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .collect();
+
+    const now = Date.now();
+
+    // Build per-participant summaries
+    const participantSummaries = await Promise.all(
+      workouts.map(async (workout) => {
+        const profile = await ctx.db
+          .query("profiles")
+          .withIndex("by_userId", (q) => q.eq("userId", workout.userId))
+          .first();
+
+        const workoutExercises = await ctx.db
+          .query("workoutExercises")
+          .withIndex("by_workoutId", (q) => q.eq("workoutId", workout._id))
+          .collect();
+
+        let setCount = 0;
+        let totalVolume = 0;
+
+        for (const we of workoutExercises) {
+          const sets = await ctx.db
+            .query("sets")
+            .withIndex("by_workoutExerciseId", (q) =>
+              q.eq("workoutExerciseId", we._id),
+            )
+            .collect();
+
+          setCount += sets.length;
+
+          for (const s of sets) {
+            // Sum weight * reps for non-warmup sets
+            if (!s.isWarmup && s.weight != null && s.reps != null) {
+              totalVolume += s.weight * s.reps;
+            }
+          }
+        }
+
+        // Duration: completedAt or now minus startedAt
+        const endTime = workout.completedAt ?? now;
+        const durationSeconds = workout.startedAt
+          ? Math.round((endTime - workout.startedAt) / 1000)
+          : 0;
+
+        return {
+          userId: workout.userId,
+          displayName: profile?.displayName ?? workout.userId,
+          exerciseCount: workoutExercises.length,
+          setCount,
+          totalVolume,
+          durationSeconds,
+        };
+      }),
+    );
+
+    return {
+      sessionId: session._id,
+      hostId: session.hostId,
+      status: session.status,
+      createdAt: session.createdAt,
+      completedAt: session.completedAt ?? null,
+      participantSummaries,
+    };
+  },
+});
+
 // ══════════════════════════════════════════════════════════════════════════════
 // Internal mutations (cron-driven)
 // ══════════════════════════════════════════════════════════════════════════════
@@ -522,6 +789,75 @@ export const cleanupPresence = internalMutation({
 
     console.log(
       `[Session] cleanupPresence: scanned ${sessionsScanned} sessions, marked ${idleCount} participants idle`,
+    );
+  },
+});
+
+/** 15-minute inactivity timeout threshold for session auto-completion */
+const SESSION_TIMEOUT_MS = 15 * 60 * 1000;
+
+/**
+ * Auto-complete abandoned sessions where ALL participants have stale heartbeats
+ * for 15+ minutes AND the session was created 15+ minutes ago.
+ *
+ * Runs on a 5-minute cron interval. Per-session try/catch for resilience.
+ */
+export const checkSessionTimeouts = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const staleThreshold = now - SESSION_TIMEOUT_MS;
+    let sessionsScanned = 0;
+    let autoCompletedCount = 0;
+
+    // Query waiting and active sessions
+    const waitingSessions = await ctx.db
+      .query("groupSessions")
+      .withIndex("by_status", (q) => q.eq("status", "waiting"))
+      .take(1000);
+
+    const activeSessions = await ctx.db
+      .query("groupSessions")
+      .withIndex("by_status", (q) => q.eq("status", "active"))
+      .take(1000);
+
+    const sessions = [...waitingSessions, ...activeSessions];
+    sessionsScanned = sessions.length;
+
+    for (const session of sessions) {
+      try {
+        // Session must be created 15+ minutes ago
+        if (session.createdAt >= staleThreshold) {
+          continue;
+        }
+
+        const participants = await ctx.db
+          .query("sessionParticipants")
+          .withIndex("by_sessionId", (q) => q.eq("sessionId", session._id))
+          .collect();
+
+        // ALL participants must have stale heartbeats (15+ minutes)
+        const allStale = participants.length > 0 && participants.every(
+          (p) => p.lastHeartbeatAt < staleThreshold,
+        );
+
+        if (allStale) {
+          await ctx.db.patch(session._id, {
+            status: "completed",
+            completedAt: now,
+          });
+          autoCompletedCount++;
+        }
+      } catch (error) {
+        console.error(
+          `[Session] checkSessionTimeouts: error processing session ${session._id}:`,
+          error,
+        );
+      }
+    }
+
+    console.log(
+      `[Session] checkSessionTimeouts: scanned ${sessionsScanned} sessions, auto-completed ${autoCompletedCount}`,
     );
   },
 });

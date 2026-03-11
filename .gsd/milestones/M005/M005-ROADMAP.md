@@ -59,7 +59,7 @@ This milestone is complete only when all are true:
 - [x] **S01: Session Creation, Joining, Presence & Live Set Feed** `risk:high` `depends:[]`
   > After this: User A creates a group session on web, User B joins via invite link, both see each other as active participants with presence indicators, User A logs a set and User B sees it appear in realtime in a shared set feed — all on web with a working heartbeat-based presence system and cron cleanup.
 
-- [ ] **S02: Shared Timer, Session Lifecycle & Combined Summary** `risk:medium` `depends:[S01]`
+- [x] **S02: Shared Timer, Session Lifecycle & Combined Summary** `risk:medium` `depends:[S01]`
   > After this: Any participant can start/pause/skip a shared rest timer that counts down in sync across all participants' screens, the host can end the session triggering a combined summary view showing all participants' workout stats, and abandoned sessions auto-complete after 15 minutes of inactivity.
 
 - [ ] **S03: Integration Hardening & Verification** `risk:medium` `depends:[S01,S02]`

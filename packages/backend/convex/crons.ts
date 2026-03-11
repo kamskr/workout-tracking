@@ -15,4 +15,10 @@ crons.interval(
   internal.sessions.cleanupPresence,
 );
 
+crons.interval(
+  "check session timeouts",
+  { minutes: 5 },
+  internal.sessions.checkSessionTimeouts,
+);
+
 export default crons;

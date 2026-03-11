@@ -3332,3 +3332,294 @@ export const testCleanupPresence = mutation({
     return { sessionsScanned, idleCount };
   },
 });
+
+// ══════════════════════════════════════════════════════════════════════════════
+// S02 Session Test Helpers — Shared Timer, Session Lifecycle & Combined Summary
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Test helper: start a shared timer (mirrors sessions.startSharedTimer without auth).
+ */
+export const testStartSharedTimer = mutation({
+  args: {
+    testUserId: v.string(),
+    sessionId: v.id("groupSessions"),
+    durationSeconds: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    // Validate participant membership
+    const participant = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId_userId", (q) =>
+        q.eq("sessionId", args.sessionId).eq("userId", args.testUserId),
+      )
+      .first();
+
+    if (!participant || participant.status === "left") {
+      throw new Error("Not an active participant");
+    }
+
+    await ctx.db.patch(args.sessionId, {
+      sharedTimerEndAt: Date.now() + args.durationSeconds * 1000,
+      sharedTimerDurationSeconds: args.durationSeconds,
+    });
+  },
+});
+
+/**
+ * Test helper: pause shared timer (mirrors sessions.pauseSharedTimer without auth).
+ */
+export const testPauseSharedTimer = mutation({
+  args: {
+    testUserId: v.string(),
+    sessionId: v.id("groupSessions"),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    const participant = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId_userId", (q) =>
+        q.eq("sessionId", args.sessionId).eq("userId", args.testUserId),
+      )
+      .first();
+
+    if (!participant || participant.status === "left") {
+      throw new Error("Not an active participant");
+    }
+
+    await ctx.db.patch(args.sessionId, {
+      sharedTimerEndAt: undefined,
+    });
+  },
+});
+
+/**
+ * Test helper: skip shared timer (mirrors sessions.skipSharedTimer without auth).
+ */
+export const testSkipSharedTimer = mutation({
+  args: {
+    testUserId: v.string(),
+    sessionId: v.id("groupSessions"),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    const participant = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId_userId", (q) =>
+        q.eq("sessionId", args.sessionId).eq("userId", args.testUserId),
+      )
+      .first();
+
+    if (!participant || participant.status === "left") {
+      throw new Error("Not an active participant");
+    }
+
+    await ctx.db.patch(args.sessionId, {
+      sharedTimerEndAt: undefined,
+    });
+  },
+});
+
+/**
+ * Test helper: end session (mirrors sessions.endSession without auth).
+ * Host-only with idempotent status guard.
+ */
+export const testEndSession = mutation({
+  args: {
+    testUserId: v.string(),
+    sessionId: v.id("groupSessions"),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    // Host-only check
+    if (session.hostId !== args.testUserId) {
+      throw new Error("Only the host can end the session");
+    }
+
+    // Idempotent: already completed → return early
+    if (session.status === "completed") {
+      return;
+    }
+
+    const now = Date.now();
+
+    await ctx.db.patch(args.sessionId, {
+      status: "completed",
+      completedAt: now,
+      sharedTimerEndAt: undefined,
+    });
+
+    // Mark all non-"left" participants as "left"
+    const participants = await ctx.db
+      .query("sessionParticipants")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .collect();
+
+    for (const p of participants) {
+      if (p.status !== "left") {
+        await ctx.db.patch(p._id, { status: "left" });
+      }
+    }
+  },
+});
+
+/**
+ * Test helper: get session summary (mirrors sessions.getSessionSummary without auth).
+ */
+export const testGetSessionSummary = query({
+  args: {
+    sessionId: v.id("groupSessions"),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    const workouts = await ctx.db
+      .query("workouts")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .collect();
+
+    const now = Date.now();
+
+    const participantSummaries = await Promise.all(
+      workouts.map(async (workout) => {
+        const profile = await ctx.db
+          .query("profiles")
+          .withIndex("by_userId", (q) => q.eq("userId", workout.userId))
+          .first();
+
+        const workoutExercises = await ctx.db
+          .query("workoutExercises")
+          .withIndex("by_workoutId", (q) => q.eq("workoutId", workout._id))
+          .collect();
+
+        let setCount = 0;
+        let totalVolume = 0;
+
+        for (const we of workoutExercises) {
+          const sets = await ctx.db
+            .query("sets")
+            .withIndex("by_workoutExerciseId", (q) =>
+              q.eq("workoutExerciseId", we._id),
+            )
+            .collect();
+
+          setCount += sets.length;
+
+          for (const s of sets) {
+            if (!s.isWarmup && s.weight != null && s.reps != null) {
+              totalVolume += s.weight * s.reps;
+            }
+          }
+        }
+
+        const endTime = workout.completedAt ?? now;
+        const durationSeconds = workout.startedAt
+          ? Math.round((endTime - workout.startedAt) / 1000)
+          : 0;
+
+        return {
+          userId: workout.userId,
+          displayName: profile?.displayName ?? workout.userId,
+          exerciseCount: workoutExercises.length,
+          setCount,
+          totalVolume,
+          durationSeconds,
+        };
+      }),
+    );
+
+    return {
+      sessionId: session._id,
+      hostId: session.hostId,
+      status: session.status,
+      createdAt: session.createdAt,
+      completedAt: session.completedAt ?? null,
+      participantSummaries,
+    };
+  },
+});
+
+/**
+ * Test helper: run session timeout check (mirrors sessions.checkSessionTimeouts).
+ * Auto-completes sessions where all participants are stale for 15+ minutes.
+ */
+export const testCheckSessionTimeouts = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const staleThreshold = now - 15 * 60 * 1000;
+    let sessionsScanned = 0;
+    let autoCompletedCount = 0;
+
+    const waitingSessions = await ctx.db
+      .query("groupSessions")
+      .withIndex("by_status", (q) => q.eq("status", "waiting"))
+      .take(1000);
+
+    const activeSessions = await ctx.db
+      .query("groupSessions")
+      .withIndex("by_status", (q) => q.eq("status", "active"))
+      .take(1000);
+
+    const sessions = [...waitingSessions, ...activeSessions];
+    sessionsScanned = sessions.length;
+
+    for (const session of sessions) {
+      try {
+        if (session.createdAt >= staleThreshold) {
+          continue;
+        }
+
+        const participants = await ctx.db
+          .query("sessionParticipants")
+          .withIndex("by_sessionId", (q) => q.eq("sessionId", session._id))
+          .collect();
+
+        const allStale = participants.length > 0 && participants.every(
+          (p) => p.lastHeartbeatAt < staleThreshold,
+        );
+
+        if (allStale) {
+          await ctx.db.patch(session._id, {
+            status: "completed",
+            completedAt: now,
+          });
+          autoCompletedCount++;
+        }
+      } catch (error) {
+        console.error(
+          `[Session] testCheckSessionTimeouts: error processing session ${session._id}:`,
+          error,
+        );
+      }
+    }
+
+    return { sessionsScanned, autoCompletedCount };
+  },
+});
+
+/**
+ * Test helper: patch a session's createdAt timestamp.
+ * Used to simulate stale sessions for timeout testing (SS-21).
+ */
+export const testPatchSessionCreatedAt = mutation({
+  args: {
+    sessionId: v.id("groupSessions"),
+    createdAt: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+    await ctx.db.patch(args.sessionId, { createdAt: args.createdAt });
+  },
+});

@@ -3,10 +3,13 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useQuery, useMutation } from "convex/react";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "@packages/backend/convex/_generated/api";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
 import SessionParticipantList from "@/components/session/SessionParticipantList";
 import SessionSetFeed from "@/components/session/SessionSetFeed";
+import SharedTimerDisplay from "@/components/session/SharedTimerDisplay";
+import SessionSummary from "@/components/session/SessionSummary";
 
 const HEARTBEAT_INTERVAL_MS = 10_000; // 10 seconds
 
@@ -14,9 +17,11 @@ export default function SessionPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const sessionId = params.id as Id<"groupSessions"> | undefined;
+  const { user } = useUser();
 
   const [copied, setCopied] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [ending, setEnding] = useState(false);
 
   // Queries with "skip" pattern (D085)
   const session = useQuery(
@@ -26,6 +31,7 @@ export default function SessionPage() {
 
   const sendHeartbeat = useMutation(api.sessions.sendHeartbeat);
   const createSession = useMutation(api.sessions.createSession);
+  const endSessionMutation = useMutation(api.sessions.endSession);
 
   // ── Heartbeat ──────────────────────────────────────────────────────────────
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -76,6 +82,20 @@ export default function SessionPage() {
     } catch (err) {
       console.error("[Session] Create failed:", err);
       setCreating(false);
+    }
+  }
+
+  // ── End session flow ──────────────────────────────────────────────────────
+  async function handleEndSession() {
+    if (ending || !sessionId) return;
+    setEnding(true);
+    console.log("[Session] End session requested");
+    try {
+      await endSessionMutation({ sessionId: sessionId as Id<"groupSessions"> });
+    } catch (err) {
+      console.error("[Session] End session failed:", err);
+    } finally {
+      setEnding(false);
     }
   }
 
@@ -178,6 +198,9 @@ export default function SessionPage() {
     completed: "bg-gray-100 text-gray-600",
   };
 
+  const isHost = user?.id === session.hostId;
+  const isCompleted = session.status === "completed";
+
   return (
     <main className="min-h-screen bg-gray-50" data-session-page>
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
@@ -201,81 +224,141 @@ export default function SessionPage() {
               </p>
             </div>
 
-            {/* Invite link section */}
-            {session.status !== "completed" && (
-              <div className="flex items-center gap-2">
-                <div className="rounded-lg bg-gray-50 px-3 py-2 border border-gray-200">
-                  <span className="text-xs text-gray-400 block">Invite Code</span>
-                  <span className="font-mono text-sm font-semibold text-gray-900">
-                    {session.inviteCode}
-                  </span>
-                </div>
+            <div className="flex items-center gap-2">
+              {/* Invite link section — hidden when completed */}
+              {!isCompleted && (
+                <>
+                  <div className="rounded-lg bg-gray-50 px-3 py-2 border border-gray-200">
+                    <span className="text-xs text-gray-400 block">Invite Code</span>
+                    <span className="font-mono text-sm font-semibold text-gray-900">
+                      {session.inviteCode}
+                    </span>
+                  </div>
+                  <button
+                    onClick={copyInviteLink}
+                    className="flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-2.5 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                  >
+                    {copied ? (
+                      <>
+                        <svg
+                          className="h-4 w-4"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2}
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m4.5 12.75 6 6 9-13.5"
+                          />
+                        </svg>
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="h-4 w-4"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2}
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+                          />
+                        </svg>
+                        Copy Invite Link
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
+
+              {/* End Session button — host-only, hidden when completed */}
+              {isHost && !isCompleted && (
                 <button
-                  onClick={copyInviteLink}
-                  className="flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-2.5 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                  data-session-end-button
+                  onClick={handleEndSession}
+                  disabled={ending}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-700 disabled:bg-gray-300 disabled:text-gray-500 transition-colors"
                 >
-                  {copied ? (
+                  {ending ? (
                     <>
                       <svg
-                        className="h-4 w-4"
+                        className="h-4 w-4 animate-spin"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="currentColor"
                       >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
                         <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m4.5 12.75 6 6 9-13.5"
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         />
                       </svg>
-                      Copied!
+                      Ending…
                     </>
                   ) : (
-                    <>
-                      <svg
-                        className="h-4 w-4"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
-                        />
-                      </svg>
-                      Copy Invite Link
-                    </>
+                    "End Session"
                   )}
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
-        {/* ── Body: Participants + Set Feed ──────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
-          {/* Sidebar: Participants */}
-          <aside className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm h-fit">
-            <SessionParticipantList
-              sessionId={sessionId as Id<"groupSessions">}
-            />
-          </aside>
+        {/* ── Completed: Summary view ──────────────────────────────────── */}
+        {isCompleted && (
+          <SessionSummary
+            sessionId={sessionId as Id<"groupSessions">}
+          />
+        )}
 
-          {/* Main: Set Feed */}
-          <section>
-            <h2 className="mb-4 text-sm font-semibold text-gray-500 uppercase tracking-wider">
-              Live Set Feed
-            </h2>
-            <SessionSetFeed
-              sessionId={sessionId as Id<"groupSessions">}
-            />
-          </section>
-        </div>
+        {/* ── Live session: Timer + Participants + Set Feed ────────────── */}
+        {!isCompleted && (
+          <>
+            {/* Shared Timer — between header and grid */}
+            <div className="mb-6">
+              <SharedTimerDisplay
+                session={session}
+                sessionId={sessionId as Id<"groupSessions">}
+              />
+            </div>
+
+            {/* Body: Participants + Set Feed */}
+            <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+              {/* Sidebar: Participants */}
+              <aside className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm h-fit">
+                <SessionParticipantList
+                  sessionId={sessionId as Id<"groupSessions">}
+                />
+              </aside>
+
+              {/* Main: Set Feed */}
+              <section>
+                <h2 className="mb-4 text-sm font-semibold text-gray-500 uppercase tracking-wider">
+                  Live Set Feed
+                </h2>
+                <SessionSetFeed
+                  sessionId={sessionId as Id<"groupSessions">}
+                />
+              </section>
+            </div>
+          </>
+        )}
       </div>
     </main>
   );

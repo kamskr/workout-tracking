@@ -367,6 +367,9 @@ export default defineSchema({
     status: sessionStatus,
     inviteCode: v.string(),
     createdAt: v.number(),
+    sharedTimerEndAt: v.optional(v.number()),
+    sharedTimerDurationSeconds: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
   })
     .index("by_hostId", ["hostId"])
     .index("by_inviteCode", ["inviteCode"])
