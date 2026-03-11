@@ -65,7 +65,7 @@ This milestone is complete only when all are true:
 - [x] **S03: Integration Hardening & Verification** `risk:medium` `depends:[S01,S02]`
   > After this: Two real browser windows prove the full end-to-end flow (create → join → log sets → timer → presence idle → end → summary), each participant's workout records flow into finishWorkout hooks (feed, leaderboard, challenge, badge), and a comprehensive verification script with 15+ checks validates all session behaviors programmatically.
 
-- [ ] **S04: Mobile Port** `risk:low` `depends:[S01,S02]`
+- [x] **S04: Mobile Port** `risk:low` `depends:[S01,S02]`
   > After this: Mobile users can create group sessions, join via deep link, see live participant list with presence, log sets in the shared feed, use the synchronized timer, and view the combined summary — all within the existing Workouts tab stack using the same Convex APIs as web.
 
 ## Boundary Map

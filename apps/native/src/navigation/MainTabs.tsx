@@ -8,6 +8,8 @@ import ExercisesScreen from "../screens/ExercisesScreen";
 import ExerciseDetailScreen from "../screens/ExerciseDetailScreen";
 import WorkoutsScreen from "../screens/WorkoutsScreen";
 import ActiveWorkoutScreen from "../screens/ActiveWorkoutScreen";
+import GroupSessionScreen from "../screens/GroupSessionScreen";
+import JoinSessionScreen from "../screens/JoinSessionScreen";
 import TemplatesScreen from "../screens/TemplatesScreen";
 import AnalyticsScreen from "../screens/AnalyticsScreen";
 import FeedScreen from "../screens/FeedScreen";
@@ -33,6 +35,13 @@ export type ProfileStackParamList = {
   OtherProfile: { userId?: string; username?: string };
 };
 
+export type WorkoutsStackParamList = {
+  WorkoutHistory: undefined;
+  ActiveWorkout: undefined;
+  GroupSession: { sessionId: string };
+  JoinSession: undefined;
+};
+
 export type CompeteStackParamList = {
   CompeteMain: undefined;
   Leaderboard: undefined;
@@ -54,7 +63,7 @@ function ExercisesTab() {
   );
 }
 
-const WorkoutsStack = createNativeStackNavigator();
+const WorkoutsStack = createNativeStackNavigator<WorkoutsStackParamList>();
 function WorkoutsTab() {
   return (
     <WorkoutsStack.Navigator
@@ -63,6 +72,8 @@ function WorkoutsTab() {
     >
       <WorkoutsStack.Screen name="WorkoutHistory" component={WorkoutsScreen} />
       <WorkoutsStack.Screen name="ActiveWorkout" component={ActiveWorkoutScreen} />
+      <WorkoutsStack.Screen name="GroupSession" component={GroupSessionScreen} />
+      <WorkoutsStack.Screen name="JoinSession" component={JoinSessionScreen} />
     </WorkoutsStack.Navigator>
   );
 }
