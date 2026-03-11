@@ -1,13 +1,19 @@
 # GSD State
 
-**Active Milestone:** none — M002 complete, M003 not yet started
-**Active Slice:** none
+**Active Milestone:** M003 — Social Foundation
+**Active Slice:** none — roadmap planned, ready for S01
 **Active Task:** none
-**Phase:** Between milestones — ready for M003 planning
+**Phase:** Roadmap complete — ready for slice execution
 
 ## Completed Milestones
 - [x] M001: Core Workout Logging ✅ (6 slices, 20 tasks, 13 requirements validated, 41/41 backend checks)
 - [x] M002: Analytics & Progress ✅ (4 slices, 13 tasks, 16 requirements validated, 72/72 backend checks)
+
+## M003 Roadmap
+- [ ] S01: User Profiles `risk:high` `depends:[]`
+- [ ] S02: Follow System & Activity Feed `risk:high` `depends:[S01]`
+- [ ] S03: Workout Sharing & Privacy `risk:medium` `depends:[S01, S02]`
+- [ ] S04: Mobile Social Port `risk:low` `depends:[S01, S02, S03]`
 
 ## Verification Status
 - `pnpm turbo typecheck --force` — ✅ 3/3 packages pass (0 errors)
@@ -20,10 +26,13 @@
 - 7 active (R015-R021)
 - 3 deferred (R024-R026)
 - 2 out of scope (R027-R028)
+- M003 covers: R015, R016, R017 (primary), R011 (supporting via S04)
+
+## Decisions
+- D070-D079 recorded for M003 planning (feed architecture, profile storage, username uniqueness, privacy default, share pattern, avatar storage, mobile tab consolidation, multi-user test helpers)
 
 ## Next Steps
-- Human UAT for mobile chart rendering quality (M002/S04)
-- Begin M003: Social Foundation (user profiles, follow system, activity feed, workout sharing)
+- Begin M003/S01: User Profiles (profiles table, profile creation flow, profile page, stats)
 
 ## Blockers
 - None
