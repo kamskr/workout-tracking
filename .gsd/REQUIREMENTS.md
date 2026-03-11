@@ -17,13 +17,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R002 — Workout CRUD with Realtime Sync
 - Class: primary-user-loop
-- Status: active
+- Status: validated
 - Description: Users can create, view, edit, and delete workouts. A workout has a date, optional name, duration (auto-tracked via start/end timestamps), and an ordered list of exercises with sets. Changes sync in realtime across all connected devices via Convex subscriptions.
 - Why it matters: This is the core user loop — logging workouts is the primary action users perform.
 - Source: user
 - Primary owning slice: M001/S02
 - Supporting slices: M001/S03
-- Validation: unmapped
+- Validation: M001/S02 — Full workout lifecycle (create → add exercises → log sets → finish → list → details → delete) verified by verify-s02.ts (11 checks). Web UI at /workouts and /workouts/active compiles with type-checked Convex API bindings. Realtime sync deferred to S06 cross-platform verification.
 - Notes: Realtime sync is provided by Convex's reactive query system at no extra implementation cost.
 
 ### R003 — Full Set Tracking (Weight, Reps, RPE, Tempo, Notes)
@@ -83,24 +83,24 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R008 — Unit Preference (kg/lbs)
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: Each user can set their preferred weight unit (kg or lbs). All weight displays respect this preference. Unit can be changed at any time and the display updates retroactively (stored values are always in a canonical unit).
 - Why it matters: International users expect metric. US users expect imperial. Getting this wrong makes the app unusable.
 - Source: inferred
 - Primary owning slice: M001/S02
 - Supporting slices: none
-- Validation: unmapped
+- Validation: M001/S02 — Unit preference CRUD (set to "lbs" → read back → set to "kg" → read back) verified by verify-s02.ts (2 checks). Unit conversion utility (kgToLbs, lbsToKg, formatWeight, displayWeight) tested programmatically. SetRow component applies conversion at input boundary (D021). UnitToggle component wired to setUnitPreference mutation.
 - Notes: Store in kg internally, convert for display.
 
 ### R009 — Workout Duration Auto-Tracking
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: Workouts automatically track duration via start and end timestamps. A running timer is visible during an active workout. Duration appears in workout history.
 - Why it matters: Users want to know how long their workouts take without manual tracking.
 - Source: inferred
 - Primary owning slice: M001/S02
 - Supporting slices: none
-- Validation: unmapped
+- Validation: M001/S02 — Server-side durationSeconds computed in finishWorkout (D019), verified by verify-s02.ts (2 checks: durationSeconds >= 1, completedAt set). Client-side timer (ActiveWorkoutHeader) uses setInterval from startedAt. Duration formatted via formatDuration utility (tested: "1h 23m", "45m", "0m").
 - Notes: Start = when first set is logged or workout is explicitly started. End = when user finishes workout.
 
 ### R010 — Body-Part and Equipment Filtering
@@ -321,14 +321,14 @@ This file is the explicit capability and coverage contract for the project.
 | ID | Class | Status | Primary owner | Supporting | Proof |
 |---|---|---|---|---|---|
 | R001 | core-capability | validated | M001/S01 | none | M001/S01 — 144 exercises seeded, queryable, browsable |
-| R002 | primary-user-loop | active | M001/S02 | M001/S03 | unmapped |
+| R002 | primary-user-loop | validated | M001/S02 | M001/S03 | M001/S02 — workout lifecycle verified by verify-s02.ts (11 checks) |
 | R003 | core-capability | active | M001/S03 | none | unmapped |
 | R004 | core-capability | active | M001/S04 | none | unmapped |
 | R005 | core-capability | active | M001/S03 | none | unmapped |
 | R006 | core-capability | active | M001/S05 | none | unmapped |
 | R007 | core-capability | active | M001/S03 | none | unmapped |
-| R008 | core-capability | active | M001/S02 | none | unmapped |
-| R009 | core-capability | active | M001/S02 | none | unmapped |
+| R008 | core-capability | validated | M001/S02 | none | M001/S02 — unit preference CRUD + conversion utility verified |
+| R009 | core-capability | validated | M001/S02 | none | M001/S02 — durationSeconds server-side computation verified |
 | R010 | core-capability | validated | M001/S01 | none | M001/S01 — muscle group, equipment, text search filters verified |
 | R011 | launchability | active | M001/S06 | M001/S01-S05 | unmapped |
 | R012 | core-capability | active | M002/S01 | none | unmapped |
@@ -351,7 +351,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 20
+- Active requirements: 17
 - Mapped to slices: 23
-- Validated: 3 (R001, R010, R023)
+- Validated: 6 (R001, R002, R008, R009, R010, R023)
 - Unmapped active requirements: 0

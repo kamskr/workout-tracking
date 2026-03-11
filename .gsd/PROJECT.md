@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-S01 complete — the full workout-domain Convex schema (8 tables, 14 indexes, 1 search index) is deployed. 144 curated exercises are seeded and browsable at `/exercises` on the web app with muscle group, equipment, and name search filters. Clerk auth gates the exercise page (unauthenticated users are redirected to sign-in). The original notes feature is preserved alongside the new workout tables. Next: S02 — Workout CRUD & Active Workout Session.
+S02 complete — 17 auth-gated Convex functions provide full workout CRUD (create, add exercises, log sets, finish, delete), unit preference management, and workout details queries. Web UI at `/workouts` (history) and `/workouts/active` (live workout with exercise picker, set logging, duration timer, unit toggle). 15-check programmatic verification proves R002, R008, R009 at integration level. Next: S03 — Full Set Tracking, Supersets & Previous Performance.
 
 ## Architecture / Key Patterns
 

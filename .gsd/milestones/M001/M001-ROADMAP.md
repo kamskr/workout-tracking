@@ -58,7 +58,7 @@ This milestone is complete only when all are true:
 - [x] **S01: Convex Schema & Exercise Library** `risk:high` `depends:[]`
   > After this: user can sign in, browse 100+ exercises filtered by muscle group and equipment on the web app. Convex schema for the entire workout domain is deployed.
 
-- [ ] **S02: Workout CRUD & Active Workout Session** `risk:high` `depends:[S01]`
+- [x] **S02: Workout CRUD & Active Workout Session** `risk:high` `depends:[S01]`
   > After this: user can start a workout on web, add exercises, log sets with weight and reps, finish the workout, and see it in their history. Duration auto-tracks. Unit preference (kg/lbs) is respected.
 
 - [ ] **S03: Full Set Tracking, Supersets & Previous Performance** `risk:medium` `depends:[S02]`
