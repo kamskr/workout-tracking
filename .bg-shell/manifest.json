@@ -1,14 +1,1 @@
-[
-  {
-    "id": "d3a4b958",
-    "label": "convex-dev",
-    "command": "cd /Users/kamskr/Files/kams-agent/turbo-template/packages/backend && npx convex dev 2>&1",
-    "cwd": "/Users/kamskr/Files/kams-agent/turbo-template",
-    "startedAt": 1773233970286,
-    "processType": "server",
-    "group": "dev",
-    "readyPattern": "Convex functions ready|Ready|watching for file changes|✓",
-    "readyPort": null,
-    "pid": 70659
-  }
-]
+[]
