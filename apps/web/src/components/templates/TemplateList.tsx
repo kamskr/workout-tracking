@@ -2,36 +2,16 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
-import Link from "next/link";
-import WorkoutCard from "./WorkoutCard";
-import { Button } from "@/components/common/button";
+import TemplateCard from "./TemplateCard";
 
-export default function WorkoutHistory() {
-  const workouts = useQuery(api.workouts.listWorkouts);
-  const preferences = useQuery(api.userPreferences.getPreferences);
+export default function TemplateList() {
+  const templates = useQuery(api.templates.listTemplates);
 
-  const isLoading = workouts === undefined || preferences === undefined;
-  const isEmpty = workouts !== undefined && workouts.length === 0;
+  const isLoading = templates === undefined;
+  const isEmpty = templates !== undefined && templates.length === 0;
 
   return (
     <div className="space-y-6">
-      {/* Header actions */}
-      <div className="flex items-center justify-between">
-        <p className="text-xs text-gray-500">
-          {workouts && workouts.length > 0
-            ? `${workouts.length} workout${workouts.length !== 1 ? "s" : ""}`
-            : ""}
-        </p>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/templates">Templates</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/workouts/active">Start Workout</Link>
-          </Button>
-        </div>
-      </div>
-
       {/* Loading state */}
       {isLoading && (
         <div className="flex items-center justify-center py-16">
@@ -56,7 +36,7 @@ export default function WorkoutHistory() {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            <span className="text-sm font-medium">Loading workouts…</span>
+            <span className="text-sm font-medium">Loading templates…</span>
           </div>
         </div>
       )}
@@ -76,25 +56,22 @@ export default function WorkoutHistory() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
               />
             </svg>
           </div>
-          <p className="text-sm font-medium text-gray-900">No workouts yet</p>
+          <p className="text-sm font-medium text-gray-900">No templates yet</p>
           <p className="mt-1 text-sm text-gray-500">
-            Start your first workout to begin tracking your progress.
+            Save a workout as a template to get started.
           </p>
-          <Button asChild className="mt-4">
-            <Link href="/workouts/active">Start Workout</Link>
-          </Button>
         </div>
       )}
 
-      {/* Workout list — already sorted desc by listWorkouts query */}
-      {workouts && workouts.length > 0 && (
+      {/* Template grid */}
+      {templates && templates.length > 0 && (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {workouts.map((workout) => (
-            <WorkoutCard key={workout._id} workout={workout} />
+          {templates.map((template) => (
+            <TemplateCard key={template._id} template={template} />
           ))}
         </div>
       )}

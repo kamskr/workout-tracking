@@ -5,6 +5,7 @@ const isProtectedRoute = createRouteMatcher([
   "/notes(.*)",
   "/exercises(.*)",
   "/workouts(.*)",
+  "/templates(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

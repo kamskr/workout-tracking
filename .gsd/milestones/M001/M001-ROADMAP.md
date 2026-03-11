@@ -67,7 +67,7 @@ This milestone is complete only when all are true:
 - [x] **S04: Rest Timer** `risk:medium` `depends:[S02]`
   > After this: rest timer auto-starts after logging a set with visual countdown. Configurable per exercise. Can be paused, adjusted, or skipped. Works on web.
 
-- [ ] **S05: Workout Templates** `risk:low` `depends:[S02]`
+- [x] **S05: Workout Templates** `risk:low` `depends:[S02]`
   > After this: user can save a completed workout as a template, view saved templates, and start a new workout pre-filled from a template. Works on web.
 
 - [ ] **S06: Mobile App & Cross-Platform Polish** `risk:medium` `depends:[S01,S02,S03,S04,S05]`

@@ -61,14 +61,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R006 — Workout Templates
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: Users can save any completed workout as a reusable template. Loading a template pre-fills exercises and their configuration (target sets/reps) but leaves weight/RPE blank for fresh input. Templates are editable and deletable.
 - Why it matters: Most gym-goers repeat workouts weekly. Templates eliminate re-entering the same exercises every session.
 - Source: user
 - Primary owning slice: M001/S05
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Templates store exercise selection and set structure, not performance data.
+- Validation: M001/S05 — saveAsTemplate copies exercise structure (targetSets, targetReps, restSeconds). startWorkoutFromTemplate pre-fills exercises without sets. 8-check integration script (verify-s05.ts) proves save/list/get/delete/start + 3 rejection cases. Web UI at /templates with type-safe Convex bindings. Template editing not implemented (delete+re-save workaround).
+- Notes: Templates store exercise selection and set structure, not performance data. Superset grouping not preserved in templates (D036).
 
 ### R007 — Previous Performance Display
 - Class: core-capability
@@ -325,7 +325,7 @@ This file is the explicit capability and coverage contract for the project.
 | R003 | core-capability | validated | M001/S03 | none | M001/S03 — RPE/tempo/notes round-trip + RPE validation verified |
 | R004 | core-capability | validated | M001/S04 | none | M001/S04 — rest timer auto-start, priority chain, per-exercise config verified |
 | R005 | core-capability | validated | M001/S03 | none | M001/S03 — superset set/clear mutations verified |
-| R006 | core-capability | active | M001/S05 | none | unmapped |
+| R006 | core-capability | validated | M001/S05 | none | M001/S05 — 8-check integration script + type-safe web UI |
 | R007 | core-capability | validated | M001/S03 | none | M001/S03 — previous performance query returns correct data or null |
 | R008 | core-capability | validated | M001/S02 | none | M001/S02 — unit preference CRUD + conversion utility verified |
 | R009 | core-capability | validated | M001/S02 | none | M001/S02 — durationSeconds server-side computation verified |
@@ -353,5 +353,5 @@ This file is the explicit capability and coverage contract for the project.
 
 - Active requirements: 17
 - Mapped to slices: 23
-- Validated: 10 (R001, R002, R003, R004, R005, R007, R008, R009, R010, R023)
+- Validated: 11 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R023)
 - Unmapped active requirements: 0

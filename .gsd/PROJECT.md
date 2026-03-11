@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-S04 complete — Rest timer auto-starts after logging a set with circular SVG countdown, pause/resume/skip/±15s adjust controls, per-exercise rest duration configuration, and completion beep. Backend: updateRestSeconds and setDefaultRestSeconds mutations with 4-level priority chain (workoutExercise → exercise default → user pref → 60s fallback). Timer state is local React context (D008). 6-check verification script proves backend contract. 10 of 17 active requirements now validated (R004 newly validated). Next: S05 — Workout Templates.
+S05 complete — Users can save completed workouts as reusable templates, browse templates at /templates, start pre-filled workouts from templates, and delete templates. Backend: 5 auth-gated Convex functions (saveAsTemplate, listTemplates, getTemplateWithExercises, deleteTemplate, startWorkoutFromTemplate) with proper validation (reject non-completed, empty workouts, active workout conflicts). Web UI: /templates page with template cards, SaveAsTemplateButton on completed workout cards, navigation between workouts and templates. 8-check verification script proves R006 contract. 11 of 17 active requirements now validated (R006 newly validated). Next: S06 — Mobile App & Cross-Platform Polish.
 
 ## Architecture / Key Patterns
 
