@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-M001 complete — All 6 slices delivered. Users can browse 144 exercises with filters, log workouts with full set tracking (weight/reps/RPE/tempo/notes), use a rest timer, save/load workout templates, see previous performance inline, and toggle unit preferences — on both web (Next.js) and mobile (Expo React Native). Both platforms share the same Convex realtime backend. 13 of 17 active requirements validated (R011, R022 newly validated in S06). Mobile app: 4-tab navigation (Exercises, Workouts, Templates, Settings), auth-gated via Clerk, gym-optimized UI with clean/minimal design. All dead notes-era code removed. TypeScript compiles 0 errors across all 3 packages. 41/41 backend verification checks pass. Ready for M002: Analytics & Progress.
+M001 complete (verified 2026-03-11) — All 6 slices delivered and verified. 13 of 13 M001 requirements validated. Users can browse 144 exercises with filters, log workouts with full set tracking (weight/reps/RPE/tempo/notes), use a rest timer, save/load workout templates, see previous performance inline, and toggle unit preferences — on both web (Next.js) and mobile (Expo React Native). Both platforms share the same Convex realtime backend (8-table normalized schema, 17+ auth-gated functions). Mobile app: 4-tab navigation (Exercises, Workouts, Templates, Settings), auth-gated via Clerk, gym-optimized UI with clean/minimal design. TypeScript compiles 0 errors across all 3 packages. 41/41 backend verification checks pass across 4 scripts. See `.gsd/milestones/M001/M001-SUMMARY.md` for full milestone summary. Ready for M002: Analytics & Progress.
 
 ## Architecture / Key Patterns
 
