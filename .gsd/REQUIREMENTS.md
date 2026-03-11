@@ -221,8 +221,8 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M004/S03
 - Supporting slices: M003/S01
-- Validation: unmapped
-- Notes: Badge rules are server-side to prevent cheating.
+- Validation: M004/S03 — `userBadges` table with 15 hardcoded badge definitions across 5 categories (workoutCount, volume, streak, PR, challenge), `evaluateAndAwardBadges` engine triggered non-fatally in finishWorkout, `getUserBadges` auth-gated query with display metadata enrichment, `BadgeDisplay` component on profile page. 12-check verification script (verify-s03-m04.ts) covers badge award, deduplication, cross-user visibility, and per-category thresholds. TypeScript compiles 0 new errors across all 3 packages. **Pending live validation:** verification script execution requires live Convex backend — must pass 12/12 to move to validated.
+- Notes: Badge rules are server-side to prevent cheating. Badge definitions are a TypeScript constant (D110), not data-driven. Evaluation is self-healing — missed badges caught on next workout completion.
 
 ### R021 — Collaborative Live Workouts
 - Class: differentiator
@@ -339,7 +339,7 @@ This file is the explicit capability and coverage contract for the project.
 | R017 | core-capability | active | M003/S03 | M003/S01, M001/S05 | M003/S03 — 15-check verification script + web UI (pending live execution) |
 | R018 | core-capability | active | M004/S01 | M003/S01 | M004/S01 — 12-check verification script + web UI (pending live execution) |
 | R019 | core-capability | active | M004/S02 | M004/S01 | M004/S02 — 16-check verification + web UI (pending live execution) |
-| R020 | differentiator | active | M004/S03 | M003/S01 | unmapped |
+| R020 | differentiator | active | M004/S03 | M003/S01 | M004/S03 — 12-check verification script + web UI (pending live execution) |
 | R021 | differentiator | active | M005/S01 | M005/S02 | unmapped |
 | R022 | quality-attribute | validated | M001/S06 | all UI slices | M001/S06 — theme.ts tokens, light status bar, consistent styling, human UAT pending |
 | R023 | constraint | validated | M001/S01 | none | M001/S01 — /exercises auth gating verified (web) |

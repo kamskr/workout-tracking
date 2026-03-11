@@ -1,9 +1,9 @@
 # GSD State
 
 **Active Milestone:** M004 — Leaderboards & Challenges
-**Active Slice:** None — S02 complete, ready for S03
-**Active Task:** None
-**Phase:** S02 summarized and committed (2026-03-11). Ready for S03 planning.
+**Active Slice:** S04 — Mobile Competitive Port (next)
+**Active Task:** None — S03 complete, S04 not started
+**Phase:** S03 complete (2026-03-11). All 3 tasks done (T01+T02+T03). S04 is next and final slice.
 
 ## Completed Milestones
 - [x] M001: Core Workout Logging ✅ (6 slices, 20 tasks, 13 requirements validated, 41/41 backend checks)
@@ -13,7 +13,7 @@
 ## M004 Roadmap
 - [x] S01: Leaderboards — Backend + Web UI ✅ (3 tasks, ~53 min, 12-check verification script written)
 - [x] S02: Group Challenges — Backend + Web UI ✅ (3 tasks, ~41 min, 16-check verification script written, /challenges page complete)
-- [ ] S03: Achievements & Badges — Backend + Web UI `risk:medium` `depends:[S01]`
+- [x] S03: Achievements & Badges — Backend + Web UI ✅ (3 tasks, ~30 min, 12-check verification script written, BadgeDisplay on profile page)
 - [ ] S04: Mobile Competitive Port `risk:low` `depends:[S01,S02,S03]`
 
 ## Verification Status
@@ -24,10 +24,11 @@
 - M003 verification scripts: 42 checks pending Convex CLI auth
 - M004/S01 verification script: 12 checks pending Convex CLI auth
 - M004/S02 verification script: 16 checks pending Convex CLI auth
+- M004/S03 verification script: 12 checks pending Convex CLI auth
 
 ## Requirements Status
 - 16 validated (R001-R014, R022, R023)
-- 7 active (R015-R021) — R015/R016/R017 fully implemented pending live verification; R018 backend+web complete pending live verification; R019 backend+web complete with 16-check verification script pending live execution; R020 mapped to M004/S03; R021 mapped to M005
+- 7 active (R015-R021) — R015/R016/R017 fully implemented pending live verification; R018 backend+web complete pending live verification; R019 backend+web complete pending live verification; R020 backend+web+UI complete (BadgeDisplay on profile page) pending live verification; R021 mapped to M005
 - 3 deferred (R024-R026)
 - 2 out of scope (R027-R028)
 
@@ -37,14 +38,14 @@
 - D107-D116 from M004 planning
 - D117-D120 from M004/S01
 - D121-D127 from M004/S02
+- D128-D131 from M004/S03
 
 ## Blockers
-- **Convex CLI auth:** `npx convex login` requires interactive terminal with browser. Must resolve before verification scripts can execute and R015/R016/R017/R018/R019 can be validated.
+- **Convex CLI auth:** `npx convex login` requires interactive terminal with browser. Must resolve before verification scripts can execute and R015-R020 can be validated.
 - **Pre-existing:** `clsx` missing from apps/web dependencies (manually copied workaround)
 - **Pre-existing:** Next.js 16 deprecated middleware convention may cause 404 on App Router routes
 
 ## Next Steps
-1. Plan and execute S03: Achievements & Badges — Backend + Web UI
-2. Plan and execute S04: Mobile Competitive Port
-3. Run all verification scripts when Convex CLI auth is available (42 M003 + 12 M004/S01 + 16 M004/S02 = 70 checks)
-4. Browser visual UAT of /leaderboards and /challenges pages
+1. Plan and execute S04: Mobile Competitive Port (final slice in M004)
+2. Run all verification scripts when Convex CLI auth is available (42 M003 + 12 M004/S01 + 16 M004/S02 + 12 M004/S03 = 82 checks)
+3. Browser visual UAT of /leaderboards, /challenges, and profile badge display

@@ -7,6 +7,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/common/avatar";
 import ProfileStats from "@/components/profile/ProfileStats";
+import BadgeDisplay from "@/components/profile/BadgeDisplay";
 import type { WeightUnit } from "@/lib/units";
 
 function getInitials(name: string): string {
@@ -380,6 +381,12 @@ export default function ProfileViewPage() {
             </div>
           </div>
         )}
+
+        {/* Badges section */}
+        <div className="mt-6">
+          <h2 className="mb-4 text-sm font-semibold text-gray-700">Badges</h2>
+          <BadgeDisplay userId={profile.userId} isOwnProfile={isOwnProfile} />
+        </div>
 
         {/* Stats section */}
         <div className="mt-8">

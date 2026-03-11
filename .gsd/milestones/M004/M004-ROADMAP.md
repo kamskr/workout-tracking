@@ -64,7 +64,7 @@ This milestone is complete only when all are true:
 - [x] **S02: Group Challenges — Backend + Web UI** `risk:high` `depends:[S01]`
   > After this: A user creates a "Most Pull-ups This Week" challenge on web, friends join via the challenges page, logging pull-up sets updates the live standings, and a scheduled function completes the challenge at deadline with the correct winner — the project's first use of Convex cron jobs and ctx.scheduler.runAt.
 
-- [ ] **S03: Achievements & Badges — Backend + Web UI** `risk:medium` `depends:[S01]`
+- [x] **S03: Achievements & Badges — Backend + Web UI** `risk:medium` `depends:[S01]`
   > After this: A user completes their 10th workout and a "Dedicated Lifter" badge appears on their profile page immediately — with ~15 hardcoded badge definitions evaluated server-side on workout completion, and a badges section visible on any user's profile.
 
 - [ ] **S04: Mobile Competitive Port** `risk:low` `depends:[S01,S02,S03]`

@@ -343,4 +343,15 @@ export default defineSchema({
     .index("by_challengeId_currentValue", ["challengeId", "currentValue"])
     .index("by_userId", ["userId"])
     .index("by_challengeId_userId", ["challengeId", "userId"]),
+
+  // ── User Badges ────────────────────────────────────────────────────────
+  // Tracks earned badges per user, evaluated on workout completion.
+  // Deduplication via by_userId_badgeSlug index prevents double-awards.
+  userBadges: defineTable({
+    userId: v.string(),
+    badgeSlug: v.string(),
+    awardedAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_userId_badgeSlug", ["userId", "badgeSlug"]),
 });

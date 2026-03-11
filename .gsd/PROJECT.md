@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-M001 complete, M002 complete, M003 complete, M004/S01+S02 complete (2026-03-11). Leaderboards and Group Challenges backend + web UI shipped. 20-table normalized Convex schema (added challenges + challengeParticipants). Challenge system: 4 types (workoutCount/totalReps/totalVolume/maxWeight), lifecycle state machine (pending→active→completed/cancelled), cron-based deadline enforcement (crons.ts), scheduler-based precision completion, 7 public + 3 internal Convex functions, /challenges web page with full CRUD. TypeScript compiles 0 new errors across all 3 packages. 70 pending verification checks (42 M003 + 12 M004/S01 + 16 M004/S02) — **execution pending Convex CLI auth** (`npx convex login`). 72/72 M001+M002 regression baseline. 16 requirements validated, R015-R019 fully implemented but remain active pending live verification. Next: S03 Achievements & Badges.
+M001 complete, M002 complete, M003 complete, M004/S01+S02+S03 complete (2026-03-11). Leaderboards, Group Challenges, and Achievements & Badges backend + web UI shipped. 21-table normalized Convex schema (added userBadges). Gamification layer: 15 badge definitions across 5 categories, threshold-based evaluation engine triggered non-fatally in finishWorkout, getUserBadges query with display metadata enrichment, BadgeDisplay component on profile page. TypeScript compiles 0 new errors across all 3 packages. 82 pending verification checks (42 M003 + 12 M004/S01 + 16 M004/S02 + 12 M004/S03) — **execution pending Convex CLI auth** (`npx convex login`). 72/72 M001+M002 regression baseline. 16 requirements validated, R015-R020 fully implemented but remain active pending live verification. Next: S04 Mobile Competitive Port.
 
 ## Architecture / Key Patterns
 
@@ -25,6 +25,7 @@ M001 complete, M002 complete, M003 complete, M004/S01+S02 complete (2026-03-11).
 - **Sharing:** Public Convex queries (no auth required) + Clerk middleware exclusion for /shared routes (D075)
 - **Leaderboards:** Pre-computed entries via non-fatal finishWorkout hook (D107/D108), opt-in filtering at query time (D109/D120), bounded rank scan (D114)
 - **Challenges:** Lifecycle state machine (D111), incremental delta computation (D121), cron-based deadline enforcement + scheduler.runAt precision (D126), creator auto-join (D125)
+- **Badges:** Hardcoded definitions constant (D110/D128), batch-fetch evaluation engine (D129), 4th non-fatal finishWorkout hook, BadgeDisplay on profile page (D130/D131)
 - **Styling:** Tailwind CSS (web), React Native StyleSheet (mobile)
 - **Design:** Clean/minimal aesthetic — light theme, Apple Health-inspired
 

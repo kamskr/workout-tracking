@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { getUserId } from "./lib/auth";
 import { updateLeaderboardEntries } from "./lib/leaderboardCompute";
 import { updateChallengeProgress } from "./lib/challengeCompute";
+import { evaluateAndAwardBadges } from "./lib/badgeEvaluation";
 
 // ── Mutations ────────────────────────────────────────────────────────────────
 
@@ -105,6 +106,15 @@ export const finishWorkout = mutation({
     } catch (err) {
       console.error(
         `[Challenge] Error updating progress for workout ${args.id}: ${err}`,
+      );
+    }
+
+    // Evaluate and award badges (non-fatal — workout completion always succeeds)
+    try {
+      await evaluateAndAwardBadges(ctx.db, userId);
+    } catch (err) {
+      console.error(
+        `[Badge] Error evaluating badges for user ${userId}: ${err}`,
       );
     }
 

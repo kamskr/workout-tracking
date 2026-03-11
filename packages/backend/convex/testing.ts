@@ -1991,6 +1991,15 @@ export const testCleanup = mutation({
       await ctx.db.delete(challenge._id);
     }
 
+    // Delete user badges
+    const userBadges = await ctx.db
+      .query("userBadges")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .collect();
+    for (const badge of userBadges) {
+      await ctx.db.delete(badge._id);
+    }
+
     // Delete profiles
     const profiles = await ctx.db
       .query("profiles")
@@ -2715,5 +2724,110 @@ export const testUpdateChallengeProgress = mutation({
   },
   handler: async (ctx, args) => {
     await updateChallengeProgress(ctx.db, args.testUserId, args.workoutId);
+  },
+});
+
+// ── Badge test helpers (S03) ────────────────────────────────────────────────
+
+import { evaluateAndAwardBadges } from "./lib/badgeEvaluation";
+import { BADGE_DEFINITIONS } from "./lib/badgeDefinitions";
+
+// Pre-build slug→definition lookup (mirrors badges.ts)
+const _badgeDefsBySlug = new Map(
+  BADGE_DEFINITIONS.map((d) => [d.slug, d]),
+);
+
+/**
+ * Test version of evaluateAndAwardBadges — accepts testUserId directly.
+ * Runs the full badge evaluation pipeline for the given user.
+ */
+export const testEvaluateAndAwardBadges = mutation({
+  args: {
+    testUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await evaluateAndAwardBadges(ctx.db, args.testUserId);
+  },
+});
+
+/**
+ * Test version of getUserBadges — no auth required.
+ * Returns enriched badges matching the public getUserBadges query output.
+ */
+export const testGetUserBadges = query({
+  args: {
+    testUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const badges = await ctx.db
+      .query("userBadges")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .collect();
+
+    const enriched = badges.map((badge) => {
+      const def = _badgeDefsBySlug.get(badge.badgeSlug);
+      return {
+        _id: badge._id,
+        badgeSlug: badge.badgeSlug,
+        awardedAt: badge.awardedAt,
+        name: def?.name ?? "Unknown Badge",
+        emoji: def?.emoji ?? "❓",
+        description: def?.description ?? "Unknown badge",
+        category: def?.category ?? "workoutCount",
+      };
+    });
+
+    enriched.sort((a, b) => b.awardedAt - a.awardedAt);
+    return enriched;
+  },
+});
+
+/**
+ * Test helper to directly award a badge — for controlled test setup.
+ * Inserts a badge row without running the evaluation pipeline.
+ */
+export const testAwardBadge = mutation({
+  args: {
+    testUserId: v.string(),
+    badgeSlug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.insert("userBadges", {
+      userId: args.testUserId,
+      badgeSlug: args.badgeSlug,
+      awardedAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * Test helper to get raw userBadges docs (no enrichment).
+ * Useful for low-level assertions on DB state.
+ */
+export const testGetRawUserBadges = query({
+  args: {
+    testUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("userBadges")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .collect();
+  },
+});
+
+/**
+ * Test helper to get badge count for a user — quick integer check.
+ */
+export const testGetUserBadgeCount = query({
+  args: {
+    testUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const badges = await ctx.db
+      .query("userBadges")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .collect();
+    return badges.length;
   },
 });
