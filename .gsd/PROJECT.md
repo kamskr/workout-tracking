@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-M001 complete, M002 complete, M003/S01+S02 complete (2026-03-11). S02 (Follow System & Activity Feed) shipped — 5 social tables, 11 Convex functions in social.ts, feed item lifecycle wired into finishWorkout/deleteWorkout, 15-check verification script, web UI for feed/reactions/follow. 16 of 28 requirements validated, R015+R016 advanced (pending live verification). 15-table normalized schema (follows, feedItems, reactions, blocks, reports added). 72/72 existing backend checks (regression baseline) + 27 new checks (12 S01 + 15 S02, pending execution). TypeScript compiles 0 errors for backend. Next: M003/S03 (Workout Sharing & Privacy).
+M001 complete, M002 complete, M003/S01+S02+S03 complete (2026-03-11). S03 (Workout Sharing & Privacy) shipped — isPublic field on workouts, sharing.ts with 4 functions (shareWorkout, getSharedWorkout, cloneSharedWorkoutAsTemplate, toggleWorkoutPrivacy), privacy-aware feed creation, public /shared/[id] route for unauthenticated access, clone-as-template, privacy toggle on completed workouts. 16 of 28 requirements validated, R015+R016+R017 advanced (all pending live verification). 15-table normalized schema. 72/72 existing backend checks (regression baseline) + 42 new checks (12 S01 + 15 S02 + 15 S03, pending execution). TypeScript compiles 0 errors (web + backend). Next: M003/S04 (Mobile Social Port).
 
 ## Architecture / Key Patterns
 

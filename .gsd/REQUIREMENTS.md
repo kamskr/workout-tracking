@@ -188,8 +188,8 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M003/S03
 - Supporting slices: M003/S01, M001/S05
-- Validation: unmapped
-- Notes: Shareable link generates a public read-only view even for non-users.
+- Validation: M003/S03 — isPublic field on workouts, 4 sharing functions in sharing.ts (shareWorkout, getSharedWorkout, cloneSharedWorkoutAsTemplate, toggleWorkoutPrivacy), defense-in-depth privacy checks, public /shared/[id] route excluded from Clerk middleware, clone-as-template reusing saveAsTemplate pattern, privacy toggle with cascade to feed items, block filtering on shared views. 15-check verification script (verify-s03-m03.ts) covering privacy-aware feed creation, share token flow, shared workout retrieval, clone-as-template, privacy toggle cascade, analytics privacy gating, block filtering. Web UI: SharedWorkoutView, CloneButton (auth-conditional), ShareButton (clipboard copy), PrivacyToggle on WorkoutCard. TypeScript compiles 0 errors. **Pending:** verification script execution blocked by Convex CLI auth — must pass 15/15 before fully validated.
+- Notes: Shareable link generates a public read-only view even for non-users. Share token is the feedItem._id (D097). Privacy default is public (D073).
 
 ### R018 — Leaderboards
 - Class: core-capability
@@ -336,7 +336,7 @@ This file is the explicit capability and coverage contract for the project.
 | R014 | core-capability | validated | M002/S03 | M002/S01 | M002/S03 — 11/11 backend checks, web dashboard with heatmap + charts + summaries |
 | R015 | core-capability | active | M003/S01 | none | M003/S01 — 12-check verification script + web UI (pending live execution) |
 | R016 | core-capability | active | M003/S02 | M003/S01 | unmapped |
-| R017 | core-capability | active | M003/S03 | M003/S01, M001/S05 | unmapped |
+| R017 | core-capability | active | M003/S03 | M003/S01, M001/S05 | M003/S03 — 15-check verification script + web UI (pending live execution) |
 | R018 | core-capability | active | M004/S01 | M003/S01 | unmapped |
 | R019 | core-capability | active | M004/S02 | M004/S01 | unmapped |
 | R020 | differentiator | active | M004/S03 | M003/S01 | unmapped |

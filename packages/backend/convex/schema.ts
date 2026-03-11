@@ -49,7 +49,10 @@ const prType = v.union(
 
 const weightUnit = v.union(v.literal("kg"), v.literal("lbs"));
 
-const feedItemType = v.union(v.literal("workout_completed"));
+const feedItemType = v.union(
+  v.literal("workout_completed"),
+  v.literal("workout_shared"),
+);
 
 const reactionType = v.union(
   v.literal("fire"),
@@ -107,6 +110,7 @@ export default defineSchema({
     userId: v.string(),
     name: v.string(),
     status: workoutStatus,
+    isPublic: v.optional(v.boolean()),
     startedAt: v.optional(v.number()),
     completedAt: v.optional(v.number()),
     notes: v.optional(v.string()),

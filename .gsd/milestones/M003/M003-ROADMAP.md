@@ -61,7 +61,7 @@ This milestone is complete only when all are true:
 - [x] **S02: Follow System & Activity Feed** `risk:high` `depends:[S01]`
   > After this: User A can search for and follow User B from their profile page. User B completes a workout and a feed item appears in User A's realtime activity feed at `/feed`. User A can react to the feed item (fire, fist bump, etc) and the reaction count updates live. Feed is paginated. Proven by backend verification script (follow/unfollow, feed item creation on workout completion, reactions, pagination, block filtering) and browser walkthrough of follow → feed → react flow.
 
-- [ ] **S03: Workout Sharing & Privacy** `risk:medium` `depends:[S01, S02]`
+- [x] **S03: Workout Sharing & Privacy** `risk:medium` `depends:[S01, S02]`
   > After this: User can toggle a workout as public/private. Public workouts can be shared to the feed or via a public link (`/shared/[id]`). An unauthenticated visitor can view the shared workout summary. An authenticated user can clone the shared workout as a personal template. Private workouts are excluded from all social surfaces. Proven by backend verification script (privacy gating, share link resolution without auth, clone-as-template, private workout exclusion from feed/profile) and browser walkthrough of share flow + public link + clone.
 
 - [ ] **S04: Mobile Social Port** `risk:low` `depends:[S01, S02, S03]`

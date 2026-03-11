@@ -321,7 +321,7 @@ export const getWeeklySummary = query({
     const userId = await getUserId(ctx);
     if (!userId) throw new Error("User not found");
 
-    return await computePeriodSummary(ctx.db, userId, 7);
+    return await computePeriodSummary(ctx.db, userId, 7, true);
   },
 });
 
@@ -334,7 +334,7 @@ export const getMonthlySummary = query({
     const userId = await getUserId(ctx);
     if (!userId) throw new Error("User not found");
 
-    return await computePeriodSummary(ctx.db, userId, 30);
+    return await computePeriodSummary(ctx.db, userId, 30, true);
   },
 });
 
@@ -345,6 +345,7 @@ export async function computePeriodSummary(
   db: any,
   userId: string,
   periodDays: number | undefined,
+  includePrivate: boolean = true,
 ): Promise<PeriodSummary> {
   const cutoff = periodDays !== undefined
     ? Date.now() - periodDays * 86_400_000
@@ -360,7 +361,8 @@ export async function computePeriodSummary(
     (w: any) =>
       w.status === "completed" &&
       w.completedAt &&
-      (cutoff === undefined || w.completedAt >= cutoff),
+      (cutoff === undefined || w.completedAt >= cutoff) &&
+      (includePrivate || w.isPublic !== false),
   );
 
   if (completedWorkouts.length === 0) {

@@ -313,7 +313,8 @@ export const getProfileStats = query({
     if (!callerId) throw new Error("Not authenticated");
 
     // All-time stats via computePeriodSummary with undefined periodDays
-    const summary = await computePeriodSummary(ctx.db, args.userId, undefined);
+    // Pass includePrivate: false so public profile stats exclude private workouts
+    const summary = await computePeriodSummary(ctx.db, args.userId, undefined, false);
 
     // Streak computation
     const currentStreak = await computeCurrentStreak(ctx.db, args.userId);

@@ -1,6 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+// NOTE: /shared routes are intentionally NOT protected — they serve
+// unauthenticated visitors viewing shared workout links (S03 sharing).
 const isProtectedRoute = createRouteMatcher([
   "/notes(.*)",
   "/exercises(.*)",

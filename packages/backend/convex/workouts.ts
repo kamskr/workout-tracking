@@ -10,6 +10,7 @@ import { getUserId } from "./lib/auth";
 export const createWorkout = mutation({
   args: {
     name: v.optional(v.string()),
+    isPublic: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
@@ -19,6 +20,7 @@ export const createWorkout = mutation({
       userId,
       name: args.name ?? "Workout",
       status: "inProgress",
+      isPublic: args.isPublic,
       startedAt: Date.now(),
     });
 
@@ -77,7 +79,7 @@ export const finishWorkout = mutation({
           exerciseCount,
           prCount,
         },
-        isPublic: true,
+        isPublic: workout.isPublic ?? true,
         createdAt: Date.now(),
       });
     } catch (err) {

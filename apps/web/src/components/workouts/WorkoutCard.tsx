@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/units";
 import { Button } from "@/components/common/button";
 import SaveAsTemplateButton from "@/components/templates/SaveAsTemplateButton";
+import ShareButton from "@/components/sharing/ShareButton";
+import PrivacyToggle from "@/components/sharing/PrivacyToggle";
 
 interface WorkoutCardProps {
   workout: {
@@ -16,6 +18,7 @@ interface WorkoutCardProps {
     startedAt?: number;
     completedAt?: number;
     durationSeconds?: number;
+    isPublic?: boolean;
   };
 }
 
@@ -87,10 +90,19 @@ export default function WorkoutCard({ workout }: WorkoutCardProps) {
 
         <div className="flex shrink-0 items-center gap-1">
           {workout.status === "completed" && (
-            <SaveAsTemplateButton
-              workoutId={workout._id}
-              workoutName={workout.name || "Workout"}
-            />
+            <>
+              <PrivacyToggle
+                workoutId={workout._id}
+                isPublic={workout.isPublic ?? true}
+              />
+              {workout.isPublic !== false && (
+                <ShareButton workoutId={workout._id} />
+              )}
+              <SaveAsTemplateButton
+                workoutId={workout._id}
+                workoutName={workout.name || "Workout"}
+              />
+            </>
           )}
           <Button
             variant="ghost"

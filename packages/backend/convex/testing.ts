@@ -35,12 +35,14 @@ export const testCreateWorkout = mutation({
   args: {
     testUserId: v.string(),
     name: v.optional(v.string()),
+    isPublic: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const workoutId = await ctx.db.insert("workouts", {
       userId: args.testUserId,
       name: args.name ?? "Workout",
       status: "inProgress",
+      isPublic: args.isPublic,
       startedAt: Date.now(),
     });
     return workoutId;
@@ -95,7 +97,7 @@ export const testFinishWorkout = mutation({
           exerciseCount,
           prCount,
         },
-        isPublic: true,
+        isPublic: workout.isPublic ?? true,
         createdAt: Date.now(),
       });
     } catch (err) {
@@ -997,10 +999,12 @@ export const testGetProfileStats = query({
     testUserId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Mirrors production getProfileStats: includePrivate = false for public-facing stats
     const summary = await computePeriodSummary(
       ctx.db,
       args.testUserId,
       undefined,
+      false,
     );
     const currentStreak = await computeCurrentStreak(ctx.db, args.testUserId);
 
@@ -1248,6 +1252,7 @@ export const testGetFeed = query({
 
 /**
  * Test helper to directly create a feed item (for bulk insertion in pagination tests).
+ * Accepts optional type and isPublic for sharing/privacy tests.
  */
 export const testCreateFeedItem = mutation({
   args: {
@@ -1259,14 +1264,16 @@ export const testCreateFeedItem = mutation({
       exerciseCount: v.number(),
       prCount: v.number(),
     }),
+    type: v.optional(v.union(v.literal("workout_completed"), v.literal("workout_shared"))),
+    isPublic: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("feedItems", {
       authorId: args.testUserId,
-      type: "workout_completed",
+      type: args.type ?? "workout_completed",
       workoutId: args.workoutId,
       summary: args.summary,
-      isPublic: true,
+      isPublic: args.isPublic ?? true,
       createdAt: Date.now(),
     });
   },
@@ -1470,6 +1477,301 @@ export const testReportContent = mutation({
       reason: args.reason,
       createdAt: Date.now(),
     });
+  },
+});
+
+// ── Sharing & Privacy test helpers ────────────────────────────────────────────
+
+/**
+ * testCreateWorkoutWithPrivacy — createWorkout variant accepting isPublic arg.
+ * Alias for testCreateWorkout which already accepts isPublic.
+ */
+export const testCreateWorkoutWithPrivacy = mutation({
+  args: {
+    testUserId: v.string(),
+    name: v.optional(v.string()),
+    isPublic: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const workoutId = await ctx.db.insert("workouts", {
+      userId: args.testUserId,
+      name: args.name ?? "Workout",
+      status: "inProgress",
+      isPublic: args.isPublic,
+      startedAt: Date.now(),
+    });
+    return workoutId;
+  },
+});
+
+/**
+ * testShareWorkout — mirrors shareWorkout mutation (no auth check).
+ */
+export const testShareWorkout = mutation({
+  args: {
+    testUserId: v.string(),
+    workoutId: v.id("workouts"),
+  },
+  handler: async (ctx, args) => {
+    const workout = await ctx.db.get(args.workoutId);
+    if (!workout) throw new Error("Workout not found");
+    if (workout.userId !== args.testUserId)
+      throw new Error("Workout does not belong to user");
+    if (workout.status !== "completed")
+      throw new Error("Workout is not completed");
+    if (workout.isPublic === false)
+      throw new Error("Workout is private — cannot share");
+
+    // After the guard above, isPublic is true | undefined — always public
+    const isPublic = workout.isPublic ?? true;
+
+    // Count exercises for summary
+    const workoutExercises = await ctx.db
+      .query("workoutExercises")
+      .withIndex("by_workoutId", (q) => q.eq("workoutId", args.workoutId))
+      .collect();
+    const exerciseCount = workoutExercises.length;
+
+    // Count PRs
+    const prs = await ctx.db
+      .query("personalRecords")
+      .withIndex("by_workoutId", (q) => q.eq("workoutId", args.workoutId))
+      .collect();
+    const prCount = prs.length;
+
+    const feedItemId = await ctx.db.insert("feedItems", {
+      authorId: args.testUserId,
+      type: "workout_shared",
+      workoutId: args.workoutId,
+      summary: {
+        name: workout.name,
+        durationSeconds: workout.durationSeconds ?? 0,
+        exerciseCount,
+        prCount,
+      },
+      isPublic,
+      createdAt: Date.now(),
+    });
+
+    console.log(
+      `[Share] Created workout_shared feed item ${feedItemId} for workout ${args.workoutId}`,
+    );
+
+    return feedItemId;
+  },
+});
+
+/**
+ * testGetSharedWorkout — mirrors getSharedWorkout query (no auth check).
+ * Skips block checks since test helpers don't have auth context.
+ */
+export const testGetSharedWorkout = query({
+  args: {
+    feedItemId: v.id("feedItems"),
+    testCallerId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Load feed item
+    const feedItem = await ctx.db.get(args.feedItemId);
+    if (!feedItem) return null;
+    if (!feedItem.isPublic) return null;
+
+    // Load workout — defense-in-depth
+    const workout = await ctx.db.get(feedItem.workoutId);
+    if (!workout) return null;
+    if (workout.isPublic === false) return null;
+
+    // Block check if caller provided
+    if (args.testCallerId) {
+      const block1 = await ctx.db
+        .query("blocks")
+        .withIndex("by_pair", (q) =>
+          q.eq("blockerId", feedItem.authorId).eq("blockedId", args.testCallerId!),
+        )
+        .first();
+      if (block1) return null;
+
+      const block2 = await ctx.db
+        .query("blocks")
+        .withIndex("by_pair", (q) =>
+          q.eq("blockerId", args.testCallerId!).eq("blockedId", feedItem.authorId),
+        )
+        .first();
+      if (block2) return null;
+    }
+
+    // Join workout → workoutExercises → exercises → sets
+    const workoutExercises = await ctx.db
+      .query("workoutExercises")
+      .withIndex("by_workoutId", (q) => q.eq("workoutId", workout._id))
+      .take(50);
+
+    const exercises = await Promise.all(
+      workoutExercises.map(async (we: any) => {
+        const [exercise, sets] = await Promise.all([
+          ctx.db.get(we.exerciseId),
+          ctx.db
+            .query("sets")
+            .withIndex("by_workoutExerciseId", (q: any) =>
+              q.eq("workoutExerciseId", we._id),
+            )
+            .take(20),
+        ]);
+
+        return {
+          workoutExercise: we,
+          exercise,
+          sets,
+        };
+      }),
+    );
+
+    // Resolve author profile
+    const authorProfile = await ctx.db
+      .query("profiles")
+      .withIndex("by_userId", (q) => q.eq("userId", feedItem.authorId))
+      .first();
+
+    let avatarUrl: string | null = null;
+    if (authorProfile?.avatarStorageId) {
+      avatarUrl =
+        (await ctx.storage.getUrl(authorProfile.avatarStorageId)) ?? null;
+    }
+
+    const author = authorProfile
+      ? {
+          displayName: authorProfile.displayName,
+          username: authorProfile.username,
+          avatarUrl,
+        }
+      : { displayName: "Unknown User", username: "unknown", avatarUrl: null };
+
+    return {
+      workout,
+      exercises,
+      author,
+      feedItem,
+    };
+  },
+});
+
+/**
+ * testCloneAsTemplate — mirrors cloneSharedWorkoutAsTemplate (no auth check).
+ */
+export const testCloneAsTemplate = mutation({
+  args: {
+    testUserId: v.string(),
+    feedItemId: v.id("feedItems"),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Load feed item
+    const feedItem = await ctx.db.get(args.feedItemId);
+    if (!feedItem || !feedItem.isPublic) {
+      throw new Error("Shared workout not available");
+    }
+
+    // Load workout — defense-in-depth
+    const workout = await ctx.db.get(feedItem.workoutId);
+    if (!workout || workout.isPublic === false) {
+      throw new Error("Shared workout not available");
+    }
+
+    // Block check
+    const block1 = await ctx.db
+      .query("blocks")
+      .withIndex("by_pair", (q) =>
+        q.eq("blockerId", feedItem.authorId).eq("blockedId", args.testUserId),
+      )
+      .first();
+    if (block1) throw new Error("Shared workout not available");
+
+    const block2 = await ctx.db
+      .query("blocks")
+      .withIndex("by_pair", (q) =>
+        q.eq("blockerId", args.testUserId).eq("blockedId", feedItem.authorId),
+      )
+      .first();
+    if (block2) throw new Error("Shared workout not available");
+
+    // Read workout exercises + sets
+    const workoutExercises = await ctx.db
+      .query("workoutExercises")
+      .withIndex("by_workoutId", (q) => q.eq("workoutId", workout._id))
+      .collect();
+
+    workoutExercises.sort((a: any, b: any) => a.order - b.order);
+
+    // Create template owned by caller
+    const templateId = await ctx.db.insert("workoutTemplates", {
+      userId: args.testUserId,
+      name: args.name,
+      createdFromWorkoutId: workout._id,
+    });
+
+    // Create template exercises from workout exercises
+    for (const we of workoutExercises) {
+      const sets = await ctx.db
+        .query("sets")
+        .withIndex("by_workoutExerciseId", (q: any) =>
+          q.eq("workoutExerciseId", we._id),
+        )
+        .collect();
+
+      sets.sort((a: any, b: any) => a.setNumber - b.setNumber);
+
+      const targetSets = sets.length;
+      const targetReps = sets.length > 0 ? sets[0]!.reps : undefined;
+
+      await ctx.db.insert("templateExercises", {
+        templateId,
+        exerciseId: we.exerciseId,
+        order: we.order,
+        targetSets: targetSets > 0 ? targetSets : undefined,
+        targetReps,
+        restSeconds: we.restSeconds,
+      });
+    }
+
+    console.log(
+      `[Clone] User ${args.testUserId} cloned shared workout ${workout._id} as template ${templateId}`,
+    );
+
+    return templateId;
+  },
+});
+
+/**
+ * testToggleWorkoutPrivacy — mirrors toggleWorkoutPrivacy mutation (no auth check).
+ */
+export const testToggleWorkoutPrivacy = mutation({
+  args: {
+    testUserId: v.string(),
+    workoutId: v.id("workouts"),
+    isPublic: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const workout = await ctx.db.get(args.workoutId);
+    if (!workout) throw new Error("Workout not found");
+    if (workout.userId !== args.testUserId)
+      throw new Error("Workout does not belong to user");
+
+    // Patch workout
+    await ctx.db.patch(args.workoutId, { isPublic: args.isPublic });
+
+    // Cascade to feed items
+    const feedItems = await ctx.db
+      .query("feedItems")
+      .withIndex("by_workoutId", (q) => q.eq("workoutId", args.workoutId))
+      .collect();
+
+    for (const fi of feedItems) {
+      await ctx.db.patch(fi._id, { isPublic: args.isPublic });
+    }
+
+    console.log(
+      `[Privacy] Updated isPublic to ${args.isPublic} on workout ${args.workoutId} and ${feedItems.length} feed items`,
+    );
   },
 });
 
@@ -1722,7 +2024,7 @@ export const testGetWeeklySummary = query({
     testUserId: v.string(),
   },
   handler: async (ctx, args) => {
-    return await computePeriodSummary(ctx.db, args.testUserId, 7);
+    return await computePeriodSummary(ctx.db, args.testUserId, 7, true);
   },
 });
 
@@ -1734,6 +2036,6 @@ export const testGetMonthlySummary = query({
     testUserId: v.string(),
   },
   handler: async (ctx, args) => {
-    return await computePeriodSummary(ctx.db, args.testUserId, 30);
+    return await computePeriodSummary(ctx.db, args.testUserId, 30, true);
   },
 });
