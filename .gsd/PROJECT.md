@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-M001 complete, M002 complete (2026-03-11). All 4 M002 slices shipped — personal records tracking, exercise progress charts, volume analytics with muscle heatmap, and mobile analytics port. 16 of 28 requirements validated. Core workout logging fully functional on web and mobile. Analytics features (PR badges, progress charts, muscle heatmap, volume bar chart, weekly/monthly summaries) work on both web and mobile with same Convex backend queries. 72/72 total backend checks pass (zero regressions). 9-table normalized schema. TypeScript compiles 0 errors across all 3 packages. Human UAT pending for mobile chart rendering quality. Next: M003 (Social Foundation).
+M001 complete, M002 complete, M003/S01 complete (2026-03-11). S01 (User Profiles) shipped — profiles table, 7 CRUD/stats/search Convex functions, 12-check verification script, web UI for profile creation and viewing. 16 of 28 requirements validated, R015 advanced (pending live verification). 10-table normalized schema (profiles added). 72/72 existing backend checks (regression baseline). TypeScript compiles 0 errors for backend. Next: Resolve Convex CLI auth, run verify-s01-m03.ts (12 checks), then M003/S02 (Follow System & Activity Feed).
 
 ## Architecture / Key Patterns
 

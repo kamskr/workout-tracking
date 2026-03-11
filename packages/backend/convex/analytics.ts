@@ -344,9 +344,11 @@ export const getMonthlySummary = query({
 export async function computePeriodSummary(
   db: any,
   userId: string,
-  periodDays: number,
+  periodDays: number | undefined,
 ): Promise<PeriodSummary> {
-  const cutoff = Date.now() - periodDays * 86_400_000;
+  const cutoff = periodDays !== undefined
+    ? Date.now() - periodDays * 86_400_000
+    : undefined;
 
   // 1. Get completed workouts in period
   const workouts = await db
@@ -358,7 +360,7 @@ export async function computePeriodSummary(
     (w: any) =>
       w.status === "completed" &&
       w.completedAt &&
-      w.completedAt >= cutoff,
+      (cutoff === undefined || w.completedAt >= cutoff),
   );
 
   if (completedWorkouts.length === 0) {

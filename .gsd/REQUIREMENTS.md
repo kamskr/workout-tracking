@@ -166,8 +166,8 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M003/S01
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Profile data stored in Convex, not just Clerk. Clerk provides auth identity, Convex stores app-level profile.
+- Validation: M003/S01 — profiles table with CRUD, username uniqueness (case-insensitive), stats computation (reusing computePeriodSummary + computeCurrentStreak), full-text search, avatar upload, cross-user reads. Web UI: /profile/setup with live username validation, /profile/[username] with stats and inline edit. 12-check verification script (verify-s01-m03.ts) written covering profile CRUD, uniqueness, format validation, stats, search, cross-user reads. TypeScript compiles 0 errors. **Pending:** verification script execution blocked by Convex CLI auth — must pass 12/12 before fully validated.
+- Notes: Profile data stored in Convex, not just Clerk. Clerk provides auth identity, Convex stores app-level profile. Recent activity display deferred to S02 (feed items on profile).
 
 ### R016 — Follow System and Activity Feed
 - Class: core-capability
@@ -334,7 +334,7 @@ This file is the explicit capability and coverage contract for the project.
 | R012 | core-capability | validated | M002/S01 | none | M002/S01 — 12/12 backend checks, reactive 🏆 badge on web |
 | R013 | core-capability | validated | M002/S02 | none | M002/S02 — 8/8 backend checks, Recharts chart on web |
 | R014 | core-capability | validated | M002/S03 | M002/S01 | M002/S03 — 11/11 backend checks, web dashboard with heatmap + charts + summaries |
-| R015 | core-capability | active | M003/S01 | none | unmapped |
+| R015 | core-capability | active | M003/S01 | none | M003/S01 — 12-check verification script + web UI (pending live execution) |
 | R016 | core-capability | active | M003/S02 | M003/S01 | unmapped |
 | R017 | core-capability | active | M003/S03 | M003/S01, M001/S05 | unmapped |
 | R018 | core-capability | active | M004/S01 | M003/S01 | unmapped |

@@ -150,6 +150,26 @@ export default defineSchema({
     defaultRestSeconds: v.optional(v.number()),
   }).index("by_userId", ["userId"]),
 
+  // ── User Profiles ──────────────────────────────────────────────────────────
+  // Cross-user readable table — profile queries accept a userId/username arg
+  // and return data for any authenticated user (not just the owner).
+  profiles: defineTable({
+    userId: v.string(),
+    username: v.string(),
+    usernameLower: v.string(),
+    displayName: v.string(),
+    bio: v.optional(v.string()),
+    avatarStorageId: v.optional(v.id("_storage")),
+    isPublic: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_usernameLower", ["usernameLower"])
+    .searchIndex("search_displayName", {
+      searchField: "displayName",
+      filterFields: ["isPublic"],
+    }),
+
   // ── Personal Records ─────────────────────────────────────────────────────
   // Stores the current best for each exercise × PR type per user (D044).
   // PR detection runs inside `logSet` and upserts into this table.

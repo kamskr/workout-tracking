@@ -25,6 +25,7 @@ import {
   computeVolumeByMuscleGroup,
   computePeriodSummary,
 } from "./analytics";
+import { computeCurrentStreak } from "./profiles";
 
 // ── Workout helpers ──────────────────────────────────────────────────────────
 
@@ -773,6 +774,210 @@ export const testGetPersonalRecords = query({
   },
 });
 
+// ── Profile helpers ──────────────────────────────────────────────────────────
+
+const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,30}$/;
+
+/**
+ * Test version of createProfile — accepts testUserId instead of auth.
+ * Same logic: at-most-one-per-user, username format + uniqueness checks.
+ */
+export const testCreateProfile = mutation({
+  args: {
+    testUserId: v.string(),
+    username: v.string(),
+    displayName: v.string(),
+    bio: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Check if user already has a profile
+    const existing = await ctx.db
+      .query("profiles")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .first();
+
+    if (existing) {
+      return existing;
+    }
+
+    // Validate username format
+    if (!USERNAME_REGEX.test(args.username)) {
+      throw new Error(
+        "Username must be 3-30 characters, alphanumeric and underscores only",
+      );
+    }
+
+    // Check case-insensitive uniqueness
+    const usernameLower = args.username.toLowerCase();
+    const taken = await ctx.db
+      .query("profiles")
+      .withIndex("by_usernameLower", (q) =>
+        q.eq("usernameLower", usernameLower),
+      )
+      .first();
+
+    if (taken) {
+      throw new Error("Username already taken");
+    }
+
+    // Insert profile
+    const profileId = await ctx.db.insert("profiles", {
+      userId: args.testUserId,
+      username: args.username,
+      usernameLower,
+      displayName: args.displayName,
+      bio: args.bio,
+      isPublic: true,
+      createdAt: Date.now(),
+    });
+
+    return await ctx.db.get(profileId);
+  },
+});
+
+/**
+ * Test version of updateProfile — accepts testUserId instead of auth.
+ * Username is immutable. Cleans up old avatar storage on change.
+ */
+export const testUpdateProfile = mutation({
+  args: {
+    testUserId: v.string(),
+    displayName: v.optional(v.string()),
+    bio: v.optional(v.string()),
+    avatarStorageId: v.optional(v.id("_storage")),
+    isPublic: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .first();
+
+    if (!profile) {
+      throw new Error("Profile not found");
+    }
+
+    const patch: Record<string, unknown> = {};
+    if (args.displayName !== undefined) patch.displayName = args.displayName;
+    if (args.bio !== undefined) patch.bio = args.bio;
+    if (args.isPublic !== undefined) patch.isPublic = args.isPublic;
+
+    if (args.avatarStorageId !== undefined) {
+      if (
+        profile.avatarStorageId &&
+        profile.avatarStorageId !== args.avatarStorageId
+      ) {
+        try {
+          await ctx.storage.delete(profile.avatarStorageId);
+        } catch (err) {
+          console.error("[testUpdateProfile] Failed to delete old avatar:", err);
+        }
+      }
+      patch.avatarStorageId = args.avatarStorageId;
+    }
+
+    if (Object.keys(patch).length > 0) {
+      await ctx.db.patch(profile._id, patch);
+    }
+
+    return await ctx.db.get(profile._id);
+  },
+});
+
+/**
+ * Test version of getProfile — returns profile for given testUserId (no auth check).
+ */
+export const testGetProfile = query({
+  args: {
+    testUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .first();
+
+    if (!profile) return null;
+
+    let avatarUrl: string | null = null;
+    if (profile.avatarStorageId) {
+      avatarUrl = (await ctx.storage.getUrl(profile.avatarStorageId)) ?? null;
+    }
+
+    return { ...profile, avatarUrl };
+  },
+});
+
+/**
+ * Test version of getProfileByUsername — returns profile by username (no auth check).
+ */
+export const testGetProfileByUsername = query({
+  args: {
+    username: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const usernameLower = args.username.toLowerCase();
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_usernameLower", (q) =>
+        q.eq("usernameLower", usernameLower),
+      )
+      .first();
+
+    if (!profile) return null;
+
+    let avatarUrl: string | null = null;
+    if (profile.avatarStorageId) {
+      avatarUrl = (await ctx.storage.getUrl(profile.avatarStorageId)) ?? null;
+    }
+
+    return { ...profile, avatarUrl };
+  },
+});
+
+/**
+ * Test version of getProfileStats — returns stats for given testUserId (no auth check).
+ */
+export const testGetProfileStats = query({
+  args: {
+    testUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const summary = await computePeriodSummary(
+      ctx.db,
+      args.testUserId,
+      undefined,
+    );
+    const currentStreak = await computeCurrentStreak(ctx.db, args.testUserId);
+
+    return {
+      totalWorkouts: summary.workoutCount,
+      currentStreak,
+      totalVolume: summary.totalVolume,
+      topExercises: summary.topExercises,
+    };
+  },
+});
+
+/**
+ * Test version of searchProfiles — searches displayName (no auth check).
+ */
+export const testSearchProfiles = query({
+  args: {
+    searchTerm: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const results = await ctx.db
+      .query("profiles")
+      .withSearchIndex("search_displayName", (q) =>
+        q.search("displayName", args.searchTerm),
+      )
+      .take(20);
+
+    return results;
+  },
+});
+
 // ── Cleanup helper ───────────────────────────────────────────────────────────
 
 /**
@@ -874,6 +1079,24 @@ export const testCleanup = mutation({
 
     for (const pref of prefs) {
       await ctx.db.delete(pref._id);
+    }
+
+    // Delete profiles
+    const profiles = await ctx.db
+      .query("profiles")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .collect();
+
+    for (const profile of profiles) {
+      // Clean up avatar storage if present
+      if (profile.avatarStorageId) {
+        try {
+          await ctx.storage.delete(profile.avatarStorageId);
+        } catch {
+          // Orphan is harmless
+        }
+      }
+      await ctx.db.delete(profile._id);
     }
   },
 });

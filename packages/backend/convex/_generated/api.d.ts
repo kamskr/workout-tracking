@@ -15,6 +15,7 @@ import type * as lib_prDetection from "../lib/prDetection.js";
 import type * as notes from "../notes.js";
 import type * as openai from "../openai.js";
 import type * as personalRecords from "../personalRecords.js";
+import type * as profiles from "../profiles.js";
 import type * as seed from "../seed.js";
 import type * as sets from "../sets.js";
 import type * as templates from "../templates.js";
@@ -38,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   notes: typeof notes;
   openai: typeof openai;
   personalRecords: typeof personalRecords;
+  profiles: typeof profiles;
   seed: typeof seed;
   sets: typeof sets;
   templates: typeof templates;

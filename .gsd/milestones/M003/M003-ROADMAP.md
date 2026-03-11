@@ -55,7 +55,7 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: User Profiles** `risk:high` `depends:[]`
+- [x] **S01: User Profiles** `risk:high` `depends:[]`
   > After this: A user visiting the app for the first time sees a profile creation flow (choose username, set bio). Their profile page at `/profile/[username]` displays name, avatar, bio, and workout stats (total workouts, volume). Other authenticated users can view the profile. Proven by backend verification script (profile CRUD, username uniqueness, stats computation) and browser walkthrough of profile creation + view.
 
 - [ ] **S02: Follow System & Activity Feed** `risk:high` `depends:[S01]`
