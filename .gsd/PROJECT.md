@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-M001 complete, M002 complete, M003 complete, M004 complete (2026-03-11). All 4 slices shipped: Leaderboards (S01), Group Challenges (S02), Achievements & Badges (S03), Mobile Competitive Port (S04). 21-table normalized Convex schema. Full competitive feature set on both web and mobile: pre-computed leaderboard rankings, 4-type challenge lifecycle with cron enforcement, 15-badge gamification layer, all consuming the same Convex backend. Mobile: 7-tab navigation with Compete tab (LeaderboardScreen, ChallengesScreen, ChallengeDetailScreen), BadgeDisplayNative on profiles, opt-in toggle. TypeScript compiles 0 new errors across all 3 packages. 82 pending verification checks (42 M003 + 40 M004) — **execution pending Convex CLI auth** (`npx convex login`). 72/72 M001+M002 regression baseline. 16 requirements validated, R015-R020 fully implemented but remain active pending live verification. Next: M005 planning or milestone close after live verification.
+M001–M004 complete (2026-03-11). 4 milestones, 18 slices, 57 tasks shipped. 21-table normalized Convex schema with 136 decisions recorded. Full feature set across both platforms: core workout logging, analytics with PR tracking and muscle heatmaps, social foundation (profiles, follows, feed, sharing), and competitive features (leaderboards, challenges, badges). Mobile app has 7-tab navigation covering all domains. `finishWorkout` mutation contains 4 non-fatal hooks (feed item, leaderboard, challenge, badge). Project's first `crons.ts` runs 15-min challenge deadline enforcement. TypeScript compiles 0 new errors across all 3 packages (backend, web, native). 72/72 M001+M002 backend checks pass. 82 additional checks (42 M003 + 40 M004) written and compile — **execution pending Convex CLI auth** (`npx convex login`). 16 requirements validated, R015–R020 fully implemented but remain active pending live verification. Next: M005 planning (Collaborative Live Workouts).
 
 ## Architecture / Key Patterns
 
@@ -38,5 +38,5 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 - [x] M001: Core Workout Logging — Exercise library, workout CRUD, full set tracking, rest timer, templates, cross-platform UI
 - [x] M002: Analytics & Progress — PR tracking, progress charts, volume analytics, muscle heatmaps, summaries
 - [x] M003: Social Foundation — User profiles, follow system, activity feed with reactions, workout sharing with privacy controls, mobile social port (verification: partial — 42 checks pending Convex CLI auth)
-- [x] M004: Leaderboards & Challenges — Leaderboards, group challenges, achievements, badges, mobile competitive port
+- [x] M004: Leaderboards & Challenges — Pre-computed leaderboards with opt-in privacy, 4-type group challenges with cron lifecycle, 15-badge gamification, mobile competitive port (verification: structural + compilation complete, 40 checks pending Convex CLI auth)
 - [ ] M005: Collaborative Workouts — Live shared sessions, partner tracking, realtime presence
