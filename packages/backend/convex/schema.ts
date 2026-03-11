@@ -67,8 +67,14 @@ const reportTargetType = v.union(
   v.literal("profile"),
 );
 
-// Export validators for use in social.ts and testing.ts
-export { feedItemType, reactionType, reportTargetType };
+const leaderboardMetric = v.union(
+  v.literal("e1rm"),
+  v.literal("volume"),
+  v.literal("reps"),
+);
+
+// Export validators for use in social.ts, testing.ts, and leaderboards.ts
+export { feedItemType, reactionType, reportTargetType, leaderboardMetric };
 
 // ── Schema ───────────────────────────────────────────────────────────────────
 
@@ -183,6 +189,7 @@ export default defineSchema({
     bio: v.optional(v.string()),
     avatarStorageId: v.optional(v.id("_storage")),
     isPublic: v.boolean(),
+    leaderboardOptIn: v.optional(v.boolean()),
     createdAt: v.number(),
   })
     .index("by_userId", ["userId"])
@@ -264,4 +271,24 @@ export default defineSchema({
     reason: v.string(),
     createdAt: v.number(),
   }).index("by_reporterId", ["reporterId"]),
+
+  // ── Leaderboard Entries ────────────────────────────────────────────────────
+  // Pre-computed per-exercise rankings updated on workout completion (D108).
+  // Opt-in filtering happens at query time, not at write time.
+  leaderboardEntries: defineTable({
+    userId: v.string(),
+    exerciseId: v.id("exercises"),
+    metric: leaderboardMetric,
+    period: v.literal("allTime"),
+    value: v.number(),
+    workoutId: v.id("workouts"),
+    updatedAt: v.number(),
+  })
+    .index("by_exerciseId_metric_period_value", [
+      "exerciseId",
+      "metric",
+      "period",
+      "value",
+    ])
+    .index("by_userId", ["userId"]),
 });

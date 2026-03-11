@@ -18,6 +18,7 @@ import {
   mutation,
   query,
 } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { detectAndStorePRs, type PRDetectionResult } from "./lib/prDetection";
 import {
@@ -28,6 +29,8 @@ import {
 import { computeCurrentStreak } from "./profiles";
 import { reactionType, reportTargetType } from "./schema";
 import { paginationOptsValidator } from "convex/server";
+import { updateLeaderboardEntries } from "./lib/leaderboardCompute";
+import { leaderboardMetric } from "./schema";
 
 // ── Workout helpers ──────────────────────────────────────────────────────────
 
@@ -159,6 +162,18 @@ export const testDeleteWorkout = mutation({
       }
 
       await ctx.db.delete(feedItem._id);
+    }
+
+    // Cascade: delete leaderboard entries for this workout
+    const lbEntries = await ctx.db
+      .query("leaderboardEntries")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .collect();
+
+    for (const entry of lbEntries) {
+      if (entry.workoutId === args.id) {
+        await ctx.db.delete(entry._id);
+      }
     }
 
     await ctx.db.delete(args.id);
@@ -1868,6 +1883,16 @@ export const testCleanup = mutation({
       }
     }
 
+    // Delete leaderboard entries
+    const leaderboardEntries = await ctx.db
+      .query("leaderboardEntries")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .collect();
+
+    for (const entry of leaderboardEntries) {
+      await ctx.db.delete(entry._id);
+    }
+
     // Delete user preferences
     const prefs = await ctx.db
       .query("userPreferences")
@@ -2037,5 +2062,245 @@ export const testGetMonthlySummary = query({
   },
   handler: async (ctx, args) => {
     return await computePeriodSummary(ctx.db, args.testUserId, 30, true);
+  },
+});
+
+// ── Leaderboard test helpers ─────────────────────────────────────────────────
+
+/**
+ * Test version of setLeaderboardOptIn — patches profile's leaderboardOptIn
+ * field for a test user without auth.
+ */
+export const testSetLeaderboardOptIn = mutation({
+  args: {
+    testUserId: v.string(),
+    optIn: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .first();
+
+    if (!profile) throw new Error("Profile not found");
+
+    await ctx.db.patch(profile._id, { leaderboardOptIn: args.optIn });
+  },
+});
+
+/**
+ * Test version of getLeaderboard — mirrors the auth-gated query but accepts
+ * no auth. Returns entries with profile info, post-filtered by opt-in.
+ */
+export const testGetLeaderboard = query({
+  args: {
+    exerciseId: v.id("exercises"),
+    metric: leaderboardMetric,
+    period: v.literal("allTime"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 10;
+
+    const entries = await ctx.db
+      .query("leaderboardEntries")
+      .withIndex("by_exerciseId_metric_period_value", (q) =>
+        q
+          .eq("exerciseId", args.exerciseId)
+          .eq("metric", args.metric)
+          .eq("period", args.period),
+      )
+      .order("desc")
+      .take(limit * 3);
+
+    const totalEntries = entries.length;
+
+    const enriched: Array<{
+      userId: string;
+      value: number;
+      displayName: string;
+      username: string;
+      updatedAt: number;
+    }> = [];
+
+    for (const entry of entries) {
+      if (enriched.length >= limit) break;
+
+      const profile = await ctx.db
+        .query("profiles")
+        .withIndex("by_userId", (q) => q.eq("userId", entry.userId))
+        .first();
+
+      if (profile && profile.leaderboardOptIn === true) {
+        enriched.push({
+          userId: entry.userId,
+          value: entry.value,
+          displayName: profile.displayName,
+          username: profile.username,
+          updatedAt: entry.updatedAt,
+        });
+      }
+    }
+
+    return { entries: enriched, totalEntries };
+  },
+});
+
+/**
+ * Test version of getMyRank — mirrors the auth-gated query but accepts
+ * testUserId directly instead of reading from auth context.
+ */
+export const testGetMyRank = query({
+  args: {
+    testUserId: v.string(),
+    exerciseId: v.id("exercises"),
+    metric: leaderboardMetric,
+    period: v.literal("allTime"),
+  },
+  handler: async (ctx, args) => {
+    // Check caller's opt-in status
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .first();
+
+    if (!profile || profile.leaderboardOptIn !== true) {
+      return { rank: null as number | null, value: null as number | null, totalScanned: 0 };
+    }
+
+    const entries = await ctx.db
+      .query("leaderboardEntries")
+      .withIndex("by_exerciseId_metric_period_value", (q) =>
+        q
+          .eq("exerciseId", args.exerciseId)
+          .eq("metric", args.metric)
+          .eq("period", args.period),
+      )
+      .order("desc")
+      .take(1000);
+
+    const totalScanned = entries.length;
+
+    let rank = 0;
+    for (const entry of entries) {
+      const entryProfile = await ctx.db
+        .query("profiles")
+        .withIndex("by_userId", (q) => q.eq("userId", entry.userId))
+        .first();
+
+      if (entryProfile && entryProfile.leaderboardOptIn === true) {
+        rank++;
+        if (entry.userId === args.testUserId) {
+          return { rank, value: entry.value, totalScanned };
+        }
+      }
+    }
+
+    return { rank: null as number | null, value: null as number | null, totalScanned };
+  },
+});
+
+/**
+ * Test helper to directly call updateLeaderboardEntries for a user+workout
+ * without going through finishWorkout.
+ */
+export const testUpdateLeaderboardEntries = mutation({
+  args: {
+    testUserId: v.string(),
+    workoutId: v.id("workouts"),
+  },
+  handler: async (ctx, args) => {
+    await updateLeaderboardEntries(ctx.db, args.testUserId, args.workoutId);
+  },
+});
+
+/**
+ * Test version of getLeaderboardExercises — mirrors the auth-gated query
+ * without auth. Returns distinct exercises that have leaderboard entries.
+ */
+export const testGetLeaderboardExercises = query({
+  args: {},
+  handler: async (ctx) => {
+    const entries = await ctx.db
+      .query("leaderboardEntries")
+      .take(500);
+
+    const exerciseIdSet = new Set<string>();
+    for (const entry of entries) {
+      exerciseIdSet.add(entry.exerciseId as string);
+    }
+
+    const exercises: Array<{
+      _id: string;
+      name: string;
+      primaryMuscleGroup: string;
+    }> = [];
+
+    for (const exerciseId of Array.from(exerciseIdSet)) {
+      const exercise = await ctx.db.get(exerciseId as Id<"exercises">);
+      if (exercise) {
+        exercises.push({
+          _id: exercise._id as string,
+          name: exercise.name,
+          primaryMuscleGroup: exercise.primaryMuscleGroup,
+        });
+      }
+    }
+
+    exercises.sort((a, b) => a.name.localeCompare(b.name));
+
+    return exercises;
+  },
+});
+
+/**
+ * Test helper to patch a leaderboard entry's updatedAt — for testing
+ * period-filtered queries.
+ */
+export const testPatchLeaderboardEntryUpdatedAt = mutation({
+  args: {
+    testUserId: v.string(),
+    exerciseId: v.id("exercises"),
+    metric: leaderboardMetric,
+    updatedAt: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const entry = await ctx.db
+      .query("leaderboardEntries")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("exerciseId"), args.exerciseId),
+          q.eq(q.field("metric"), args.metric),
+        ),
+      )
+      .first();
+
+    if (!entry) throw new Error("Leaderboard entry not found");
+
+    await ctx.db.patch(entry._id, { updatedAt: args.updatedAt });
+  },
+});
+
+/**
+ * Test helper to get raw leaderboard entries for a user (unfiltered by opt-in).
+ * Useful for verifying entries exist before/after operations.
+ */
+export const testGetRawLeaderboardEntries = query({
+  args: {
+    testUserId: v.string(),
+    exerciseId: v.optional(v.id("exercises")),
+  },
+  handler: async (ctx, args) => {
+    let entries = await ctx.db
+      .query("leaderboardEntries")
+      .withIndex("by_userId", (q) => q.eq("userId", args.testUserId))
+      .collect();
+
+    if (args.exerciseId) {
+      entries = entries.filter((e) => e.exerciseId === args.exerciseId);
+    }
+
+    return entries;
   },
 });

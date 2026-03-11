@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getUserId } from "./lib/auth";
+import { updateLeaderboardEntries } from "./lib/leaderboardCompute";
 
 // ── Mutations ────────────────────────────────────────────────────────────────
 
@@ -88,6 +89,15 @@ export const finishWorkout = mutation({
       );
     }
 
+    // Update leaderboard entries (non-fatal — workout completion always succeeds)
+    try {
+      await updateLeaderboardEntries(ctx.db, userId, args.id);
+    } catch (err) {
+      console.error(
+        `[Leaderboard] Error updating entries for workout ${args.id}: ${err}`,
+      );
+    }
+
     return { completedAt, durationSeconds };
   },
 });
@@ -144,6 +154,18 @@ export const deleteWorkout = mutation({
       }
 
       await ctx.db.delete(feedItem._id);
+    }
+
+    // Cascade: delete leaderboard entries for this workout
+    const leaderboardEntries = await ctx.db
+      .query("leaderboardEntries")
+      .withIndex("by_userId", (q) => q.eq("userId", workout.userId))
+      .collect();
+
+    for (const entry of leaderboardEntries) {
+      if (entry.workoutId === args.id) {
+        await ctx.db.delete(entry._id);
+      }
     }
 
     await ctx.db.delete(args.id);

@@ -65,6 +65,14 @@ export default function Header() {
                         Feed
                       </button>
                     </Link>
+                    <Link href="/leaderboards">
+                      <button
+                        type="button"
+                        className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal] font-montserrat px-[22px] py-[11px] hover:text-gray-600 transition-colors"
+                      >
+                        Leaderboards
+                      </button>
+                    </Link>
                     <Link href="/notes">
                       <button
                         type="button"
@@ -114,13 +122,22 @@ export default function Header() {
           <DisclosurePanel className="sm:hidden">
             <div className="space-y-1 px-2 pb-3 pt-2 flex flex-col gap-3 items-start">
               {user && (
-                <DisclosureButton
-                  as={Link}
-                  href="/feed"
-                  className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal]"
-                >
-                  Feed
-                </DisclosureButton>
+                <>
+                  <DisclosureButton
+                    as={Link}
+                    href="/feed"
+                    className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal]"
+                  >
+                    Feed
+                  </DisclosureButton>
+                  <DisclosureButton
+                    as={Link}
+                    href="/leaderboards"
+                    className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal]"
+                  >
+                    Leaderboards
+                  </DisclosureButton>
+                </>
               )}
               {navigation.map((item) => (
                 <DisclosureButton

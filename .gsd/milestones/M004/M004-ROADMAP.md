@@ -58,7 +58,7 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: Leaderboards — Backend + Web UI** `risk:high` `depends:[]`
+- [x] **S01: Leaderboards — Backend + Web UI** `risk:high` `depends:[]`
   > After this: A user visits the Leaderboards page on web, sees top-10 rankings for Bench Press 1RM across multiple users, filters by exercise and time period, and their own rank is displayed — all backed by pre-computed leaderboard entries updated on workout completion.
 
 - [ ] **S02: Group Challenges — Backend + Web UI** `risk:high` `depends:[S01]`

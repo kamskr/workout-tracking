@@ -199,8 +199,8 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M004/S01
 - Supporting slices: M003/S01
-- Validation: unmapped
-- Notes: Opt-in leaderboards — users choose whether to participate.
+- Validation: M004/S01 — Pre-computed leaderboardEntries table with composite index, 3 metrics (e1RM/volume/reps), opt-in filtering via profiles.leaderboardOptIn, 4 auth-gated Convex functions (getLeaderboard, getMyRank, setLeaderboardOptIn, getLeaderboardExercises). Web UI at /leaderboards with exercise selector, metric/period pickers, ranked top-10 table, My Rank callout, profile opt-in toggle. 12-check verification script (verify-s01-m04.ts) across 5 test users covers entry creation, Epley formula, warmup exclusion, opt-in filtering, ranking order, rank computation, period filtering, deletion cascade. TypeScript compiles 0 new errors. **Pending live validation:** verification script execution blocked by Convex CLI auth — must pass 12/12 to move to validated.
+- Notes: Opt-in leaderboards — users choose whether to participate. Absolute ranking only (no bodyweight normalization, D112). Period filtering cosmetic in S01 (D117).
 
 ### R019 — Group Challenges
 - Class: core-capability
@@ -337,7 +337,7 @@ This file is the explicit capability and coverage contract for the project.
 | R015 | core-capability | active | M003/S01 | none | M003/S01 — 12-check verification script + web UI (pending live execution) |
 | R016 | core-capability | active | M003/S02 | M003/S01 | M003/S02 — 15-check verification script + web+mobile UI (pending live execution) |
 | R017 | core-capability | active | M003/S03 | M003/S01, M001/S05 | M003/S03 — 15-check verification script + web UI (pending live execution) |
-| R018 | core-capability | active | M004/S01 | M003/S01 | unmapped |
+| R018 | core-capability | active | M004/S01 | M003/S01 | M004/S01 — 12-check verification script + web UI (pending live execution) |
 | R019 | core-capability | active | M004/S02 | M004/S01 | unmapped |
 | R020 | differentiator | active | M004/S03 | M003/S01 | unmapped |
 | R021 | differentiator | active | M005/S01 | M005/S02 | unmapped |

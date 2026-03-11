@@ -10,7 +10,7 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-M001 complete, M002 complete, M003 complete (2026-03-11). All 4 M003 slices delivered: user profiles with username uniqueness, follow/unfollow with activity feed, 5-emoji reactions, workout sharing via public links, clone-as-template, privacy controls with defense-in-depth, block/report system, and full mobile port with 6-tab navigation. 15-table normalized Convex schema. TypeScript compiles 0 new errors across all 3 packages. 42 M003 verification checks written (12 profile + 15 social + 15 sharing/privacy) — **execution pending Convex CLI auth** (`npx convex login`). 72/72 M001+M002 regression baseline (not re-run, no breaking changes). 16 requirements validated, R015+R016+R017 fully implemented but remain active pending live verification. Next: Convex CLI auth → run 42+72 verification checks → mobile UAT → M004 planning.
+M001 complete, M002 complete, M003 complete, M004/S01 complete (2026-03-11). Leaderboard backend and web UI shipped: pre-computed leaderboardEntries table (16th table), 3 metrics (e1RM/volume/reps), opt-in filtering, 4 auth-gated Convex functions, web UI at /leaderboards with exercise/metric/period pickers and ranked table. 16-table normalized Convex schema. TypeScript compiles 0 new errors across all 3 packages. 54 pending verification checks (42 M003 + 12 M004/S01) — **execution pending Convex CLI auth** (`npx convex login`). 72/72 M001+M002 regression baseline. 16 requirements validated, R015-R018 fully implemented but remain active pending live verification. Next: S02 Group Challenges planning.
 
 ## Architecture / Key Patterns
 
@@ -23,6 +23,7 @@ M001 complete, M002 complete, M003 complete (2026-03-11). All 4 M003 slices deli
 - **Social:** Hybrid feed denormalization (D070) — feedItems table with denormalized snapshots, single-table paginate + post-filter (D087)
 - **Privacy:** Defense-in-depth (D098) — isPublic checked on both feedItems and workouts, cascade updates on toggle
 - **Sharing:** Public Convex queries (no auth required) + Clerk middleware exclusion for /shared routes (D075)
+- **Leaderboards:** Pre-computed entries via non-fatal finishWorkout hook (D107/D108), opt-in filtering at query time (D109/D120), bounded rank scan (D114)
 - **Styling:** Tailwind CSS (web), React Native StyleSheet (mobile)
 - **Design:** Clean/minimal aesthetic — light theme, Apple Health-inspired
 

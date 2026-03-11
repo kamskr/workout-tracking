@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useUser } from "@clerk/clerk-react";
 import { useQuery, useMutation } from "convex/react";
@@ -95,6 +95,24 @@ export default function ProfileViewPage() {
   const weightUnit: WeightUnit = preferences?.weightUnit ?? "kg";
 
   const isOwnProfile = profile?.userId === user?.id;
+
+  // Leaderboard opt-in
+  const setLeaderboardOptIn = useMutation(api.leaderboards.setLeaderboardOptIn);
+  const [isTogglingOptIn, setIsTogglingOptIn] = useState(false);
+
+  const handleToggleOptIn = useCallback(async () => {
+    if (!profile) return;
+    setIsTogglingOptIn(true);
+    try {
+      await setLeaderboardOptIn({
+        optIn: !(profile.leaderboardOptIn === true),
+      });
+    } catch {
+      // Error handled — UI will update reactively
+    } finally {
+      setIsTogglingOptIn(false);
+    }
+  }, [profile, setLeaderboardOptIn]);
 
   // Edit profile state
   const [isEditing, setIsEditing] = useState(false);
@@ -319,6 +337,49 @@ export default function ProfileViewPage() {
             ) : null}
           </div>
         </div>
+
+        {/* Leaderboard opt-in (own profile only) */}
+        {isOwnProfile && (
+          <div className="mt-6" data-leaderboard-optin>
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <h2 className="text-sm font-semibold text-gray-700 mb-3">
+                Leaderboard
+              </h2>
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="leaderboard-opt-in"
+                  className="text-sm text-gray-600 cursor-pointer select-none"
+                >
+                  Show my rankings on public leaderboards
+                </label>
+                <button
+                  id="leaderboard-opt-in"
+                  type="button"
+                  role="switch"
+                  aria-checked={profile.leaderboardOptIn === true}
+                  disabled={isTogglingOptIn}
+                  onClick={handleToggleOptIn}
+                  className={`
+                    relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent
+                    transition-colors duration-200 ease-in-out
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                    ${profile.leaderboardOptIn === true ? "bg-blue-600" : "bg-gray-200"}
+                  `}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`
+                      pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0
+                      transition duration-200 ease-in-out
+                      ${profile.leaderboardOptIn === true ? "translate-x-5" : "translate-x-0"}
+                    `}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats section */}
         <div className="mt-8">
