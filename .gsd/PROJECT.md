@@ -52,17 +52,7 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 
 - [x] M001: Core Workout Logging — Exercise library, workout CRUD, full set tracking, rest timer, templates, cross-platform UI
 - [x] M002: Analytics & Progress — PR tracking, progress charts, volume analytics, muscle heatmaps, summaries
-- [x] M003: Social Foundation — User profiles, follow system, activity feed with reactions, workout sharing with privacy controls, mobile social port (verification: 42 checks pending Convex CLI auth)
-- [x] M004: Leaderboards & Challenges — Pre-computed leaderboards with opt-in privacy, 4-type group challenges with cron lifecycle, 15-badge gamification, mobile competitive port (verification: 40 checks pending Convex CLI auth)
-- [x] M005: Collaborative Live Workouts — Session creation with invite links, realtime presence via heartbeat + cron, live set feed, server-authoritative shared timer, host-controlled lifecycle with combined summary, finishWorkoutCore integration, mobile port (verification: 37 checks pending Convex CLI auth)
-
-## Blockers
-
-- **Convex CLI auth:** `npx convex login` requires interactive terminal with browser. Must resolve before 119 verification checks can execute and R015–R021 can be validated.
-
-## Next Steps
-
-1. Resolve Convex CLI auth to execute all 119 pending verification checks (M003: 42, M004: 40, M005: 37)
-2. Mark R015–R021 as validated once live verification passes
-3. Final milestone-level UAT with multi-device end-to-end proof (two browsers for sessions, two phones for mobile)
-4. Consider future milestones: offline support (R024), community exercise library (R025), structured training programs (R026)
+- [x] M003: Social Foundation — User profiles, follow system, activity feed with reactions, workout sharing with privacy controls, mobile social port
+- [x] M004: Leaderboards & Challenges — Pre-computed leaderboards with opt-in privacy, 4-type group challenges with cron lifecycle, 15-badge gamification, mobile competitive port
+- [x] M005: Collaborative Live Workouts — Session creation with invite links, realtime presence, shared timer, host-controlled lifecycle, finishWorkoutCore integration, mobile port
+- [ ] M006: Stabilization, Testing & Design Refresh — Dev stack setup, landing page redesign, app pages Apple Fitness+ refresh, 119 backend verification checks, mobile testing on iOS Simulator

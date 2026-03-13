@@ -257,6 +257,61 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: M001/S01 — /exercises route redirects unauthenticated users to Clerk sign-in (verified in browser). createCustomExercise mutation requires auth. Web platform verified; mobile deferred to S06.
 - Notes: Template already has ConvexProviderWithClerk on both platforms.
 
+### R029 — Dev Stack Boots Cleanly
+- Class: operability
+- Status: active
+- Description: Convex backend, Next.js web app, and Expo mobile app all boot cleanly in local dev with a live Convex deployment. Seed data loaded. All dependencies resolved.
+- Why it matters: Nothing else can be tested or demoed if the dev stack doesn't run.
+- Source: execution
+- Primary owning slice: M006/S01
+- Supporting slices: none
+- Validation: unmapped
+- Notes: Blocked on Convex CLI auth. User has a Convex project — need deployment URL configured.
+
+### R030 — Landing Page Redesign
+- Class: launchability
+- Status: active
+- Description: Landing page at `/` is a polished, bold workout tracker showcase with Apple Fitness+ inspired design — hero section, feature highlights, social proof, and CTA. No trace of the UseNotes template.
+- Why it matters: The landing page is the first impression. Currently it says "UseNotes" and describes a note-taking app.
+- Source: user
+- Primary owning slice: M006/S02
+- Supporting slices: none
+- Validation: unmapped
+- Notes: Bold & energetic style. Apple Fitness+ aesthetic — rounded cards, gradient backgrounds, warm colors, premium feel.
+
+### R031 — App Pages Design Refresh
+- Class: quality-attribute
+- Status: active
+- Description: All authenticated app pages share a cohesive Apple Fitness+ design language — modern navigation, rounded cards, gradient accents, warm colors, consistent typography and spacing. Premium feel throughout.
+- Why it matters: The app is feature-complete but visually plain. A design refresh makes it feel like a real product.
+- Source: user
+- Primary owning slice: M006/S03
+- Supporting slices: M006/S04
+- Validation: unmapped
+- Notes: Supersedes D007 clean/minimal for web. Design tokens defined in globals.css. App shell with modern navigation.
+
+### R032 — Full Backend Verification
+- Class: quality-attribute
+- Status: active
+- Description: All 119 pending verification checks (42 M003 + 40 M004 + 37 M005) execute against a live Convex backend and pass. Any bugs found are fixed.
+- Why it matters: Features built in M003–M005 have never been runtime-tested. Structural proof (TypeScript compilation) is not sufficient for confidence.
+- Source: execution
+- Primary owning slice: M006/S05
+- Supporting slices: none
+- Validation: unmapped
+- Notes: Validates R015–R021 on success.
+
+### R033 — Mobile App Functional on iOS Simulator
+- Class: launchability
+- Status: active
+- Description: The Expo mobile app boots on iOS Simulator with all 7 tabs rendering, navigation working, and core flows (exercise browse, workout logging) functional.
+- Why it matters: The mobile app has never been runtime-tested. 55 component/screen files exist but none have been verified on a real device or simulator.
+- Source: user
+- Primary owning slice: M006/S06
+- Supporting slices: none
+- Validation: unmapped
+- Notes: Requires xcode-select path switch to Xcode.app for simulator access.
+
 ## Deferred
 
 ### R024 — Offline Workout Logging
@@ -348,10 +403,15 @@ This file is the explicit capability and coverage contract for the project.
 | R026 | core-capability | deferred | none | none | unmapped |
 | R027 | anti-feature | out-of-scope | none | none | n/a |
 | R028 | anti-feature | out-of-scope | none | none | n/a |
+| R029 | operability | active | M006/S01 | none | unmapped |
+| R030 | launchability | active | M006/S02 | none | unmapped |
+| R031 | quality-attribute | active | M006/S03 | M006/S04 | unmapped |
+| R032 | quality-attribute | active | M006/S05 | none | unmapped |
+| R033 | launchability | active | M006/S06 | none | unmapped |
 
 ## Coverage Summary
 
-- Active requirements: 14
-- Mapped to slices: 23
+- Active requirements: 12 (R015–R021, R029–R033)
+- Mapped to slices: 28
 - Validated: 16 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R013, R014, R022, R023)
 - Unmapped active requirements: 0
