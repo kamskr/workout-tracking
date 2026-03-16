@@ -4,11 +4,13 @@ import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
+import { Clock3, History, Sparkles, Trash2 } from "lucide-react";
 import { formatWeight, type WeightUnit } from "@/lib/units";
 import SetRow from "./SetRow";
 import RestDurationConfig from "./RestDurationConfig";
 import { useRestTimer } from "./RestTimerContext";
 import { Button } from "@/components/common/button";
+import { AppBadge } from "@/components/app-shell/AppBadge";
 import { cn } from "@/lib/utils";
 
 interface SetData {
@@ -44,29 +46,18 @@ interface ExerciseItemData {
 interface WorkoutExerciseItemProps {
   data: ExerciseItemData;
   unit: WeightUnit;
-  /** Whether to show the selection checkbox for superset grouping. */
   selectable?: boolean;
-  /** Whether this exercise is currently selected. */
   selected?: boolean;
-  /** Called when the selection checkbox is toggled. */
   onSelectionChange?: (id: Id<"workoutExercises">, selected: boolean) => void;
-  /** User-level default rest seconds from preferences (lowest priority in the chain). */
   userDefaultRestSeconds?: number;
 }
 
-/**
- * Summarise previous performance sets into a compact string.
- * Example: "3×10 @ 60 kg, 3×8 @ 65 kg"
- *
- * Groups consecutive sets with the same weight+reps and shows count prefix.
- */
 function formatPreviousPerformance(
   sets: { weight?: number; reps?: number }[],
   unit: WeightUnit,
 ): string {
   if (sets.length === 0) return "";
 
-  // Group consecutive identical (weight, reps) pairs
   const groups: { weight?: number; reps?: number; count: number }[] = [];
   for (const s of sets) {
     const last = groups[groups.length - 1];
@@ -104,7 +95,6 @@ export default function WorkoutExerciseItem({
   const { startTimer } = useRestTimer();
   const [isRemoving, setIsRemoving] = useState(false);
 
-  // Previous performance query
   const previousPerformance = useQuery(
     api.sets.getPreviousPerformance,
     data.workoutExercise.exerciseId
@@ -112,7 +102,6 @@ export default function WorkoutExerciseItem({
       : "skip",
   );
 
-  // PR badge — subscribe to all PRs for this workout, filter for this exercise
   const workoutPRs = useQuery(api.personalRecords.getWorkoutPRs, {
     workoutId: data.workoutExercise.workoutId,
   });
@@ -124,8 +113,6 @@ export default function WorkoutExerciseItem({
     );
   }, [workoutPRs, data.workoutExercise.exerciseId]);
 
-  // Resolve rest duration via priority chain:
-  // exercise-level override → exercise default → user preference → 60s fallback
   const resolvedRestSeconds =
     data.workoutExercise.restSeconds ??
     data.exercise?.defaultRestSeconds ??
@@ -137,7 +124,6 @@ export default function WorkoutExerciseItem({
       workoutExerciseId: data.workoutExercise._id,
     });
 
-    // Start rest timer after successful set log (duration 0 = disabled)
     if (resolvedRestSeconds > 0) {
       startTimer(resolvedRestSeconds, data.exercise?.name ?? "Exercise");
     }
@@ -168,14 +154,14 @@ export default function WorkoutExerciseItem({
   return (
     <div
       className={cn(
-        "rounded-xl border border-gray-200 bg-white shadow-sm transition-opacity",
+        "workout-surface flex flex-col transition-opacity duration-200",
         isRemoving && "pointer-events-none opacity-50",
-        selected && "ring-2 ring-primary/40",
+        selected && "ring-2 ring-primary/35 ring-offset-2 ring-offset-[#fff7f0]",
       )}
+      data-workout-exercise-item
     >
-      {/* Exercise header */}
-      <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
+      <div className="flex items-start justify-between gap-3 border-b border-white/65 px-4 py-4 sm:px-5">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
           {selectable && (
             <input
               type="checkbox"
@@ -183,49 +169,59 @@ export default function WorkoutExerciseItem({
               onChange={(e) =>
                 onSelectionChange?.(data.workoutExercise._id, e.target.checked)
               }
-              className="h-4 w-4 shrink-0 rounded border-gray-300 text-primary accent-primary"
+              className="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-primary accent-primary"
               aria-label={`Select ${data.exercise?.name ?? "exercise"} for superset`}
             />
           )}
-          <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-gray-900">
-              {data.exercise?.name ?? "Unknown Exercise"}
-            </h3>
-            {data.exercise && (
-              <p className="mt-0.5 text-xs text-gray-500 capitalize">
-                {data.exercise.primaryMuscleGroup.replace(
-                  /([a-z])([A-Z])/g,
-                  "$1 $2",
-                )}{" "}
-                · {data.exercise.equipment}
+          <div className="min-w-0 flex-1 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <AppBadge tone="neutral">Exercise</AppBadge>
+              {data.exercise && (
+                <span className="workout-section-label capitalize">
+                  {data.exercise.primaryMuscleGroup.replace(/([a-z])([A-Z])/g, "$1 $2")} · {data.exercise.equipment}
+                </span>
+              )}
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold tracking-[-0.04em] text-slate-950">
+                {data.exercise?.name ?? "Unknown Exercise"}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Keep set entry quick while surfacing previous performance, PR moments, and rest controls in the same card rhythm.
               </p>
-            )}
-            {/* Previous performance display (R007) */}
-            {prevPerfSummary && (
-              <p className="mt-0.5 text-xs text-blue-600/80">
-                Last: {prevPerfSummary}
-              </p>
-            )}
-            {/* First-time badge: show only when query has resolved and returned null */}
-            {previousPerformance === null && (
-              <p className="mt-0.5 text-xs text-emerald-600/70">
-                First time! 🎉
-              </p>
-            )}
-            {/* PR badges — appear reactively after a set triggers a PR */}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {prevPerfSummary && (
+                <span className="workout-kpi-pill workout-kpi-pill--cool">
+                  <History className="h-3.5 w-3.5" />
+                  Last: {prevPerfSummary}
+                </span>
+              )}
+              {previousPerformance === null && (
+                <span className="workout-kpi-pill">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  First time on this movement
+                </span>
+              )}
+              <span className="workout-kpi-pill workout-kpi-pill--warning">
+                <Clock3 className="h-3.5 w-3.5" />
+                Rest {resolvedRestSeconds === 0 ? "Off" : `${Math.round(resolvedRestSeconds / 60)}m max`}
+              </span>
+            </div>
+
             {exercisePRs.length > 0 && (
-              <div className="mt-1 flex flex-wrap gap-1" data-pr-badge>
+              <div className="flex flex-wrap gap-1.5" data-pr-badge>
                 {exercisePRs.map((pr) => (
                   <span
                     key={pr.type}
                     className={cn(
-                      "inline-flex items-center gap-0.5 rounded-full px-2 py-0.5",
-                      "bg-amber-50 text-amber-700 border border-amber-200/60",
-                      "text-[11px] font-medium leading-tight",
+                      "inline-flex items-center gap-1 rounded-full border border-amber-200/60 bg-[linear-gradient(135deg,rgba(255,248,232,0.98),rgba(255,236,199,0.9))] px-3 py-1 text-[11px] font-semibold text-amber-800 shadow-[0_10px_18px_rgba(168,100,14,0.12)]",
                       "animate-[pr-badge-in_0.3s_ease-out]",
                     )}
                   >
-                    🏆{" "}
+                    🏆
                     {pr.type === "weight"
                       ? "Weight PR"
                       : pr.type === "volume"
@@ -235,7 +231,7 @@ export default function WorkoutExerciseItem({
                 ))}
               </div>
             )}
-            {/* Per-exercise rest duration config */}
+
             <RestDurationConfig
               workoutExerciseId={data.workoutExercise._id}
               currentRestSeconds={resolvedRestSeconds}
@@ -246,66 +242,51 @@ export default function WorkoutExerciseItem({
         <Button
           variant="ghost"
           size="sm"
-          className="shrink-0 text-gray-400 hover:text-destructive"
+          className="shrink-0 rounded-full bg-white/68 px-3 text-slate-500 hover:bg-white hover:text-destructive"
           onClick={handleRemoveExercise}
           aria-label={`Remove ${data.exercise?.name ?? "exercise"}`}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="mr-1 h-3.5 w-3.5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-            />
-          </svg>
+          <Trash2 className="mr-1.5 h-3.5 w-3.5" />
           Remove
         </Button>
       </div>
 
-      {/* Set header row */}
       {sortedSets.length > 0 && (
-        <div className="flex items-center gap-2 px-3 pt-3 pb-1">
-          <span className="w-8 text-center text-[10px] font-medium uppercase text-gray-400">
-            Set
-          </span>
-          <span className="min-w-0 flex-[2] text-[10px] font-medium uppercase text-gray-400">
-            Weight
-          </span>
-          <span className="min-w-0 flex-[2] text-[10px] font-medium uppercase text-gray-400">
-            Reps
-          </span>
-          <span className="w-14 shrink-0 text-center text-[10px] font-medium uppercase text-gray-400">
-            RPE
-          </span>
-          <span className="w-24 shrink-0 text-[10px] font-medium uppercase text-gray-400">
-            Tempo
-          </span>
-          {/* Spacers for notes toggle, warmup toggle, delete button */}
-          <span className="w-6 shrink-0" />
-          <span className="w-8 shrink-0" />
-          <span className="w-7 shrink-0" />
+        <div className="px-3 pt-4 sm:px-4">
+          <div className="exercise-detail-panel flex items-center gap-2 px-3 py-2.5">
+            <span className="w-8 text-center text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+              Set
+            </span>
+            <span className="min-w-0 flex-[2] text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+              Weight
+            </span>
+            <span className="min-w-0 flex-[2] text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+              Reps
+            </span>
+            <span className="w-14 shrink-0 text-center text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+              RPE
+            </span>
+            <span className="w-24 shrink-0 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+              Tempo
+            </span>
+            <span className="w-6 shrink-0" />
+            <span className="w-8 shrink-0" />
+            <span className="w-7 shrink-0" />
+          </div>
         </div>
       )}
 
-      {/* Sets */}
-      <div className="space-y-1 px-2 pb-2">
+      <div className="space-y-2 px-2 py-3 sm:px-3">
         {sortedSets.map((set) => (
           <SetRow key={set._id} set={set} unit={unit} />
         ))}
       </div>
 
-      {/* Add set button */}
-      <div className="border-t border-gray-100 px-4 py-2">
+      <div className="border-t border-white/65 px-4 py-3 sm:px-5">
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className="w-full text-gray-500 hover:text-primary"
+          className="h-10 w-full rounded-full border-white/70 bg-white/72 text-slate-700 shadow-sm hover:bg-white"
           onClick={handleAddSet}
         >
           <svg

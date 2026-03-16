@@ -286,13 +286,23 @@ export default function SharedTimerDisplay({
   return (
     <div
       data-session-timer
-      className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+      className="workout-surface workout-surface--accent rounded-[28px] p-5 sm:p-6"
     >
-      <div className="flex items-center gap-2 mb-4">
-        <TimerIcon />
-        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
-          Shared Rest Timer
-        </h3>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-slate-700">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/70 bg-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
+            <TimerIcon />
+          </div>
+          <div>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Shared timing</p>
+            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">
+              Shared Rest Timer
+            </h3>
+          </div>
+        </div>
+        <span className="workout-kpi-pill workout-kpi-pill--warning">
+          {isRunning ? "Live sync" : showDone ? "Completed" : `${selectedDuration}s preset`}
+        </span>
       </div>
 
       {/* ── Running / Done state ──────────────────────────────────────── */}
@@ -322,11 +332,11 @@ export default function SharedTimerDisplay({
 
           {/* Controls while running */}
           {timerState === "running" && (
-            <div className="mt-3 flex items-center gap-2">
+            <div className="mt-4 flex items-center gap-2">
               <button
                 type="button"
                 onClick={handlePause}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/82 px-4 py-2 text-sm font-semibold text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] transition hover:bg-white"
               >
                 <PauseIcon />
                 Pause
@@ -334,7 +344,7 @@ export default function SharedTimerDisplay({
               <button
                 type="button"
                 onClick={handleSkip}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-full border border-rose-200/80 bg-rose-50/85 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
               >
                 <SkipIcon />
                 Skip
@@ -346,18 +356,17 @@ export default function SharedTimerDisplay({
 
       {/* ── Idle state: duration presets + start ──────────────────────── */}
       {timerState === "idle" && (
-        <div className="flex flex-col items-center gap-3">
-          {/* Duration presets */}
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col items-center gap-4 rounded-[24px] border border-white/70 bg-white/78 px-4 py-5 shadow-[0_18px_34px_rgba(83,37,10,0.06)]">
+          <div className="flex flex-wrap items-center justify-center gap-2">
             {DURATION_PRESETS.map((d) => (
               <button
                 key={d}
                 type="button"
                 onClick={() => setSelectedDuration(d)}
-                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                   selectedDuration === d
-                    ? "bg-blue-100 text-blue-700 ring-1 ring-blue-300"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-[linear-gradient(135deg,#ff8a3d_0%,#ff9556_45%,#b03bff_120%)] text-white shadow-[0_18px_38px_rgba(176,59,255,0.22)]"
+                    : "border border-white/70 bg-white/85 text-slate-600 hover:bg-white"
                 }`}
               >
                 {d}s
@@ -365,11 +374,10 @@ export default function SharedTimerDisplay({
             ))}
           </div>
 
-          {/* Start button */}
           <button
             type="button"
             onClick={handleStart}
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#ff8a3d_0%,#ff9556_45%,#b03bff_120%)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_18px_38px_rgba(176,59,255,0.22)] transition hover:-translate-y-0.5"
           >
             <TimerIcon />
             Start Timer

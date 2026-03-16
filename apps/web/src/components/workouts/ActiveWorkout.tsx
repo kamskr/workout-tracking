@@ -4,7 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
+import { Dumbbell, Sparkles, TimerReset } from "lucide-react";
 import type { WeightUnit } from "@/lib/units";
+import { AppBadge } from "@/components/app-shell/AppBadge";
 import ActiveWorkoutHeader from "./ActiveWorkoutHeader";
 import WorkoutExerciseList from "./WorkoutExerciseList";
 import ExercisePicker from "./ExercisePicker";
@@ -18,13 +20,9 @@ export default function ActiveWorkout() {
 
   const createWorkout = useMutation(api.workouts.createWorkout);
 
-  // Check for existing in-progress workout
   const activeWorkout = useQuery(api.workouts.getActiveWorkout);
-
-  // Determine the active workout ID (existing or just-created)
   const workoutId = activeWorkout?._id ?? createdWorkoutId;
 
-  // Auto-create workout if none exists
   useEffect(() => {
     if (activeWorkout !== undefined && activeWorkout === null && !createAttempted.current && !createdWorkoutId) {
       createAttempted.current = true;
@@ -37,104 +35,42 @@ export default function ActiveWorkout() {
     }
   }, [activeWorkout, createdWorkoutId, createWorkout]);
 
-  // Load workout details once we have an ID
   const workoutDetails = useQuery(
     api.workouts.getWorkoutWithDetails,
     workoutId ? { id: workoutId } : "skip",
   );
 
-  // Load user preferences for unit
   const preferences = useQuery(api.userPreferences.getPreferences);
   const unit: WeightUnit = preferences?.weightUnit ?? "kg";
 
-  // Loading state: waiting for active workout check
   if (activeWorkout === undefined) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <div className="flex items-center gap-3 text-gray-400">
-          <svg
-            className="h-5 w-5 animate-spin"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-          <span className="text-sm font-medium">Loading…</span>
+      <div className="workout-surface workout-surface--muted p-6 sm:p-8">
+        <div className="feature-inline-state justify-center py-14">
+          <span className="feature-inline-state__spinner" aria-hidden="true" />
+          <span className="text-sm font-medium">Loading active workout…</span>
         </div>
       </div>
     );
   }
 
-  // Creating workout state
   if (!workoutId) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <div className="flex items-center gap-3 text-gray-400">
-          <svg
-            className="h-5 w-5 animate-spin"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
+      <div className="workout-surface workout-surface--accent p-6 sm:p-8">
+        <div className="feature-inline-state justify-center py-14">
+          <span className="feature-inline-state__spinner" aria-hidden="true" />
           <span className="text-sm font-medium">Starting workout…</span>
         </div>
       </div>
     );
   }
 
-  // Loading workout details
   if (!workoutDetails) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <div className="flex items-center gap-3 text-gray-400">
-          <svg
-            className="h-5 w-5 animate-spin"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-          <span className="text-sm font-medium">Loading workout…</span>
+      <div className="workout-surface workout-surface--cool p-6 sm:p-8">
+        <div className="feature-inline-state justify-center py-14">
+          <span className="feature-inline-state__spinner" aria-hidden="true" />
+          <span className="text-sm font-medium">Loading workout details…</span>
         </div>
       </div>
     );
@@ -148,12 +84,45 @@ export default function ActiveWorkout() {
 
   return (
     <RestTimerProvider>
-      <div className="space-y-6">
-        <ActiveWorkoutHeader
-          workoutId={workout._id}
-          name={workout.name ?? "Workout"}
-          startedAt={workout.startedAt!}
-        />
+      <div className="space-y-6" data-active-workout>
+        <div className="workout-surface workout-surface--accent p-5 sm:p-6">
+          <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <AppBadge tone="warning">Active workout</AppBadge>
+                <span className="workout-section-label">High-frequency logging flow</span>
+              </div>
+              <div>
+                <p className="text-2xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-[2rem]">
+                  Log sets, group supersets, and keep rest timing in one polished working surface.
+                </p>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                  The active flow now matches the refreshed browse and detail pages without changing mutations, timers, or PR wiring.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className="workout-kpi-pill">
+                  <Dumbbell className="h-3.5 w-3.5" />
+                  {exercises.length} exercise{exercises.length !== 1 ? "s" : ""}
+                </span>
+                <span className="workout-kpi-pill workout-kpi-pill--cool">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Premium shell carry-through
+                </span>
+                <span className="workout-kpi-pill workout-kpi-pill--warning">
+                  <TimerReset className="h-3.5 w-3.5" />
+                  Rest timer intact
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <ActiveWorkoutHeader
+            workoutId={workout._id}
+            name={workout.name ?? "Workout"}
+            startedAt={workout.startedAt!}
+          />
+        </div>
 
         <RestTimerDisplay />
 

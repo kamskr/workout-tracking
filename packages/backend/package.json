@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "convex dev",
     "setup": "convex dev --until-success",
-    "typecheck": "tsc --noEmit -p convex"
+    "typecheck": "tsc --noEmit -p convex",
+    "verify:env-contract": "tsx scripts/verify-env-contract.ts",
+    "verify:env-contract:failure": "tsx scripts/verify-env-contract.ts --check-failure-fixture",
+    "verify:seed-data": "tsx scripts/verify-seed-data.ts"
   },
   "author": "",
   "license": "ISC",
@@ -14,6 +17,7 @@
     "openai": "^6.9.1"
   },
   "devDependencies": {
+    "tsx": "^4.20.6",
     "typescript": "5.9.3"
   }
 }

@@ -8,12 +8,12 @@ interface Props {
 
 const Logo = ({ isMobile }: Props) => {
   return (
-    <Link href={"/"}>
+    <Link href="/">
       <div className="flex gap-2 items-center">
-        <Image src={"/images/logo.png"} width={26} height={26} alt="logo" />
+        <Image src="/images/logo.png" width={26} height={26} alt="Workout Tracker logo" />
         {!isMobile ? (
           <h1 className="font-montserrat text-black text-3xl sm:text-[35px] not-italic font-normal leading-[90.3%] tracking-[-0.875px]">
-            UseNotes
+            LiftLab
           </h1>
         ) : null}
       </div>

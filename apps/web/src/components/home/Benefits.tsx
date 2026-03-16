@@ -1,90 +1,101 @@
-import Image from "next/image";
+import Link from "next/link";
 
-const benefits = [
+const features = [
   {
-    title: "Effortless Note-Taking",
-    description: "Capture thoughts effortlessly with our intuitive interface",
-    image: "/images/goodNews.png",
-  },
-  {
-    title: "Seamless Sync",
+    eyebrow: "Log with intent",
+    title: "Capture every set the way lifters actually train.",
     description:
-      "Access your notes anytime, anywhere, with seamless cloud synchronization.",
-    image: "/images/cloudSync.png",
+      "Record weight, reps, RPE, tempo, notes, and rest timing without turning your session into admin work.",
+    bullets: ["Set-by-set detail", "Auto rest timer", "Template-free workout flow"],
   },
   {
-    title: "Enhanced Productivity",
+    eyebrow: "Discover the right movement",
+    title: "Browse exercises by goal, equipment, and muscle focus.",
     description:
-      "Let AI handle organization, so you can focus on what matters most.",
-    image: "/images/googleCalander.png",
+      "The exercise library is structured for fast decisions before the session and confident swaps during it.",
+    bullets: ["Curated exercise database", "Primary muscle filters", "In-session exercise add"],
   },
   {
-    title: "AI-Powered Insights",
+    eyebrow: "Know what is working",
+    title: "See progress with analytics that turn volume into signal.",
     description:
-      "Gain valuable insights with smart analytics based on your note patterns.",
-    image: "/images/bot.png",
+      "Track estimated maxes, session volume, weekly trends, and body-region load so your next block starts from evidence.",
+    bullets: ["Progress charts", "Muscle heatmaps", "Personal records"],
   },
+  {
+    eyebrow: "Train with people",
+    title: "Bring the gym&apos;s social energy into your planning loop.",
+    description:
+      "Follow training partners, compete on leaderboards, join challenges, and run live shared sessions with synced timers.",
+    bullets: ["Activity feed", "Challenges + rankings", "Shared live sessions"],
+  },
+];
+
+const capabilityBands = [
+  "Workouts",
+  "Exercises",
+  "Analytics",
+  "Feed",
+  "Leaderboards",
+  "Challenges",
+  "Live Sessions",
 ];
 
 const Benefits = () => {
   return (
-    <section id="Benefits" className="relative pointer-events-none">
-      <Image
-        src={"/images/blue-circle.svg"}
-        width={503}
-        height={531}
-        alt=""
-        className="absolute hidden sm:block -left-40 -top-48 h-[531px]"
-      />
-      <div className="container py-16 px-2 md:px-0">
-        <p className="text-black text-[17px] sm:text-3xl not-italic font-medium leading-[90.3%] tracking-[-0.75px] text-center font-montserrat pb-2 sm:pb-[18px]">
-          Benefits
-        </p>
-        <h3 className=" text-black text-3xl sm:text-[57px] not-italic font-medium leading-[90.3%] tracking-[-1.425px] font-montserrat text-center pb-[46px] sm:pb-[87px]">
-          Why Choose UseNotes
-        </h3>
+    <section id="Benefits" className="landing-shell landing-grid">
+      <div className="container relative px-6 py-18 sm:px-0 sm:py-24">
+        <div className="landing-section-header">
+          <span className="landing-kicker">Feature highlights</span>
+          <h2 className="landing-section-title text-[#140f26]">
+            Built to connect disciplined logging with visible progress and real accountability.
+          </h2>
+          <p className="landing-body max-w-[760px] text-[#4e4465]">
+            This is not a generic habit tracker with a fitness skin. Every surface is
+            centered on training decisions: what to lift, how hard to push, what changed,
+            and who you are chasing.
+          </p>
+        </div>
 
-        <div className="relative">
-          <div className="hidden sm:flex justify-between items-center absolute inset-0 -z-10">
-            {Array(3)
-              .fill(0)
-              .map((_, index) => (
-                <Image
-                  src="/images/cricle.svg"
-                  width={183}
-                  height={193}
-                  alt="line"
-                  key={index}
-                />
-              ))}
+        <div className="landing-feature-grid mt-10 sm:mt-14">
+          {features.map((feature, index) => (
+            <article
+              key={feature.title}
+              className={`landing-feature-card ${index === 0 ? "landing-feature-card-large" : ""}`}
+            >
+              <span className="landing-micro-label">{feature.eyebrow}</span>
+              <h3 className="landing-card-title mt-4 text-[#181129]">{feature.title}</h3>
+              <p className="landing-card-copy mt-4 text-[#51476a]">{feature.description}</p>
+              <ul className="mt-6 space-y-3">
+                {feature.bullets.map((bullet) => (
+                  <li key={bullet} className="landing-list-item">
+                    <span className="landing-list-marker" aria-hidden="true" />
+                    <span>{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+
+        <div className="landing-capability-band mt-10 sm:mt-12">
+          <div>
+            <span className="landing-micro-label">Inside the product</span>
+            <p className="landing-card-copy mt-3 max-w-[560px] text-[#f4ecff]">
+              The public page maps directly to the app behind auth — no placeholder tours,
+              no fake feature list, just the real product surfaces people already use.
+            </p>
           </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 z-10 ">
-            {benefits.map((benefit, index) => (
-              <div
-                key={index}
-                className="flex gap-2 sm:gap-7 bg-white items-center border rounded-[17px] py-4 px-2 sm:py-12 sm:px-6 border-solid border-[#B8B5B5] shadow-xl"
-              >
-                <div className=" min-w-16 sm:min-w-28">
-                  <Image
-                    src={benefit.image}
-                    width={100}
-                    height={100}
-                    alt="benefit"
-                    className="sm:w-[100px] w-[58px]"
-                  />
-                </div>
-                <div className="">
-                  <h4 className="text-black text-[24px] sm:text-[42px] not-italic font-medium leading-[90.3%] tracking-[-1.05px] pb-2 sm:pb-6 font-montserrat">
-                    {benefit.title}
-                  </h4>
-                  <p className="font-montserrat pb-2 text-black text-[17px] sm:text-3xl not-italic font-normal leading-[90.3%] tracking-[-0.75px]">
-                    {benefit.description}
-                  </p>
-                </div>
-              </div>
+          <div className="landing-band-chips">
+            {capabilityBands.map((band) => (
+              <span key={band} className="landing-band-chip">
+                {band}
+              </span>
             ))}
           </div>
+          <Link href="/exercises" className="landing-inline-link">
+            Browse the exercise library
+          </Link>
         </div>
       </div>
     </section>

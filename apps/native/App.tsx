@@ -1,12 +1,15 @@
-import { View, StatusBar } from "react-native";
+import { View, StatusBar, LogBox } from "react-native";
 import { useFonts } from "expo-font";
-import { LogBox } from "react-native";
 import Navigation from "./src/navigation/Navigation";
 import ConvexClientProvider from "./ConvexClientProvider";
 
+const SUPPRESSED_LOG_PATTERNS = [
+  "Warning: ...",
+  "Sending `onAnimatedValueUpdate` with no listeners registered.",
+];
+
 export default function App() {
-  LogBox.ignoreLogs(["Warning: ..."]);
-  LogBox.ignoreAllLogs();
+  LogBox.ignoreLogs(SUPPRESSED_LOG_PATTERNS);
 
   const [loaded] = useFonts({
     Bold: require("./src/assets/fonts/Inter-Bold.ttf"),

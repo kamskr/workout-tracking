@@ -10,21 +10,34 @@ A user can open the app on their phone at the gym, log a workout set-by-set with
 
 ## Current State
 
-All 5 milestones complete (2026-03-11). 5 milestones, 22 slices, 73 tasks shipped. 23-table normalized Convex schema with 164 decisions recorded (D001–D164). Full feature set across both platforms:
+M001–M005 remain shipped. M006 is now closed as a truthful stabilization milestone: the backend verification gap is retired and the web product has been substantially refreshed, but final runtime proof is still blocked at two boundaries.
 
-- **Core:** Exercise library (144 exercises), workout CRUD with full set tracking (weight, reps, RPE, tempo, notes), rest timer with 4-level priority chain, workout templates, superset grouping
-- **Analytics:** Personal records (weight/volume/rep PRs), progress charts per exercise, volume analytics with muscle group heatmaps, weekly/monthly summaries
-- **Social:** User profiles with stats, follow system, realtime activity feed with 5 reaction types, workout sharing with privacy controls, clone-as-template
-- **Competitive:** Pre-computed leaderboards with opt-in privacy, 4-type group challenges with cron lifecycle, 15-badge gamification system
-- **Collaborative:** Live group workout sessions with invite codes, realtime presence via heartbeat + cron, live set feed, server-authoritative shared timer, host-only session ending, combined summary, abandoned session auto-timeout, full workout→hooks integration via `finishWorkoutCore`
+- **M006 complete as recorded work:**
+  - S01 established the canonical local env/runtime contract, verified seeded backend readiness, fixed native Convex dependency resolution, and proved local web boot.
+  - S02 replaced the leftover UseNotes landing source with workout-specific marketing content and premium landing styling.
+  - S03 established a dedicated authenticated App Router shell seam, shared Apple Fitness+-style web primitives, and blocker-aware shell verification.
+  - S04 widened that design system across the remaining authenticated web routes and feature surfaces, including session collaboration pages.
+  - S05 executed the full live backend verification sweep for M003–M005 and closed it green: M003 `42/42`, M004 `40/40`, M005 `41/41`.
+  - S06 proved the current native boundary honestly: native typecheck passes and Expo reaches Metro, but simulator launch is still blocked by this machine’s Xcode/`simctl` setup.
 
-**Backend:** 7 Convex modules (workouts, exercises, sessions, social, sharing, badges, analytics) + `finishWorkoutCore` lib function as single source of truth for workout completion hooks (feed, leaderboard, challenge, badge). `crons.ts` runs 3 entries: 15-min challenge deadline enforcement, 30s session presence cleanup, 5-min session timeout check. `sessions.ts` has 15 functions covering full group session lifecycle.
+- **What is now proven:**
+  - Backend env alignment/readiness is diagnosable via `packages/backend/scripts/verify-env-contract.ts` and `packages/backend/scripts/verify-seed-data.ts`.
+  - The live Convex backend has seeded data and passes all pending M003–M005 verification runners.
+  - TypeScript compiles across backend, web, and native with no new milestone-introduced errors.
+  - The public landing source and authenticated web source now reflect the intended product and design language.
 
-**Mobile:** 7-tab navigation (Exercises, Workouts, Templates, Analytics, Feed, Profile, Compete) with typed stack navigators covering all domains.
+- **What remains blocked / unproven:**
+  - Live browser proof for the redesigned landing page and authenticated app pages is still blocked in this worktree by pre-render auth/runtime failure (`Publishable key not valid.` / blocker-classified page failure on the worktree-local server).
+  - Native iOS simulator proof is still blocked because `xcode-select -p` points at `/Library/Developer/CommandLineTools` and `xcrun simctl list devices` fails.
+  - Because of those two runtime blockers, M006 did not satisfy the original milestone definition of done in full, even though all slices are closed and the backend verification target is complete.
 
-**Compilation:** TypeScript compiles 0 new errors across all 3 packages (backend: 0, web: 0, native: 44 pre-existing TS2307 `convex/react` path resolution errors).
+**Backend:** Convex backend is reachable from the current local env contract, seeded with 144 exercises, and verified live for all pending M003–M005 checks.
 
-**Verification:** 72/72 M001+M002 backend checks pass (live). 119 additional checks across M003–M005 (42 + 40 + 37) written and compile — **execution pending Convex CLI auth** (`npx convex login`). 16 requirements validated (R001–R014, R022, R023). 7 requirements active (R015–R021) — all fully implemented, pending live verification to move to validated.
+**Compilation:** The workspace typecheck path passes across backend, web, and native. Native direct `convex` dependency resolution remains the fix for prior pnpm-strict module failures.
+
+**Web:** The landing page and authenticated page refresh are implemented in source, with shared app-shell seams and blocker-aware Playwright coverage. The truthful remaining gap is runtime render proof under valid Clerk/local auth configuration.
+
+**Mobile:** Native code compiles and Expo can start Metro, but the simulator/tooling boundary is still external to app code on this machine.
 
 ## Architecture / Key Patterns
 
@@ -42,7 +55,7 @@ All 5 milestones complete (2026-03-11). 5 milestones, 22 slices, 73 tasks shippe
 - **Badges:** Hardcoded definitions constant (D110/D128), batch-fetch evaluation engine (D129), 4th non-fatal finishWorkout hook, BadgeDisplay on profile page (D130/D131)
 - **Sessions:** Separate sessionParticipants table (D137), heartbeat-based presence with cron cleanup (D139), server-authoritative timer via stored timerEndAt (D138), finishWorkoutCore for unified hook execution (D159)
 - **Styling:** Tailwind CSS (web), React Native StyleSheet (mobile)
-- **Design:** Clean/minimal aesthetic — light theme, Apple Health-inspired (D007)
+- **Design:** Web now uses the M006 Apple Fitness+-style shell/tokens and premium landing surfaces; mobile remains on the pre-existing native design language.
 
 ## Capability Contract
 
@@ -55,4 +68,4 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 - [x] M003: Social Foundation — User profiles, follow system, activity feed with reactions, workout sharing with privacy controls, mobile social port
 - [x] M004: Leaderboards & Challenges — Pre-computed leaderboards with opt-in privacy, 4-type group challenges with cron lifecycle, 15-badge gamification, mobile competitive port
 - [x] M005: Collaborative Live Workouts — Session creation with invite links, realtime presence, shared timer, host-controlled lifecycle, finishWorkoutCore integration, mobile port
-- [ ] M006: Stabilization, Testing & Design Refresh — Dev stack setup, landing page redesign, app pages Apple Fitness+ refresh, 119 backend verification checks, mobile testing on iOS Simulator
+- [x] M006: Stabilization, Testing & Design Refresh — env/runtime contract, landing/app-shell refresh, live M003–M005 backend verification, and truthful native/runtime blocker localization

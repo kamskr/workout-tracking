@@ -1,35 +1,32 @@
-import Image from "next/image";
 import Link from "next/link";
-import React from "react";
 
 const FooterHero = () => {
   return (
-    <div className="bg-primary">
-      <div className="flex flex-wrap md:flex-nowrap justify-between container py-20 px-6 sm:px-0">
-        <div className="max-w-[802px]">
-          <h2 className="font-montserrat text-wrap text-white not-italic text-3xl md:text-[57px] font-semibold sm:leading-[109.3%] sm:tracking-[-1.425px] leading-[97.3%] tracking-[-0.75px] pb-[31px] sm:pb-[38px]">
-            Start Your Intelligent Note-Taking Journey
-          </h2>
-          <p className="text-white max-w-[681px] text-xl sm:text-3xl not-italic font-normal leading-[103.3%] tracking-[-0.75px] font-montserrat pb-[66px] sm:pb-[53px]">
-            Sign up now and experience the power of AI-enhanced note-taking with
-            UseNotes
-          </p>
-          <Link href={"/notes"}>
-            <button className="linear_gradient flex max-w-[438px] w-full justify-center items-center gap-2.5 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] px-8 py-4 rounded-[11px]  text-black text-xl sm:text-3xl not-italic font-semibold leading-[90.3%] tracking-[-0.75px]">
-              Get Started For Free
-            </button>
-          </Link>
-        </div>
-        <div className="mt-20 md:mt-0">
-          <Image
-            src="/images/monitor.png"
-            alt="hero"
-            width={560}
-            height={456}
-          />
+    <section className="landing-shell landing-grid">
+      <div className="container px-6 pb-20 pt-4 sm:px-0 sm:pb-24 sm:pt-10">
+        <div className="landing-cta-panel">
+          <div className="max-w-[720px]">
+            <span className="landing-kicker">Final call to action</span>
+            <h2 className="landing-section-title mt-5 text-[#120d23]">
+              Start logging with enough clarity to know when your training is actually moving.
+            </h2>
+            <p className="landing-body mt-5 max-w-[620px] text-[#4e4465]">
+              Join with a free account, log your next workout, and step into the same feed,
+              analytics, leaderboards, and challenges that power the rest of the product.
+            </p>
+          </div>
+
+          <div className="landing-cta-actions">
+            <Link href="/sign-up" className="landing-button landing-button-primary">
+              Create your account
+            </Link>
+            <Link href="/feed" className="landing-button landing-button-secondary">
+              See community momentum
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

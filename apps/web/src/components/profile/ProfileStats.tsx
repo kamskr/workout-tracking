@@ -1,9 +1,13 @@
 "use client";
 
 import { useQuery } from "convex/react";
+import { Activity, Flame, Layers3, TrendingUp } from "lucide-react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { formatWeight } from "@/lib/units";
 import type { WeightUnit } from "@/lib/units";
+import { AppCard } from "@/components/app-shell/AppCard";
+import { AppBadge } from "@/components/app-shell/AppBadge";
+import { StatCard } from "@/components/app-shell/StatCard";
 
 interface ProfileStatsProps {
   userId: string;
@@ -16,19 +20,16 @@ export default function ProfileStats({
 }: ProfileStatsProps) {
   const stats = useQuery(api.profiles.getProfileStats, { userId });
 
-  // Loading skeleton
   if (stats === undefined) {
     return (
       <div data-profile-stats>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="animate-pulse rounded-lg border border-gray-200 bg-white p-4"
-            >
-              <div className="h-3 w-16 rounded bg-gray-200" />
-              <div className="mt-2 h-6 w-12 rounded bg-gray-200" />
-            </div>
+            <AppCard key={i} tone="subtle" padding="md" className="animate-pulse">
+              <div className="h-3 w-20 rounded-full bg-slate-200/80" />
+              <div className="mt-4 h-8 w-24 rounded-full bg-slate-200/80" />
+              <div className="mt-3 h-3 w-28 rounded-full bg-slate-200/70" />
+            </AppCard>
           ))}
         </div>
       </div>
@@ -38,12 +39,13 @@ export default function ProfileStats({
   const hasWorkouts = stats.totalWorkouts > 0;
 
   return (
-    <div data-profile-stats>
-      {/* Summary stats */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <div data-profile-stats className="space-y-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Workouts"
           value={stats.totalWorkouts.toString()}
+          description="Completed sessions recorded on your profile"
+          icon={<Activity className="h-5 w-5" />}
         />
         <StatCard
           label="Current Streak"
@@ -52,6 +54,9 @@ export default function ProfileStats({
               ? `${stats.currentStreak} day${stats.currentStreak !== 1 ? "s" : ""}`
               : "—"
           }
+          description="Consecutive days with logged training"
+          emphasis="warm"
+          icon={<Flame className="h-5 w-5" />}
         />
         <StatCard
           label="Total Volume"
@@ -60,56 +65,72 @@ export default function ProfileStats({
               ? formatWeight(stats.totalVolume, weightUnit)
               : "—"
           }
+          description="All-time lifted volume across completed workouts"
+          emphasis="cool"
+          icon={<TrendingUp className="h-5 w-5" />}
         />
         <StatCard
-          label="Exercises"
+          label="Tracked Exercises"
           value={
             stats.topExercises.length > 0
               ? stats.topExercises.length.toString()
               : "—"
           }
+          description="Exercises with enough data to surface here"
+          icon={<Layers3 className="h-5 w-5" />}
         />
       </div>
 
-      {/* Top exercises */}
       {hasWorkouts && stats.topExercises.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-sm font-medium text-gray-700">Top Exercises</h3>
-          <ul className="mt-2 divide-y divide-gray-100">
-            {stats.topExercises.slice(0, 5).map((exercise: { exerciseName: string; totalVolume: number }) => (
-              <li
-                key={exercise.exerciseName}
-                className="flex items-center justify-between py-2.5"
-              >
-                <span className="text-sm text-gray-900">
-                  {exercise.exerciseName}
-                </span>
-                <span className="text-sm text-gray-500">
-                  {formatWeight(exercise.totalVolume, weightUnit)}
-                </span>
-              </li>
-            ))}
+        <AppCard tone="raised" padding="lg" className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Top exercises
+              </p>
+              <p className="mt-2 text-xl font-semibold tracking-[-0.04em] text-slate-950">
+                Highest-volume movements
+              </p>
+            </div>
+            <AppBadge tone="neutral">All time</AppBadge>
+          </div>
+
+          <ul className="grid gap-3">
+            {stats.topExercises
+              .slice(0, 5)
+              .map((exercise: { exerciseName: string; totalVolume: number }, index) => (
+                <li
+                  key={exercise.exerciseName}
+                  className="flex items-center justify-between gap-4 rounded-[22px] border border-white/65 bg-white/58 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]"
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      #{index + 1}
+                    </p>
+                    <p className="mt-1 truncate text-sm font-medium text-slate-900">
+                      {exercise.exerciseName}
+                    </p>
+                  </div>
+                  <p className="shrink-0 text-sm font-semibold text-slate-600">
+                    {formatWeight(exercise.totalVolume, weightUnit)}
+                  </p>
+                </li>
+              ))}
           </ul>
-        </div>
+        </AppCard>
       )}
 
-      {/* Empty state */}
       {!hasWorkouts && (
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-500">
-            No workout data yet. Complete a workout to see your stats!
-          </p>
-        </div>
+        <AppCard tone="subtle" padding="lg" className="feature-empty-state py-10 text-center">
+          <div className="feature-empty-state__body">
+            <p className="feature-empty-state__eyebrow">Workout stats</p>
+            <p className="feature-empty-state__title">No workout data yet</p>
+            <p className="feature-empty-state__copy">
+              Complete a workout and your profile stats will appear here with the same shell-driven structure as the rest of the app.
+            </p>
+          </div>
+        </AppCard>
       )}
-    </div>
-  );
-}
-
-function StatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-medium text-gray-500">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-gray-900">{value}</p>
     </div>
   );
 }

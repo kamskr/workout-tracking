@@ -122,7 +122,7 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M001/S06
 - Supporting slices: M001/S01 through M001/S05, M005/S04
-- Validation: M001/S06 — All M001 features ported to React Native mobile app: exercise browse with filters, workout CRUD with full set tracking/supersets/previous performance, rest timer with vibration, templates, settings with unit toggle. M002/S04 — All M002 analytics features ported to mobile: PR badges, exercise progress charts (Victory Native XL), muscle heatmap (react-native-svg), volume bar chart, summary cards. M003/S04 — All M003 social features ported to mobile: 8 social components, 5 social screens (Feed, Profile, ProfileSetup, OtherProfile, SharedWorkout), 6-tab navigation, usePaginatedQuery + FlatList feed, settings consolidated into Profile tab. M004/S04 — All M004 competitive features ported to mobile: 3 competitive screens (Leaderboard, Challenges, ChallengeDetail), 3 reusable components (PillSelectorNative, BadgeDisplayNative, LeaderboardTableNative), 7th Compete tab, badge display on both profile screens, leaderboard opt-in toggle. M005/S04 — All M005 collaborative session features ported to mobile: GroupSessionScreen + JoinSessionScreen + 4 session components (participant list, set feed, shared timer, summary), heartbeat lifecycle, typed WorkoutsStackParamList navigator, Vibration haptics. Both platforms use same Convex backend for realtime sync. TypeScript compiles across all 3 packages (0 new errors). 72/72 M001+M002 backend checks pass (regression baseline). 42 M003 + 40 M004 + 37 M005 checks pending live execution. Manual Expo verification required for runtime UX.
+- Validation: M001/S06 — All M001 features ported to React Native mobile app: exercise browse with filters, workout CRUD with full set tracking/supersets/previous performance, rest timer with vibration, templates, settings with unit toggle. M002/S04 — All M002 analytics features ported to mobile: PR badges, exercise progress charts (Victory Native XL), muscle heatmap (react-native-svg), volume bar chart, summary cards. M003/S04 — All M003 social features ported to mobile: 8 social components, 5 social screens (Feed, Profile, ProfileSetup, OtherProfile, SharedWorkout), 6-tab navigation, usePaginatedQuery + FlatList feed, settings consolidated into Profile tab. M004/S04 — All M004 competitive features ported to mobile: 3 competitive screens (Leaderboard, Challenges, ChallengeDetail), 3 reusable components (PillSelectorNative, BadgeDisplayNative, LeaderboardTableNative), 7th Compete tab, badge display on both profile screens, leaderboard opt-in toggle. M005/S04 — All M005 collaborative session features ported to mobile: GroupSessionScreen + JoinSessionScreen + 4 session components (participant list, set feed, shared timer, summary), heartbeat lifecycle, typed WorkoutsStackParamList navigator, Vibration haptics. Both platforms use same Convex backend for realtime sync. TypeScript compiles across all 3 packages (0 new errors). 72/72 M001+M002 backend checks pass (regression baseline). 42 M003 + 40 M004 + 41 M005 checks now pass live in M006/S05; manual Expo verification still required for runtime UX.
 - Notes: UI code is platform-specific (React vs React Native). Backend and types are shared.
 
 ### R012 — Personal Records Tracking
@@ -158,105 +158,6 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: M002/S03 — 11/11 backend checks (verify-s03-m02.ts) prove volume aggregation accuracy, secondary muscle attribution (50%), warmup exclusion, bodyweight handling, time-range filtering, weekly/monthly summary totals, top exercises ranking, and empty state. Web dashboard at `/analytics` renders MuscleHeatmap (7 color-coded SVG body regions), VolumeByMuscleGroupChart (Recharts horizontal bar chart), WeeklySummaryCard, MonthlySummaryCard with period selector (7d/30d/90d/All Time). All data-analytics-* attributes present for programmatic verification. M002/S04 — Mobile Analytics tab with MuscleHeatmapNative (react-native-svg), VolumeBarChartNative (Victory Native XL), WeeklySummaryCardNative, MonthlySummaryCardNative, PeriodSelector — all consuming same backend queries. Cross-platform delivery complete.
 - Notes: Volume = sets × reps × weight. Muscle group mapping comes from exercise library data. Secondary muscles attributed at 50% for heatmap only.
 
-### R015 — User Profiles
-- Class: core-capability
-- Status: active
-- Description: Public user profiles showing display name, avatar, bio, workout stats (total workouts, streak, favorite exercises), and recent activity. Profile is viewable by other users.
-- Why it matters: Foundation for all social features. Users need an identity beyond auth.
-- Source: user
-- Primary owning slice: M003/S01
-- Supporting slices: none
-- Validation: M003 complete — profiles table with CRUD, username uniqueness (case-insensitive), stats computation (reusing computePeriodSummary + computeCurrentStreak), full-text search, avatar upload, cross-user reads. Web UI: /profile/setup with live username validation, /profile/[username] with stats and inline edit. Mobile: ProfileScreen (view/edit + stats), ProfileSetupScreen, OtherProfileScreen. 12-check verification script (verify-s01-m03.ts) written and type-checks. TypeScript compiles 0 errors across all 3 packages. **Pending live validation:** verification script execution blocked by Convex CLI auth — must pass 12/12 to move to validated.
-- Notes: Profile data stored in Convex, not just Clerk. Clerk provides auth identity, Convex stores app-level profile. Recent activity display deferred to S02 (feed items on profile).
-
-### R016 — Follow System and Activity Feed
-- Class: core-capability
-- Status: active
-- Description: Users can follow other users. A realtime activity feed shows workouts completed by followed users, with reactions (e.g. fire emoji, fist bump).
-- Why it matters: Social accountability is a proven retention mechanism for fitness apps.
-- Source: user
-- Primary owning slice: M003/S02
-- Supporting slices: M003/S01
-- Validation: M003 complete — 5 social tables (follows, feedItems, reactions, blocks, reports), 11 Convex functions in social.ts, feed item auto-creation in finishWorkout (non-fatal), cascade-delete in deleteWorkout. Web UI: /feed with usePaginatedQuery + reactions, follow/unfollow on profiles, user search. Mobile: FeedScreen with FlatList infinite scroll, ReactionBarNative with optimistic state, FollowButtonNative. 15-check verification script (verify-s02-m03.ts) with 3 test users written and type-checks. TypeScript compiles 0 errors across all 3 packages. **Pending live validation:** verification script execution blocked by Convex CLI auth — must pass 15/15 to move to validated.
-- Notes: Feed is realtime via Convex subscriptions. Privacy: users can make workouts private (S03). Block/report mutations exist; block UI deferred.
-
-### R017 — Workout Sharing
-- Class: core-capability
-- Status: active
-- Description: Users can share a workout summary (exercises, sets, PRs hit) to their feed or via a shareable link. Shared workouts can be cloned as templates by other users.
-- Why it matters: Sharing drives discovery and community engagement. Cloning templates spreads good programming.
-- Source: user
-- Primary owning slice: M003/S03
-- Supporting slices: M003/S01, M001/S05
-- Validation: M003 complete — isPublic field on workouts, 4 sharing functions in sharing.ts (shareWorkout, getSharedWorkout, cloneSharedWorkoutAsTemplate, toggleWorkoutPrivacy), defense-in-depth privacy checks (D098), public /shared/[id] route excluded from Clerk middleware, clone-as-template, privacy toggle with cascade, block filtering. Web UI: SharedWorkoutView, CloneButton (auth-conditional), ShareButton, PrivacyToggle on WorkoutCard. Mobile: ShareButtonNative (expo-clipboard), CloneButtonNative, PrivacyToggleNative, SharedWorkoutScreen. 15-check verification script (verify-s03-m03.ts) written and type-checks. TypeScript compiles 0 errors across all 3 packages. **Pending live validation:** verification script execution blocked by Convex CLI auth — must pass 15/15 to move to validated.
-- Notes: Shareable link generates a public read-only view even for non-users. Share token is the feedItem._id (D097). Privacy default is public (D073).
-
-### R018 — Leaderboards
-- Class: core-capability
-- Status: active
-- Description: Leaderboards for various metrics — strongest lifts (by bodyweight class or absolute), most volume, longest streak, most workouts. Filterable by time period and exercise.
-- Why it matters: Competition drives engagement. Users want to see how they stack up.
-- Source: user
-- Primary owning slice: M004/S01
-- Supporting slices: M003/S01
-- Validation: M004/S01 — Pre-computed leaderboardEntries table with composite index, 3 metrics (e1RM/volume/reps), opt-in filtering via profiles.leaderboardOptIn, 4 auth-gated Convex functions (getLeaderboard, getMyRank, setLeaderboardOptIn, getLeaderboardExercises). Web UI at /leaderboards with exercise selector, metric/period pickers, ranked top-10 table, My Rank callout, profile opt-in toggle. M004/S04 — Mobile LeaderboardScreen with exercise selector chips, metric/period pill pickers, LeaderboardTableNative, My Rank callout. Leaderboard opt-in toggle on ProfileScreen. All 4 leaderboard APIs consumed from mobile (type-safe). 12-check verification script (verify-s01-m04.ts) across 5 test users covers entry creation, Epley formula, warmup exclusion, opt-in filtering, ranking order, rank computation, period filtering, deletion cascade. TypeScript compiles 0 new errors across all 3 packages. **Pending live validation:** verification script execution blocked by Convex CLI auth — must pass 12/12 to move to validated.
-- Notes: Opt-in leaderboards — users choose whether to participate. Absolute ranking only (no bodyweight normalization, D112). Period filtering cosmetic in S01 (D117).
-
-### R019 — Group Challenges
-- Class: core-capability
-- Status: active
-- Description: Users can create or join time-limited challenges (e.g., "most pull-ups in a week", "complete 20 workouts in a month"). Challenges have a start/end date, rules, and a live leaderboard.
-- Why it matters: Challenges drive time-bounded engagement spikes and group participation.
-- Source: user
-- Primary owning slice: M004/S02
-- Supporting slices: M004/S01
-- Validation: M004/S02 — `challenges` + `challengeParticipants` tables with status state machine (pending → active → completed → cancelled), 4 challenge types (workoutCount, totalReps, totalVolume, maxWeight), 7 auth-gated Convex functions, incremental progress computation in finishWorkout (non-fatal), `crons.ts` with 15-min deadline check, `ctx.scheduler.runAt` for precise completion/activation scheduling. Web UI at /challenges with status filtering, create form, standings table, join/leave/cancel actions. M004/S04 — Mobile ChallengesScreen with status pill filter, challenge card list, create form with exercise picker modal. ChallengeDetailScreen with standings FlatList, join/leave/cancel action buttons. All 6 user-facing challenge APIs consumed from mobile (type-safe). 16-check verification script (verify-s02-m04.ts) across 4 test users covers full lifecycle (create → join → activate → log progress → standings → complete → winner determination). TypeScript compiles 0 new errors across all 3 packages. **Pending live validation:** verification script execution requires live Convex backend — must pass 16/16 to move to validated.
-- Notes: Challenge progress computed from workout data, not self-reported. Stale currentValue on workout deletion is a known limitation (D127).
-
-### R020 — Achievements and Badges
-- Class: differentiator
-- Status: active
-- Description: Gamification layer — users earn badges for milestones (first workout, 100 workouts, 1000lb total, etc.). Badges display on profiles.
-- Why it matters: Gamification increases long-term retention through collection mechanics.
-- Source: user
-- Primary owning slice: M004/S03
-- Supporting slices: M003/S01
-- Validation: M004/S03 — `userBadges` table with 15 hardcoded badge definitions across 5 categories (workoutCount, volume, streak, PR, challenge), `evaluateAndAwardBadges` engine triggered non-fatally in finishWorkout, `getUserBadges` auth-gated query with display metadata enrichment, `BadgeDisplay` component on profile page. M004/S04 — Mobile BadgeDisplayNative with self-contained useQuery(api.badges.getUserBadges), loading skeleton, empty states, 3-column grid. Integrated into both ProfileScreen (isOwnProfile=true) and OtherProfileScreen (isOwnProfile=false). 12-check verification script (verify-s03-m04.ts) covers badge award, deduplication, cross-user visibility, and per-category thresholds. TypeScript compiles 0 new errors across all 3 packages. **Pending live validation:** verification script execution requires live Convex backend — must pass 12/12 to move to validated.
-- Notes: Badge rules are server-side to prevent cheating. Badge definitions are a TypeScript constant (D110), not data-driven. Evaluation is self-healing — missed badges caught on next workout completion.
-
-### R021 — Collaborative Live Workouts
-- Class: differentiator
-- Status: active
-- Description: Users can start a shared workout session that multiple participants join in realtime. All participants see each other's sets as they're logged. Shared rest timer. Realtime presence indicators showing who's active.
-- Why it matters: This is the marquee differentiator — training partners can stay in sync even when not physically together.
-- Source: user
-- Primary owning slice: M005/S01
-- Supporting slices: M005/S02
-- Validation: M005/S01+S02+S03+S04 — Session creation, joining, presence heartbeat (10s interval + 30s cron cleanup), live set feed, server-authoritative shared timer (start/pause/skip by any participant), host-only session ending with combined summary view, abandoned session auto-timeout (15-min threshold, 5-min cron), and full workout→hooks integration via `finishWorkoutCore` (feed, leaderboard, challenge, badge). Backend: 15 functions in sessions.ts, `finishWorkoutCore` lib function, 3 cron entries, 37 verification checks across S01 (12) + S02 (10) + S03 (15). Web UI: session page with SharedTimerDisplay, End Session + summary view, "Start Group Session" button on /workouts page. Mobile: GroupSessionScreen + JoinSessionScreen + 4 session components (participant list, set feed, shared timer, summary) consuming same Convex APIs, with heartbeat lifecycle, typed navigation, Vibration haptics. All 3 risks retired (heartbeat write load, timer sync, session state machine concurrency). **Pending:** two-browser/two-device end-to-end proof (requires live Convex), live verification script execution.
-- Notes: Leverages Convex realtime subscriptions. Presence via heartbeat pattern. S01 proved heartbeat write load risk manageable. S02 proved timer sync via server-authoritative timestamp (D138). Timer pause = clear, no resume (D155). S04 mobile port uses manual invite code entry (D162), no deep linking.
-
-### R022 — Clean/Minimal Design Language
-- Class: quality-attribute
-- Status: validated
-- Description: Light theme, minimal UI, Apple Health-inspired aesthetic. Clean whites, subtle colors, generous whitespace. Mobile optimized for one-handed gym use with large tap targets.
-- Why it matters: User explicitly chose this direction. Consistency across platforms is important.
-- Source: user
-- Primary owning slice: M001/S06
-- Supporting slices: all UI slices
-- Validation: M001/S06 — theme.ts defines D007-compliant color constants (white background, system blue accent, subtle grays) used across all mobile screens. Light status bar with dark content. app.json splash changed from blue to white. Consistent spacing, font sizes, large tap targets across all mobile components. Web UI established same design language in S01-S05 with Tailwind. Human UAT required for final design quality assessment.
-- Notes: Establish design tokens and component patterns in M001, carry forward.
-
-### R023 — Clerk Authentication on Both Platforms
-- Class: constraint
-- Status: validated
-- Description: Authentication uses Clerk on both web (Next.js) and mobile (Expo). Already wired in the template. All Convex queries/mutations are auth-gated.
-- Why it matters: Auth is pre-existing and working. Changing it would be waste.
-- Source: user
-- Primary owning slice: M001/S01
-- Supporting slices: none
-- Validation: M001/S01 — /exercises route redirects unauthenticated users to Clerk sign-in (verified in browser). createCustomExercise mutation requires auth. Web platform verified; mobile deferred to S06.
-- Notes: Template already has ConvexProviderWithClerk on both platforms.
-
 ### R029 — Dev Stack Boots Cleanly
 - Class: operability
 - Status: active
@@ -264,9 +165,9 @@ This file is the explicit capability and coverage contract for the project.
 - Why it matters: Nothing else can be tested or demoed if the dev stack doesn't run.
 - Source: execution
 - Primary owning slice: M006/S01
-- Supporting slices: none
-- Validation: unmapped
-- Notes: Blocked on Convex CLI auth. User has a Convex project — need deployment URL configured.
+- Supporting slices: S06
+- Validation: M006/S01 — cross-package env contract is executable via `verify-env-contract.ts`, native Convex module resolution is fixed by a direct dependency, seed-data readiness passes against the configured backend URL (144 exercises), and the web app boots at `http://localhost:3000`. Expo runtime boot remains for M006/S06, so requirement stays active.
+- Notes: `packages/backend/.env.local` is now the canonical local backend env boundary. Web/native public Convex URLs must mirror its `CONVEX_URL`.
 
 ### R030 — Landing Page Redesign
 - Class: launchability
@@ -290,17 +191,6 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: unmapped
 - Notes: Supersedes D007 clean/minimal for web. Design tokens defined in globals.css. App shell with modern navigation.
 
-### R032 — Full Backend Verification
-- Class: quality-attribute
-- Status: active
-- Description: All 119 pending verification checks (42 M003 + 40 M004 + 37 M005) execute against a live Convex backend and pass. Any bugs found are fixed.
-- Why it matters: Features built in M003–M005 have never been runtime-tested. Structural proof (TypeScript compilation) is not sufficient for confidence.
-- Source: execution
-- Primary owning slice: M006/S05
-- Supporting slices: none
-- Validation: unmapped
-- Notes: Validates R015–R021 on success.
-
 ### R033 — Mobile App Functional on iOS Simulator
 - Class: launchability
 - Status: active
@@ -309,8 +199,98 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M006/S06
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Requires xcode-select path switch to Xcode.app for simulator access.
+- Validation: M006/S06 established the runtime boundary but did not validate the requirement: `apps/native/src/navigation/MainTabs.tsx` defines the 7-tab contract (Exercises, Workouts, Templates, Analytics, Feed, Compete, Profile), `pnpm --filter native-app typecheck` passes, and `pnpm --filter native-app exec expo start --ios` loads env plus starts Metro; however, no simulator UI launched because `xcode-select -p` still points at `/Library/Developer/CommandLineTools` and `xcrun simctl list devices` fails with `unable to find utility "simctl"`. `S06-UAT.md` records that the app launch state, all 7 tabs, Exercises render, Workouts → ActiveWorkout logging loop, Analytics render, and profile/auth runtime state all remain unproven until full Xcode/simulator tooling is available.
+- Notes: Requires xcode-select path switch to Xcode.app for simulator access before any runtime proof can be claimed.
+
+## Validated
+
+### R015 — User Profiles
+- Class: core-capability
+- Status: validated
+- Description: Public user profiles showing display name, avatar, bio, workout stats (total workouts, streak, favorite exercises), and recent activity. Profile is viewable by other users.
+- Why it matters: Foundation for all social features. Users need an identity beyond auth.
+- Source: user
+- Primary owning slice: M003/S01
+- Supporting slices: none
+- Validation: M006/S05 — `pnpm --filter @packages/backend exec tsx scripts/verify-s01-m03.ts` passed 12/12 against the live Convex backend after `verify-seed-data.ts` confirmed connectivity and seeded data. S05 also revalidated the readiness surface with `verify-env-contract.ts` and `--check-failure-fixture`, then reran the full staged sweep and backend typecheck clean.
+- Notes: Profile data stored in Convex, not just Clerk. Clerk provides auth identity, Convex stores app-level profile. Recent activity display deferred to S02 (feed items on profile).
+
+### R016 — Follow System and Activity Feed
+- Class: core-capability
+- Status: validated
+- Description: Users can follow other users. A realtime activity feed shows workouts completed by followed users, with reactions (e.g. fire emoji, fist bump).
+- Why it matters: Social accountability is a proven retention mechanism for fitness apps.
+- Source: user
+- Primary owning slice: M003/S02
+- Supporting slices: M003/S01
+- Validation: M006/S05 — `pnpm --filter @packages/backend exec tsx scripts/verify-s02-m03.ts` passed 15/15 against the live Convex backend after the readiness probes succeeded. T02 reran the same script during the final staged sweep and preserved the env-contract diagnostic seam with `verify-env-contract.ts --check-failure-fixture`.
+- Notes: Feed is realtime via Convex subscriptions. Privacy: users can make workouts private (S03). Block/report mutations exist; block UI deferred.
+
+### R017 — Workout Sharing
+- Class: core-capability
+- Status: validated
+- Description: Users can share a workout summary (exercises, sets, PRs hit) to their feed or via a shareable link. Shared workouts can be cloned as templates by other users.
+- Why it matters: Sharing drives discovery and community engagement. Cloning templates spreads good programming.
+- Source: user
+- Primary owning slice: M003/S03
+- Supporting slices: M003/S01, M001/S05
+- Validation: M006/S05 — `pnpm --filter @packages/backend exec tsx scripts/verify-s03-m03.ts` passed 15/15 on the live backend. This pass was part of the full S05 sweep that also reran `verify-seed-data.ts`, rechecked `verify-env-contract.ts`, and finished with backend typecheck green.
+- Notes: Shareable link generates a public read-only view even for non-users. Share token is the feedItem._id (D097). Privacy default is public (D073).
+
+### R018 — Leaderboards
+- Class: core-capability
+- Status: validated
+- Description: Leaderboards for various metrics — strongest lifts (by bodyweight class or absolute), most volume, longest streak, most workouts. Filterable by time period and exercise.
+- Why it matters: Competition drives engagement. Users want to see how they stack up.
+- Source: user
+- Primary owning slice: M004/S01
+- Supporting slices: M003/S01
+- Validation: M006/S05 — `pnpm --filter @packages/backend exec tsx scripts/verify-s01-m04.ts` passed 12/12 against the live backend during both the baseline sweep and the final rerun. The slice close proof also includes `pnpm turbo run typecheck --filter=@packages/backend` passing after the full M003–M005 staged rerun.
+- Notes: Opt-in leaderboards — users choose whether to participate. Absolute ranking only (no bodyweight normalization, D112). Period filtering cosmetic in S01 (D117).
+
+### R019 — Group Challenges
+- Class: core-capability
+- Status: validated
+- Description: Users can create or join time-limited challenges (e.g., "most pull-ups in a week", "complete 20 workouts in a month"). Challenges have a start/end date, rules, and a live leaderboard.
+- Why it matters: Challenges drive time-bounded engagement spikes and group participation.
+- Source: user
+- Primary owning slice: M004/S02
+- Supporting slices: M004/S01
+- Validation: M006/S05 — `pnpm --filter @packages/backend exec tsx scripts/verify-s02-m04.ts` passed 16/16 against the live backend, then passed again in T02’s final staged rerun after the env-contract seam stopped reproducing and its failure fixture was proven inspectable.
+- Notes: Challenge progress computed from workout data, not self-reported. Stale currentValue on workout deletion is a known limitation (D127).
+
+### R020 — Achievements and Badges
+- Class: differentiator
+- Status: validated
+- Description: Gamification layer — users earn badges for milestones (first workout, 100 workouts, 1000lb total, etc.). Badges display on profiles.
+- Why it matters: Gamification increases long-term retention through collection mechanics.
+- Source: user
+- Primary owning slice: M004/S03
+- Supporting slices: M003/S01
+- Validation: M006/S05 — `pnpm --filter @packages/backend exec tsx scripts/verify-s03-m04.ts` passed 12/12 against the live backend. The same slice close evidence path reran `verify-seed-data.ts`, the rest of the M003–M005 runners, and backend typecheck without cleanup leakage.
+- Notes: Badge rules are server-side to prevent cheating. Badge definitions are a TypeScript constant (D110), not data-driven. Evaluation is self-healing — missed badges caught on next workout completion.
+
+### R021 — Collaborative Live Workouts
+- Class: differentiator
+- Status: validated
+- Description: Users can start a shared workout session that multiple participants join in realtime. All participants see each other's sets as they're logged. Shared rest timer. Realtime presence indicators showing who's active.
+- Why it matters: This is the marquee differentiator — training partners can stay in sync even when not physically together.
+- Source: user
+- Primary owning slice: M005/S01
+- Supporting slices: M005/S02
+- Validation: M006/S05 — the live backend sweep proved all three session runners: `pnpm --filter @packages/backend exec tsx scripts/verify-s01-m05.ts` passed 12/12, `verify-s02-m05.ts` passed 10/10, and `verify-s03-m05.ts` passed 19/19, for an actual M005 total of 41/41. S05 also reran backend typecheck successfully after the staged sweep. Two-browser/two-device manual runtime proof remains a separate UX-level concern for later validation, but the backend contract is now live-verified.
+- Notes: Leverages Convex realtime subscriptions. Presence via heartbeat pattern. S01 proved heartbeat write load risk manageable. S02 proved timer sync via server-authoritative timestamp (D138). Timer pause = clear, no resume (D155). S04 mobile port uses manual invite code entry (D162), no deep linking.
+
+### R032 — Full Backend Verification
+- Class: quality-attribute
+- Status: validated
+- Description: All pending verification checks for M003–M005 execute against a live Convex backend and pass. Any bugs found are fixed.
+- Why it matters: Features built in M003–M005 had never been runtime-tested. Structural proof (TypeScript compilation) was not sufficient for confidence.
+- Source: execution
+- Primary owning slice: M006/S05
+- Supporting slices: none
+- Validation: M006/S05 — readiness probes and the full staged sweep passed against the live backend: `pnpm --filter @packages/backend exec tsx scripts/verify-env-contract.ts` (green on required checks, with diagnostic seam also proven via `--check-failure-fixture`), `pnpm --filter @packages/backend exec tsx scripts/verify-seed-data.ts` (144 seeded exercises), `verify-s01-m03.ts` 12/12, `verify-s02-m03.ts` 15/15, `verify-s03-m03.ts` 15/15, `verify-s01-m04.ts` 12/12, `verify-s02-m04.ts` 16/16, `verify-s03-m04.ts` 12/12, `verify-s01-m05.ts` 12/12, `verify-s02-m05.ts` 10/10, `verify-s03-m05.ts` 19/19, and `pnpm turbo run typecheck --filter=@packages/backend` passed. The truthful slice totals are M003 42/42, M004 40/40, and M005 41/41.
+- Notes: Earlier slice/demo text said M005 should total 37, but the executed runner surface in S05 proved 41 checks; the requirement contract now reflects the executed truth.
 
 ## Deferred
 
@@ -385,17 +365,17 @@ This file is the explicit capability and coverage contract for the project.
 | R008 | core-capability | validated | M001/S02 | none | M001/S02 — unit preference CRUD + conversion utility verified |
 | R009 | core-capability | validated | M001/S02 | none | M001/S02 — durationSeconds server-side computation verified |
 | R010 | core-capability | validated | M001/S01 | none | M001/S01 — muscle group, equipment, text search filters verified |
-| R011 | launchability | validated | M001/S06 | M001/S01-S05, M002/S04, M003/S04, M004/S04, M005/S04 | M001-M005 — all features on mobile, typecheck 3/3, 72/72 M001+M002 checks, 119 pending |
+| R011 | launchability | validated | M001/S06 | M001/S01-S05, M002/S04, M003/S04, M004/S04, M005/S04 | M001-M005 — all features on mobile, typecheck 3/3, 72/72 M001+M002 checks, 42/40/41 live backend checks now proven in M006/S05 |
 | R012 | core-capability | validated | M002/S01 | none | M002/S01 — 12/12 backend checks, reactive 🏆 badge on web |
 | R013 | core-capability | validated | M002/S02 | none | M002/S02 — 8/8 backend checks, Recharts chart on web |
 | R014 | core-capability | validated | M002/S03 | M002/S01 | M002/S03 — 11/11 backend checks, web dashboard with heatmap + charts + summaries |
-| R015 | core-capability | active | M003/S01 | none | M003/S01 — 12-check verification script + web UI (pending live execution) |
-| R016 | core-capability | active | M003/S02 | M003/S01 | M003/S02 — 15-check verification script + web+mobile UI (pending live execution) |
-| R017 | core-capability | active | M003/S03 | M003/S01, M001/S05 | M003/S03 — 15-check verification script + web UI (pending live execution) |
-| R018 | core-capability | active | M004/S01 | M003/S01, M004/S04 | M004/S01+S04 — 12-check verification script + web+mobile UI (pending live execution) |
-| R019 | core-capability | active | M004/S02 | M004/S01, M004/S04 | M004/S02+S04 — 16-check verification + web+mobile UI (pending live execution) |
-| R020 | differentiator | active | M004/S03 | M003/S01, M004/S04 | M004/S03+S04 — 12-check verification script + web+mobile UI (pending live execution) |
-| R021 | differentiator | active | M005/S01 | M005/S02, M005/S04 | M005/S01+S02+S03+S04 — full session lifecycle + mobile port, pending live verification |
+| R015 | core-capability | validated | M003/S01 | none | M006/S05 — verify-s01-m03.ts passed 12/12 live |
+| R016 | core-capability | validated | M003/S02 | M003/S01 | M006/S05 — verify-s02-m03.ts passed 15/15 live |
+| R017 | core-capability | validated | M003/S03 | M003/S01, M001/S05 | M006/S05 — verify-s03-m03.ts passed 15/15 live |
+| R018 | core-capability | validated | M004/S01 | M003/S01, M004/S04 | M006/S05 — verify-s01-m04.ts passed 12/12 live |
+| R019 | core-capability | validated | M004/S02 | M004/S01, M004/S04 | M006/S05 — verify-s02-m04.ts passed 16/16 live |
+| R020 | differentiator | validated | M004/S03 | M003/S01, M004/S04 | M006/S05 — verify-s03-m04.ts passed 12/12 live |
+| R021 | differentiator | validated | M005/S01 | M005/S02, M005/S04 | M006/S05 — verify-s01/02/03-m05.ts passed 12/10/19 live (41/41 total) |
 | R022 | quality-attribute | validated | M001/S06 | all UI slices | M001/S06 — theme.ts tokens, light status bar, consistent styling, human UAT pending |
 | R023 | constraint | validated | M001/S01 | none | M001/S01 — /exercises auth gating verified (web) |
 | R024 | continuity | deferred | none | none | unmapped |
@@ -403,15 +383,27 @@ This file is the explicit capability and coverage contract for the project.
 | R026 | core-capability | deferred | none | none | unmapped |
 | R027 | anti-feature | out-of-scope | none | none | n/a |
 | R028 | anti-feature | out-of-scope | none | none | n/a |
-| R029 | operability | active | M006/S01 | none | unmapped |
-| R030 | launchability | active | M006/S02 | none | unmapped |
-| R031 | quality-attribute | active | M006/S03 | M006/S04 | unmapped |
-| R032 | quality-attribute | active | M006/S05 | none | unmapped |
+| R029 | operability | active | M006/S01 | S06 | M006/S01 — env contract executable, native Convex dependency fixed, seed-data verifier passes (144 exercises), web boots at localhost:3000; Expo runtime still pending |
+| R030 | launchability | active | M006/S02 | none | M006/S02 — landing rewrite shipped and static/typecheck proof passed; live browser validation still blocked by Clerk publishable-key middleware failure |
+| R031 | quality-attribute | active | M006/S03 | M006/S04 | M006/S03 — app-shell tokens, shared primitives, protected-route layout seam, representative route adoption, typecheck pass; live browser proof blocked by Clerk publishable-key failure |
+| R032 | quality-attribute | validated | M006/S05 | none | M006/S05 — readiness probes + 9 live runners + backend typecheck all passed; totals 42/42, 40/40, 41/41 |
+| R033 | launchability | active | M006/S06 | none | M006/S06 — 7-tab contract confirmed in `MainTabs.tsx`, native typecheck passes, Expo loads env + starts Metro, but simulator UI proof is blocked because `xcode-select -p` points at CommandLineTools and `xcrun simctl list devices` fails |
+
+## Coverage Summary
+
+- Active requirements: 5 (R029, R030, R031, R033)
+- Mapped to slices: 28
+- Validated: 23 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R013, R014, R015, R016, R017, R018, R019, R020, R021, R022, R023, R032)
+- Unmapped active requirements: 0
+ to slices: 28
+- Validated: 23 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R013, R014, R015, R016, R017, R018, R019, R020, R021, R022, R023, R032)
+- Unmapped active requirements: 0
+/40, 41/41 |
 | R033 | launchability | active | M006/S06 | none | unmapped |
 
 ## Coverage Summary
 
-- Active requirements: 12 (R015–R021, R029–R033)
+- Active requirements: 5 (R029, R030, R031, R033)
 - Mapped to slices: 28
-- Validated: 16 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R013, R014, R022, R023)
+- Validated: 23 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R013, R014, R015, R016, R017, R018, R019, R020, R021, R022, R023, R032)
 - Unmapped active requirements: 0

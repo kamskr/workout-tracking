@@ -12,6 +12,12 @@
 - iOS Simulator runs the mobile app with all 7 tabs rendering and navigation working
 - TypeScript compiles 0 new errors across all 3 packages
 
+## Current Closure Status
+
+- S01–S05 are closed with live evidence.
+- S06 is closed as a truthful blocker/documentation slice, not as green simulator runtime proof.
+- Remaining milestone blocker: this machine still points `xcode-select -p` at `/Library/Developer/CommandLineTools`, `xcrun simctl list devices` fails, and Expo iOS launch stops before simulator startup. M006 is not milestone-complete until full Xcode tooling is active and the 7-tab/core-flow native proof is rerun.
+
 ## Key Risks / Unknowns
 
 - **Convex CLI auth in non-interactive terminal** — Every previous attempt has crashed. Must use user-provided deployment URL or find a workaround for `npx convex login`.
@@ -57,23 +63,23 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: Infrastructure & Dev Stack** `risk:high` `depends:[]`
+- [x] **S01: Infrastructure & Dev Stack** `risk:high` `depends:[]`
   > After this: Convex backend connected with seed data, Next.js dev server serves pages at localhost:3000, all dependencies resolved, dev stack boots cleanly.
 
-- [ ] **S02: Landing Page Redesign** `risk:medium` `depends:[S01]`
+- [x] **S02: Landing Page Redesign** `risk:medium` `depends:[S01]`
   > After this: Bold Apple Fitness+ landing page at `/` with workout-specific hero, feature showcase sections, social proof, and CTA — UseNotes template fully replaced.
 
-- [ ] **S03: App Shell & Design System** `risk:medium` `depends:[S01]`
+- [x] **S03: App Shell & Design System** `risk:medium` `depends:[S01]`
   > After this: Modern app shell with sidebar or top navigation, consistent layout wrapper for all authenticated pages, design tokens (colors, typography, spacing, gradients) defined in globals.css, Header component redesigned.
 
-- [ ] **S04: App Pages Design Refresh** `risk:medium` `depends:[S03]`
+- [x] **S04: App Pages Design Refresh** `risk:medium` `depends:[S03]`
   > After this: All 17 internal pages (exercises, workouts, analytics, feed, templates, profile, leaderboards, challenges, sessions) redesigned with Apple Fitness+ aesthetic — rounded cards, gradient accents, warm colors, premium feel.
 
-- [ ] **S05: Backend Testing & Bug Fixes** `risk:medium` `depends:[S01]`
-  > After this: All 119 M003–M005 verification checks executed against live Convex, bugs fixed, R015–R021 validated with live evidence.
+- [x] **S05: Backend Testing & Bug Fixes** `risk:medium` `depends:[S01]`
+  > After this: All live M003–M005 backend verification runners closed green against Convex (42/42, 40/40, 41/41), R015–R021 and R032 are validated, and S06 can treat backend verification as proven input.
 
-- [ ] **S06: Mobile Testing & Bug Fixes** `risk:low` `depends:[S01,S05]`
-  > After this: Expo running on iOS Simulator, all 7 tabs rendering, core flows (exercise browse, workout logging, analytics) tested, bugs fixed.
+- [x] **S06: Mobile Testing & Bug Fixes** `risk:low` `depends:[S01,S05]`
+  > After this: Native runtime truth is durable — Expo reaches Metro and the remaining stop point is explicitly the machine’s Xcode/`simctl` boundary; 7-tab/core-flow simulator proof remains blocked pending full Xcode tooling.
 
 ## Boundary Map
 
@@ -126,7 +132,7 @@ Consumes from S03:
 ### S05 (terminal — produces validation evidence)
 
 Produces:
-- 119 verification check results (pass/fail with evidence)
+- 9 verification runner results plus readiness/typecheck evidence (pass/fail with evidence)
 - Bug fixes for any failing checks
 - R015–R021 validation evidence for REQUIREMENTS.md updates
 - Updated test helpers if needed for bug fixes

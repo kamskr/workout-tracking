@@ -45,11 +45,19 @@ export default function SessionParticipantList({
 
   if (participants === undefined) {
     return (
-      <div className="animate-pulse space-y-3">
-        {[1, 2].map((i) => (
-          <div key={i} className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-gray-200" />
-            <div className="h-4 w-24 rounded bg-gray-200" />
+      <div className="space-y-3 animate-pulse">
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="rounded-[22px] border border-white/70 bg-white/78 p-3 shadow-[0_16px_30px_rgba(83,37,10,0.06)]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-slate-200" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-24 rounded bg-slate-200" />
+                <div className="h-3 w-16 rounded bg-slate-200" />
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -57,36 +65,37 @@ export default function SessionParticipantList({
   }
 
   return (
-    <div data-session-participants>
-      <h3 className="mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wider">
-        Participants ({participants.length})
-      </h3>
-      <ul className="space-y-2">
+    <div data-session-participants className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Presence</p>
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-900">
+            Participants ({participants.length})
+          </h3>
+        </div>
+        <span className="workout-kpi-pill workout-kpi-pill--cool">Live roster</span>
+      </div>
+      <ul className="space-y-2.5">
         {participants.map((p) => (
           <li
             key={p._id}
-            className="flex items-center gap-3 rounded-lg bg-white p-2 shadow-sm border border-gray-100"
+            className="rounded-[22px] border border-white/70 bg-white/80 p-3 shadow-[0_16px_30px_rgba(83,37,10,0.06)] transition hover:bg-white"
           >
-            <div className="relative">
-              <Avatar className="h-8 w-8 text-xs">
-                {p.avatarUrl ? (
-                  <AvatarImage src={p.avatarUrl} alt={p.displayName} />
-                ) : null}
-                <AvatarFallback>{getInitials(p.displayName)}</AvatarFallback>
-              </Avatar>
-              {/* Presence dot */}
-              <span
-                data-presence-indicator
-                className={`absolute -bottom-0.5 -right-0.5 block h-3 w-3 rounded-full border-2 border-white ${presenceDotColor(p.derivedStatus)}`}
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-gray-900">
-                {p.displayName}
-              </p>
-              <p className="text-xs text-gray-400 capitalize">
-                {p.derivedStatus}
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Avatar className="h-10 w-10 text-xs shadow-[0_10px_20px_rgba(83,37,10,0.12)]">
+                  {p.avatarUrl ? <AvatarImage src={p.avatarUrl} alt={p.displayName} /> : null}
+                  <AvatarFallback>{getInitials(p.displayName)}</AvatarFallback>
+                </Avatar>
+                <span
+                  data-presence-indicator
+                  className={`absolute -bottom-0.5 -right-0.5 block h-3.5 w-3.5 rounded-full border-2 border-white ${presenceDotColor(p.derivedStatus)}`}
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-slate-900">{p.displayName}</p>
+                <p className="text-xs uppercase tracking-[0.12em] text-slate-400">{p.derivedStatus}</p>
+              </div>
             </div>
           </li>
         ))}

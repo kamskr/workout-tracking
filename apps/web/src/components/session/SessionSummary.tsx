@@ -59,29 +59,10 @@ export default function SessionSummary({ sessionId }: SessionSummaryProps) {
   // Loading state
   if (summary === undefined) {
     return (
-      <div data-session-summary className="flex items-center justify-center py-16">
-        <div className="flex items-center gap-3 text-gray-400">
-          <svg
-            className="h-5 w-5 animate-spin"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-          <span className="text-sm font-medium">Loading summary…</span>
+      <div data-session-summary className="workout-surface rounded-[28px] px-6 py-16">
+        <div className="feature-inline-state justify-center">
+          <span className="feature-inline-state__spinner" aria-hidden="true" />
+          <span>Loading summary…</span>
         </div>
       </div>
     );
@@ -95,11 +76,10 @@ export default function SessionSummary({ sessionId }: SessionSummaryProps) {
 
   return (
     <div data-session-summary className="space-y-6">
-      {/* ── Summary header ────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 mb-3">
+      <div className="workout-surface workout-surface--accent rounded-[30px] p-6 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[24px] border border-white/70 bg-white/88 shadow-[0_18px_34px_rgba(83,37,10,0.08)]">
           <svg
-            className="h-7 w-7 text-green-600"
+            className="h-8 w-8 text-green-600"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -113,52 +93,46 @@ export default function SessionSummary({ sessionId }: SessionSummaryProps) {
             />
           </svg>
         </div>
-        <h2 className="text-lg font-bold text-gray-900">Session Complete!</h2>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Session recap</p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-[-0.05em] text-slate-950">Session Complete!</h2>
+        <p className="mt-2 text-sm leading-7 text-slate-600">
           {completedTime} · {totalParticipants} participant{totalParticipants !== 1 ? "s" : ""}
         </p>
       </div>
 
-      {/* ── Per-participant cards ──────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {summary.participantSummaries.map((p) => (
           <div
             key={p.userId}
-            className={`rounded-xl border p-4 shadow-sm ${cardColor(p.userId)}`}
+            className={`rounded-[28px] border p-5 shadow-[0_20px_38px_rgba(83,37,10,0.08)] ${cardColor(p.userId)}`}
           >
-            <h3 className="text-sm font-semibold text-gray-900 mb-3 truncate">
-              {p.displayName}
-            </h3>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Participant</p>
+                <h3 className="mt-1 truncate text-lg font-semibold tracking-[-0.04em] text-slate-950">
+                  {p.displayName}
+                </h3>
+              </div>
+              <span className="workout-kpi-pill">Summary</span>
+            </div>
             <div className="grid grid-cols-2 gap-3">
-              <StatItem
-                label="Exercises"
-                value={String(p.exerciseCount)}
-              />
-              <StatItem
-                label="Sets"
-                value={String(p.setCount)}
-              />
-              <StatItem
-                label="Volume"
-                value={formatWeight(p.totalVolume, "kg")}
-              />
-              <StatItem
-                label="Duration"
-                value={formatDuration(p.durationSeconds)}
-              />
+              <StatItem label="Exercises" value={String(p.exerciseCount)} />
+              <StatItem label="Sets" value={String(p.setCount)} />
+              <StatItem label="Volume" value={formatWeight(p.totalVolume, "kg")} />
+              <StatItem label="Duration" value={formatDuration(p.durationSeconds)} />
             </div>
           </div>
         ))}
       </div>
 
-      {/* Empty state if no participants */}
-      {totalParticipants === 0 && (
-        <div className="text-center py-8">
-          <p className="text-sm text-gray-500">
-            No workout data was recorded for this session.
-          </p>
+      {totalParticipants === 0 ? (
+        <div className="feature-empty-state py-8">
+          <div className="feature-empty-state__body">
+            <h3 className="feature-empty-state__title">No workout data was recorded</h3>
+            <p className="feature-empty-state__copy">The summary shell still renders cleanly even if a session ends before anyone logs work.</p>
+          </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

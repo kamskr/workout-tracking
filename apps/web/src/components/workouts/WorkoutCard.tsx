@@ -3,9 +3,11 @@
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
+import { Activity, Clock3, Flame, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/units";
 import { Button } from "@/components/common/button";
+import { AppBadge } from "@/components/app-shell/AppBadge";
 import SaveAsTemplateButton from "@/components/templates/SaveAsTemplateButton";
 import ShareButton from "@/components/sharing/ShareButton";
 import PrivacyToggle from "@/components/sharing/PrivacyToggle";
@@ -50,45 +52,56 @@ export default function WorkoutCard({ workout }: WorkoutCardProps) {
   return (
     <div
       className={cn(
-        "group rounded-xl border border-gray-200 bg-white p-4 shadow-sm",
-        "transition-all hover:border-gray-300 hover:shadow-md",
+        "workout-surface group flex h-full flex-col p-5 transition-all duration-200",
+        workout.status === "inProgress" ? "workout-surface--accent" : "workout-surface--cool hover:-translate-y-0.5",
       )}
+      data-workout-card
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <h3 className="truncate text-sm font-semibold text-gray-900 group-hover:text-primary transition-colors">
-            {workout.name || "Workout"}
-          </h3>
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <AppBadge tone={workout.status === "inProgress" ? "warning" : "neutral"}>
+              {workout.status === "inProgress" ? "In progress" : "Completed"}
+            </AppBadge>
+            {workout.startedAt && (
+              <span className="workout-section-label">{formatDate(workout.startedAt)}</span>
+            )}
+          </div>
 
-          {workout.startedAt && (
-            <p className="mt-1 text-xs text-gray-500">
-              {formatDate(workout.startedAt)}
+          <div>
+            <h3 className="truncate text-lg font-semibold tracking-[-0.04em] text-slate-950 transition-colors group-hover:text-primary">
+              {workout.name || "Workout"}
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {workout.status === "inProgress"
+                ? "Resume active logging without losing rest timing, exercise order, or PR surfacing."
+                : "Saved session summary with privacy, sharing, and template actions kept inline."}
             </p>
-          )}
+          </div>
 
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {/* Duration badge */}
+          <div className="flex flex-wrap gap-2">
             {workout.durationSeconds != null && (
-              <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+              <span className="workout-kpi-pill workout-kpi-pill--cool">
+                <Clock3 className="h-3.5 w-3.5" />
                 {formatDuration(workout.durationSeconds)}
               </span>
             )}
 
-            {/* Status badge */}
-            {workout.status === "inProgress" && (
-              <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
-                In Progress
-              </span>
-            )}
-
-            {/* Exercise count badge */}
-            <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+            <span className="workout-kpi-pill">
+              <Activity className="h-3.5 w-3.5" />
               {exerciseCount} exercise{exerciseCount !== 1 ? "s" : ""}
             </span>
+
+            {workout.status === "inProgress" && (
+              <span className="workout-kpi-pill workout-kpi-pill--warning">
+                <Flame className="h-3.5 w-3.5" />
+                Live session
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1.5">
           {workout.status === "completed" && (
             <>
               <PrivacyToggle
@@ -107,24 +120,11 @@ export default function WorkoutCard({ workout }: WorkoutCardProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-gray-400 hover:text-destructive"
+            className="h-9 w-9 rounded-full bg-white/68 text-slate-400 hover:bg-white hover:text-destructive"
             onClick={handleDelete}
             aria-label="Delete workout"
           >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="h-4 w-4"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-            />
-          </svg>
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </div>

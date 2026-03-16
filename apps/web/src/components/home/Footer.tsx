@@ -8,65 +8,58 @@ const menuItems = [
     url: "/",
   },
   {
-    title: "Benefits",
+    title: "Features",
     url: "#Benefits",
   },
   {
-    title: "Get Started",
-    url: "/notes",
+    title: "Results",
+    url: "#reviews",
   },
   {
-    title: "Reviews",
-    url: "#reviews",
+    title: "Start Tracking",
+    url: "/sign-up",
   },
 ];
 
 const Footer = () => {
   return (
-    <>
-      <div className="container hidden sm:block py-12">
-        <div className="flex flex-wrap md:flex-nowrap justify-between items-center pb-6">
+    <footer className="landing-footer-wrap">
+      <div className="container hidden py-12 sm:block">
+        <div className="flex flex-wrap items-center justify-between gap-6 border-b border-white/10 pb-6 md:flex-nowrap">
           <Logo />
           <Menu menuItems={menuItems} />
         </div>
-        <div className="pt-8 border-t-[#929292] border-t border-solid">
-          <h3 className="text-gray-900 text-xl not-italic font-semibold leading-[30px] font-montserrat pb-2">
-            Take more efficient notes with UseNotes
-          </h3>
-          <div className="flex justify-between">
-            <p className="text-gray-600 font-montserrat text-base not-italic font-normal leading-6">
-              Save countless hours of note-taking and organize your notes
-              easier.
-            </p>
-            <p className="text-gray-600 font-inter text-base not-italic font-normal leading-6">
-              © 2023 UseNotes. All rights reserved.
+        <div className="flex flex-col justify-between gap-6 pt-8 md:flex-row md:items-end">
+          <div>
+            <h3 className="landing-footer-title">Train with structure. Recover with signal. Show up again tomorrow.</h3>
+            <p className="landing-footer-copy mt-3 max-w-[620px]">
+              LiftLab keeps workouts, progress, and community in one place so your next training decision is grounded in what actually happened.
             </p>
           </div>
+          <p className="landing-footer-meta">© 2026 LiftLab. Built for athletes chasing consistency.</p>
         </div>
       </div>
 
-      <div className="container sm:hidden pt-7 pl-6 pr-5">
-        <div className="flex justify-between items-center">
-          <div className="flex flex-col gap-6">
+      <div className="container px-6 pb-10 pt-7 sm:hidden">
+        <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-5">
             <Logo />
-            <h3 className="text-[#101828] text-base not-italic font-semibold leading-[18px] font-montserrat">
-              Take more efficient notes with UseNotes
+            <h3 className="landing-footer-title text-base">
+              Train with structure. Recover with signal. Show up again tomorrow.
             </h3>
-            <p className="text-[#101828] font-montserrat text-base not-italic font-light leading-[18px]">
-              Save countless hours of note-taking and organize your notes
-              easier.
+            <p className="landing-footer-copy text-sm">
+              Log workouts, watch your progress move, and stay connected to the people pushing with you.
             </p>
           </div>
-          <div className="min-w-[100px]">
+          <div className="w-full">
             <Menu menuItems={menuItems} />
           </div>
+          <p className="landing-footer-meta text-sm">
+            © 2026 LiftLab. Built for athletes chasing consistency.
+          </p>
         </div>
-        <p className="text-[#667085] font-inter text-center text-base not-italic font-light leading-[18px] py-11">
-          © 2023 UseNotes. All rights reserved. <br />
-          <span className="mt-1"> Icons by Icons8</span>
-        </p>
       </div>
-    </>
+    </footer>
   );
 };
 

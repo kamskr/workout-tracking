@@ -37,11 +37,14 @@ export default function SessionSetFeed({ sessionId }: SessionSetFeedProps) {
 
   if (sessionSets === undefined) {
     return (
-      <div className="animate-pulse space-y-4">
+      <div className="space-y-4 animate-pulse">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-lg bg-gray-100 p-4">
-            <div className="h-4 w-32 rounded bg-gray-200 mb-2" />
-            <div className="h-3 w-48 rounded bg-gray-200" />
+          <div key={i} className="rounded-[24px] border border-white/70 bg-white/80 p-4 shadow-[0_16px_30px_rgba(83,37,10,0.06)]">
+            <div className="mb-3 h-4 w-32 rounded bg-slate-200" />
+            <div className="space-y-2">
+              <div className="h-3 w-48 rounded bg-slate-200" />
+              <div className="h-3 w-36 rounded bg-slate-200" />
+            </div>
           </div>
         ))}
       </div>
@@ -107,10 +110,10 @@ export default function SessionSetFeed({ sessionId }: SessionSetFeedProps) {
   // Empty state
   if (feedGroups.length === 0) {
     return (
-      <div data-session-sets className="text-center py-12">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+      <div data-session-sets className="feature-empty-state rounded-[28px] border border-dashed border-[rgba(138,91,57,0.2)] bg-[linear-gradient(180deg,rgba(255,250,245,0.9),rgba(255,245,237,0.76))] px-6 py-12 text-center">
+        <div className="feature-empty-state__icon feature-empty-state__icon--warm">
           <svg
-            className="h-8 w-8 text-gray-400"
+            className="h-6 w-6"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -124,58 +127,58 @@ export default function SessionSetFeed({ sessionId }: SessionSetFeedProps) {
             />
           </svg>
         </div>
-        <p className="mt-4 text-sm font-medium text-gray-900">
-          No sets logged yet
-        </p>
-        <p className="mt-1 text-xs text-gray-500">
-          Start your workout! Sets from all participants will appear here.
-        </p>
+        <div className="feature-empty-state__body">
+          <p className="feature-empty-state__eyebrow">Live feed idle</p>
+          <h3 className="feature-empty-state__title">No sets logged yet</h3>
+          <p className="feature-empty-state__copy">
+            Start your workout. Sets from all participants will appear here with the existing collaboration hooks intact.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div data-session-sets className="space-y-6">
+    <div data-session-sets className="space-y-5">
       {feedGroups.map((group) => (
         <div
           key={group.exerciseId}
-          className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden"
+          className="workout-surface overflow-hidden rounded-[28px]"
         >
-          {/* Exercise header */}
-          <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-100">
-            <h4 className="text-sm font-semibold text-gray-900">
-              {group.exerciseName}
-            </h4>
+          <div className="border-b border-white/60 bg-[linear-gradient(180deg,rgba(255,252,248,0.92),rgba(255,243,232,0.72))] px-5 py-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Exercise stream</p>
+                <h4 className="mt-1 text-base font-semibold tracking-[-0.03em] text-slate-950">
+                  {group.exerciseName}
+                </h4>
+              </div>
+              <span className="workout-kpi-pill">{group.entries.length} set{group.entries.length === 1 ? "" : "s"}</span>
+            </div>
           </div>
 
-          {/* Set entries */}
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-white/60">
             {group.entries.map((entry, idx) => (
               <div
                 key={`${entry.participantUserId}-${entry.setNumber}-${idx}`}
-                className="flex items-center gap-3 px-4 py-2.5"
+                className="flex flex-wrap items-center gap-3 px-5 py-3.5"
               >
-                {/* Participant badge */}
                 <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badgeColor(entry.participantUserId)}`}
+                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${badgeColor(entry.participantUserId)}`}
                 >
                   {entry.participantName}
                 </span>
 
-                {/* Set details */}
-                <span className="text-sm text-gray-700">
+                <span className="text-sm font-medium text-slate-700">
                   {entry.weight != null ? formatWeight(entry.weight, unit) : "—"}
                   {" × "}
                   {entry.reps ?? "—"}
-                  {entry.rpe != null && (
-                    <span className="ml-1.5 text-xs text-gray-400">
-                      RPE {entry.rpe}
-                    </span>
-                  )}
+                  {entry.rpe != null ? (
+                    <span className="ml-2 text-xs uppercase tracking-[0.12em] text-slate-400">RPE {entry.rpe}</span>
+                  ) : null}
                 </span>
 
-                {/* Set number */}
-                <span className="ml-auto text-xs text-gray-400">
+                <span className="ml-auto text-xs uppercase tracking-[0.12em] text-slate-400">
                   Set {entry.setNumber}
                 </span>
               </div>

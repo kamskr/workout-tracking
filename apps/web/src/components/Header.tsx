@@ -2,118 +2,63 @@
 
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import Logo from "./common/Logo";
 import Link from "next/link";
-import { useUser } from "@clerk/clerk-react";
-import { UserNav } from "./common/UserNav";
-import { usePathname } from "next/navigation";
+import Logo from "./common/Logo";
 
-type NavigationItem = {
-  name: string;
-  href: string;
-  current: boolean;
-};
-
-const navigation: NavigationItem[] = [
-  { name: "Benefits", href: "#Benefits", current: true },
-  { name: "Reviews", href: "#reviews", current: false },
-];
+const navigation = [
+  { name: "Features", href: "#Benefits" },
+  { name: "Community", href: "#reviews" },
+] as const;
 
 export default function Header() {
-  const { user } = useUser();
-  const pathname = usePathname();
-
   return (
-    <Disclosure as="nav" className=" ">
+    <Disclosure as="nav" data-ui="public-header">
       {({ open }) => (
         <>
-          <div className="flex items-center bg-white h-16 sm:h-20">
+          <div className="flex h-16 items-center bg-white sm:h-20">
             <div className="container px-2 sm:px-0">
               <div className="relative flex h-16 items-center justify-between">
-                <div className="flex sm:hidden shrink-0 items-center">
-                  <Logo isMobile={true} />
+                <div className="flex shrink-0 items-center sm:hidden">
+                  <Logo isMobile />
                 </div>
-                <div className="sm:flex hidden shrink-0 items-center">
+                <div className="hidden shrink-0 items-center sm:flex">
                   <Logo />
                 </div>
-                {pathname === "/" && (
-                  <div className="flex flex-1 items-center justify-center ">
-                    <div className="hidden sm:ml-6 sm:block">
-                      <ul className="flex space-x-28">
-                        {navigation.map((item) => (
-                          <li key={item.name}>
-                            <Link
-                              href={item.href}
-                              className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal]"
-                              aria-current={item.current ? "page" : undefined}
-                            >
-                              {item.name}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+
+                <div className="flex flex-1 items-center justify-center">
+                  <div className="hidden sm:block">
+                    <ul className="flex space-x-28">
+                      {navigation.map((item) => (
+                        <li key={item.name}>
+                          <Link
+                            href={item.href}
+                            className="text-center text-xl font-normal leading-[normal] text-[#2D2D2D]"
+                          >
+                            {item.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                )}
-                {user ? (
-                  <div className="hidden sm:flex absolute inset-y-0 right-0 gap-6 items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                    <Link href="/feed">
-                      <button
-                        type="button"
-                        className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal] font-montserrat px-[22px] py-[11px] hover:text-gray-600 transition-colors"
-                      >
-                        Feed
-                      </button>
-                    </Link>
-                    <Link href="/leaderboards">
-                      <button
-                        type="button"
-                        className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal] font-montserrat px-[22px] py-[11px] hover:text-gray-600 transition-colors"
-                      >
-                        Leaderboards
-                      </button>
-                    </Link>
-                    <Link href="/challenges">
-                      <button
-                        type="button"
-                        className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal] font-montserrat px-[22px] py-[11px] hover:text-gray-600 transition-colors"
-                      >
-                        Challenges
-                      </button>
-                    </Link>
-                    <Link href="/notes">
-                      <button
-                        type="button"
-                        className=" text-white text-center text-xl not-italic font-normal leading-[normal] font-montserrat px-[22px] py-[11px] button"
-                      >
-                        See your Notes
-                      </button>
-                    </Link>
-                    <UserNav
-                      image={user?.imageUrl}
-                      name={user?.fullName!}
-                      email={user?.primaryEmailAddress?.emailAddress!}
-                    />
-                  </div>
-                ) : (
-                  <div className="hidden sm:flex absolute inset-y-0 right-0 gap-6 items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                    <Link
-                      href="/notes"
-                      className="border rounded-lg border-solid border-[#2D2D2D] text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal] font-montserrat px-[22px] py-2.5"
-                    >
-                      Sign in
-                    </Link>
-                    <Link
-                      href="/notes"
-                      className=" text-white text-center text-xl not-italic font-normal leading-[normal] font-montserrat px-[22px] py-[11px] button"
-                    >
-                      Get Started
-                    </Link>
-                  </div>
-                )}
+                </div>
+
+                <div className="hidden items-center gap-6 pr-2 sm:static sm:inset-auto sm:ml-6 sm:flex sm:pr-0">
+                  <Link
+                    href="/sign-in"
+                    className="rounded-lg border border-solid border-[#2D2D2D] px-[22px] py-2.5 text-center font-montserrat text-xl font-normal leading-[normal] text-[#2D2D2D]"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    className="button px-[22px] py-[11px] text-center font-montserrat text-xl font-normal leading-[normal] text-white"
+                  >
+                    Start tracking
+                  </Link>
+                </div>
+
                 <div className="block sm:hidden">
-                  {/* Mobile menu button*/}
-                  <DisclosureButton className="relative inline-flex  items-center justify-center rounded-md p-2 text-gray-400 focus:outline-hidden focus:ring-2 focus:ring-inset focus:ring-white">
+                  <DisclosureButton className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 focus:outline-hidden focus:ring-2 focus:ring-inset focus:ring-white">
                     <span className="absolute -inset-0.5" />
                     <span className="sr-only">Open main menu</span>
                     {open ? (
@@ -128,55 +73,29 @@ export default function Header() {
           </div>
 
           <DisclosurePanel className="sm:hidden">
-            <div className="space-y-1 px-2 pb-3 pt-2 flex flex-col gap-3 items-start">
-              {user && (
-                <>
-                  <DisclosureButton
-                    as={Link}
-                    href="/feed"
-                    className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal]"
-                  >
-                    Feed
-                  </DisclosureButton>
-                  <DisclosureButton
-                    as={Link}
-                    href="/leaderboards"
-                    className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal]"
-                  >
-                    Leaderboards
-                  </DisclosureButton>
-                  <DisclosureButton
-                    as={Link}
-                    href="/challenges"
-                    className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal]"
-                  >
-                    Challenges
-                  </DisclosureButton>
-                </>
-              )}
+            <div className="flex flex-col items-start gap-3 space-y-1 px-2 pb-3 pt-2">
               {navigation.map((item) => (
                 <DisclosureButton
                   key={item.name}
                   as={Link}
                   href={item.href}
-                  className="text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal]"
-                  aria-current={item.current ? "page" : undefined}
+                  className="text-center text-xl font-normal leading-[normal] text-[#2D2D2D]"
                 >
                   {item.name}
                 </DisclosureButton>
               ))}
-              <div className="flex gap-6 items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+              <div className="flex items-center gap-6 pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                 <Link
-                  href="/notes"
-                  className="border rounded-lg border-solid border-[#2D2D2D] text-[#2D2D2D] text-center text-xl not-italic font-normal leading-[normal] font-montserrat px-5 py-[5px]"
+                  href="/sign-in"
+                  className="rounded-lg border border-solid border-[#2D2D2D] px-5 py-[5px] text-center font-montserrat text-xl font-normal leading-[normal] text-[#2D2D2D]"
                 >
                   Sign in
                 </Link>
                 <Link
-                  href="/notes"
-                  className=" text-white text-center text-xl not-italic font-normal leading-[normal] font-montserrat px-5 py-1.5 button"
+                  href="/sign-up"
+                  className="button px-5 py-1.5 text-center font-montserrat text-xl font-normal leading-[normal] text-white"
                 >
-                  Get Started
+                  Start tracking
                 </Link>
               </div>
             </div>
